@@ -30,6 +30,9 @@ function App() {
 
   return (
     <div className="App">
+      <h1 className="bg-red-500 w-60 h-60 z-50">
+        TESTINGGGG
+      </h1>
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>
