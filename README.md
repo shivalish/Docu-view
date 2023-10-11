@@ -22,7 +22,7 @@ Then setup
 
 [ https://maven.apache.org/guides/getting-started/windows-prerequisites.html ]
 
-### Linux
+### Linux (ubuntu distros)
 
 ``` sudo apt-get update; sudo apt-get -y install maven ```
 
