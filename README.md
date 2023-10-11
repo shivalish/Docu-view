@@ -12,6 +12,20 @@ Document management app
 
 ```brew install maven```
 
+### Windows
+
+If java has been downloaded, maven should be installed as well. If not follow the next instructions:
+
+[https://maven.apache.org/install.html]
+
+Then setup
+
+[https://maven.apache.org/guides/getting-started/windows-prerequisites.html]
+
+### Linux
+
+``` sudo apt-get update ```
+
 ## Frontend (React)
 
 ### Commands (Windows/Linux/Mac):
