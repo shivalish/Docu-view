@@ -6,7 +6,7 @@ Document management app
 
 ### Mac / Windows
 
-Download installer from [https://www.java.com/en/download/]
+Download installer from [ https://www.java.com/en/download/ ]
 Follow the instructions to install
 
 ### Linux (ubuntu distros)
@@ -37,7 +37,7 @@ Then setup
 
 ### Commands (Windows/Linux/Mac):
 start application from parent directory \
-``` npm install --prefix frontend/docuview-react-app ; npm start --prefix frontend/docuview-react-app```
+``` npm install --prefix frontend/docuview-react-app ; npm start --prefix frontend/docuview-react-app ```
 
 ### Requirements:
 
