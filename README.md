@@ -15,7 +15,7 @@ Document management app
 -Commands:
     start server from inside `server` dir (windows): `.\mvnw.cmd spring-boot:run`
 
-    start server from inside`server` dir (linux/mac):`./mvnw spring-boot:run`
+    start server from inside`server` dir (linux/mac): `./mvnw spring-boot:run`
 
 -Requirements:
 
