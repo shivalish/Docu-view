@@ -2,11 +2,15 @@
 
 Document management app
 
+## JAVA INSTALL FOR UBUNTU DISTROS
+
+``` sudo apt install openjdk-21-jdk ; sudo update-java-alternatives -s $(update-java-alternatives -l | tr ' ' '\n' | grep java-1.21 | grep -v /) ```
+
 ## Frontend (React)
 
 ### Commands (Windows/Linux/Mac):
-start application from inside `frontend\docuview-react-app` dir \
-```npm start```
+start application from parent directory \
+``` npm install --prefix frontend/docuview-react-app ; npm start --prefix frontend/docuview-react-app```
 
 ### Requirements:
 
@@ -15,11 +19,13 @@ start application from inside `frontend\docuview-react-app` dir \
 ## Server (Springboot)
 
 ### Commands (Windows):
-start server from inside server dir \
-``` .\mvnw.cmd spring-boot:run ```
+Note, setup a env varible JAVA_HOME to the main dirrectory where java is installed
+start server from inside parent dir \
+``` server\mvnw.cmd -f server\pom.xml spring-boot:run ```
 ### Commands (Linux/Mac):
-start server from inside server dir \
-```./mvnw spring-boot:run```
+
+start server from parent dir \
+``` export JAVA_HOME=/usr ; server/mvnw -f server/pom.xml spring-boot:run ```
 
 ### Requirements:
 
