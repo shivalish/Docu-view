@@ -18,7 +18,7 @@ start application from inside `frontend\docuview-react-app` dir \
 start server from inside server dir \
 ``` .\mvnw.cmd spring-boot:run ```
 ### Commands (Linux/Mac):
-start server from inside server dir (linux/mac): \
+start server from inside server dir \
 ```./mvnw spring-boot:run```
 
 ### Requirements:
