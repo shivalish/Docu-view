@@ -2,6 +2,10 @@
 
 Document management app
 
+## JAVA INSTALL FOR UBUNTU DISTROS
+
+``` sudo apt install openjdk-21-jdk ; sudo update-java-alternatives -s $(update-java-alternatives -l | tr ' ' '\n' | grep java-1.21 | grep -v /) ```
+
 ## Frontend (React)
 
 ### Commands (Windows/Linux/Mac):
