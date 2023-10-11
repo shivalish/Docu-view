@@ -29,7 +29,7 @@ start server from parent dir \
 
 ### Commands (Mac)
 start server from parent dir \
-``` export JAVA_HOME=/Library/Java/Home ; server/mvnw -f server/pom.xml spring-boot:run ```
+``` export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home ; server/mvnw -f server/pom.xml spring-boot:run ```
 
 ### Requirements:
 
