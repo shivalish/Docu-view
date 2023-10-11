@@ -6,6 +6,12 @@ Document management app
 
 ``` sudo apt update ; sudo apt install openjdk-21-jdk -y ; sudo update-java-alternatives -s $(update-java-alternatives -l | tr ' ' '\n' | grep java-1.21 | grep -v /) ```
 
+## Maven Install
+
+### Mac
+
+```brew install maven```
+
 ## Frontend (React)
 
 ### Commands (Windows/Linux/Mac):
