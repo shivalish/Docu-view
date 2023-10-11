@@ -2,7 +2,14 @@
 
 Document management app
 
-## JAVA INSTALL FOR UBUNTU DISTROS
+## Java Install
+
+### Mac / Windows
+
+Download installer from [https://www.java.com/en/download/]
+Follow the instructions to install
+
+### Linux (ubuntu distros)
 
 ``` sudo apt install openjdk-21-jdk ; sudo update-java-alternatives -s $(update-java-alternatives -l | tr ' ' '\n' | grep java-1.21 | grep -v /) ```
 
