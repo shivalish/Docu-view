@@ -5,8 +5,8 @@ Document management app
 ## Frontend (React)
 
 ### Commands (Windows/Linux/Mac):
-start application from inside `frontend\docuview-react-app` dir \
-```npm install ; npm start```
+start application from parent directory \
+``` npm install --prefix frontend/docuview-react-app ; npm start --prefix frontend/docuview-react-app```
 
 ### Requirements:
 
@@ -15,12 +15,12 @@ start application from inside `frontend\docuview-react-app` dir \
 ## Server (Springboot)
 
 ### Commands (Windows):
-start server from inside server dir \
-``` .\mvnw.cmd spring-boot:run ```
+start server from inside parent dir \
+``` .\mvnw.cmd -f server/pom.xml spring-boot:run ```
 ### Commands (Linux/Mac):
 
-start server from inside server dir \
-```export JAVA_HOME=/usr ; ./mvnw spring-boot:run```
+start server from parent dir \
+``` export JAVA_HOME=/usr ; server/mvnw -f server/pom.xml spring-boot:run ```
 
 ### Requirements:
 
