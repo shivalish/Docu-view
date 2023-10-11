@@ -15,8 +15,9 @@ start application from parent directory \
 ## Server (Springboot)
 
 ### Commands (Windows):
+Note, setup a env varible JAVA_HOME to the main dirrectory where java is installed
 start server from inside parent dir \
-``` .\mvnw.cmd -f server/pom.xml spring-boot:run ```
+``` server\mvnw.cmd -f server\pom.xml spring-boot:run ```
 ### Commands (Linux/Mac):
 
 start server from parent dir \
