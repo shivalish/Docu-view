@@ -7,7 +7,8 @@ Document management app
 -Commands:
     start application from inside `frontend\docuview-react-app` dir : `npm start`
 -Requirements:
-    Node 18
+
+* Node 18
 
 ## Server (Springboot)
 
@@ -16,14 +17,15 @@ Document management app
 
     start server from inside`server` dir (linux/mac):`./mvnw spring-boot:run`
 
-
 -Requirements:
-    Java 21
-    Maven 3.9.4
-    Spring Boot 3.1.4
+
+* Java 21
+* Maven 3.9.4
+* Spring Boot 3.1.4
 
 ## Database (MySQL)
 
 -Requirements:
-    MySql workbench
-    digi certify file
+
+* MySql workbench
+* digi certify file
