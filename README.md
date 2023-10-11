@@ -4,19 +4,24 @@ Document management app
 
 ## Frontend (React)
 
--Commands:
-    start application from inside `frontend\docuview-react-app` dir : `npm start`
--Requirements:
+### Commands (Windows/Linux/Mac):
+start application from inside `frontend\docuview-react-app` dir \
+```npm start```
+
+### Requirements:
 
 * Node 18
 
 ## Server (Springboot)
 
--Commands:
-    start server from inside `server` dir (windows): `.\mvnw.cmd spring-boot:run`
-    start server from inside `server` dir (linux/mac): `./mvnw spring-boot:run`
+### Commands (Windows):
+start server from inside server dir \
+``` .\mvnw.cmd spring-boot:run ```
+### Commands (Linux/Mac):
+start server from inside server dir (linux/mac): \
+```./mvnw spring-boot:run```
 
--Requirements:
+### Requirements:
 
 * Java 21
 * Maven 3.9.4
@@ -24,7 +29,7 @@ Document management app
 
 ## Database (MySQL)
 
--Requirements:
+### Requirements:
 
 * MySql workbench
 * digi certify file
