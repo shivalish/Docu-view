@@ -20,7 +20,7 @@ If java has been downloaded, maven should be installed as well. If not follow th
 
 Then setup
 
-[https://maven.apache.org/guides/getting-started/windows-prerequisites.html]
+[ https://maven.apache.org/guides/getting-started/windows-prerequisites.html ]
 
 ### Linux
 
