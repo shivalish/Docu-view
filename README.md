@@ -16,7 +16,7 @@ Document management app
 
 If java has been downloaded, maven should be installed as well. If not follow the next instructions:
 
-[https://maven.apache.org/install.html]
+[ https://maven.apache.org/install.html ]
 
 Then setup
 
