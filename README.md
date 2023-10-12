@@ -39,7 +39,7 @@ Download [installer
 
 ### Linux (ubuntu distros)
 
-`sudo apt update;` `sudo apt -y install nodejs`
+`sudo apt update; sudo apt -y install nodejs`
 
 ## Frontend (React)
 
