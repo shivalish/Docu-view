@@ -35,7 +35,6 @@ If java has been downloaded, maven should be installed as well. If not follow th
 Then [setup](https://maven.apache.org/guides/getting-started/windows-prerequisites.html)
 
 ### Linux (ubuntu distros)
-
 ``` sudo apt-get update; sudo apt-get -y install maven ```
 
 ## MySql Workbench Install
