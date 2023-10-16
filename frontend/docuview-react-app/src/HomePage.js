@@ -3,6 +3,12 @@ import Header from "./atoms/Header.jsx";
 import Button from "./atoms/Button.jsx";
 import { Tab } from "@headlessui/react";
 
+function TabList(tabs) {
+  return (
+    <Tab.List>{ tabs }</Tab.List>
+  )
+}
+
 function LoginSignupTab(text){
               return ( 
                 <Tab
@@ -29,10 +35,12 @@ function HomePage() {
       <div className="flex h-full w-1/3 justify-center items-center">
         <div>
           <Tab.Group>
-            <Tab.List>
-              { LoginSignupTab("Login") }
-              { LoginSignupTab("Signup") }
-            </Tab.List>
+            {
+              TabList(
+                LoginSignupTab("Login"),
+                LoginSignupTab("Signup")
+              )
+            }
             <Tab.Panels>
               <Tab.Panel className="w-96 h-1/3 bg-iso-white p-10 rounded-b-md rounded-tr-md">
                 <label> Username </label>
