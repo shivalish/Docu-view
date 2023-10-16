@@ -3,6 +3,10 @@ import Header from "./atoms/Header.jsx";
 import Button from "./atoms/Button.jsx";
 import { Tab } from "@headlessui/react";
 
+function LoginSignup(){
+
+}
+
 function HomePage() {
   //TODO 1: reduce boilerplate html; too many divs so u would need to move some divs into components folder
   //TODO 2: reduce boilerplate tailwind css; maybe add a tailwind class to index.css and use here
@@ -24,7 +28,7 @@ function HomePage() {
               >
                 Login
               </Tab>
-              <Tab className="rounded-t-md ui-selected:bg-iso-white ui-not-selected:bg-iso-grey h-10 w-32">
+              <Tab className= {"rounded-t-md ui-selected:bg-iso-white ui-not-selected:bg-iso-grey h-10 w-32"}>
                 Sign Up
               </Tab>
             </Tab.List>
