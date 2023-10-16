@@ -3,13 +3,7 @@ import Header from "./atoms/Header.jsx";
 import Button from "./atoms/Button.jsx";
 import { Tab } from "@headlessui/react";
 
-function TabList(tabs) {
-  return (
-    <Tab.List>{ tabs.map(x => x) }</Tab.List>
-  )
-}
-
-function LoginSignupTab(text){
+function HomePageLoginSignupTab(text){
   return ( 
     <Tab
       className={`rounded-t-md ui-selected:bg-iso-white ui-not-selected:bg-iso-grey h-10 w-32`}
@@ -19,7 +13,14 @@ function LoginSignupTab(text){
   );
 }
 
-function LoginBotton(text){
+// isolated divs
+function HomePageTabList() {
+  return (
+    <Tab.List>{ [ "Login", "Signup" ].map(x => HomePageLoginSignupTab(x)) }</Tab.List>
+  )
+}
+
+function HomePageBotton(text){
   return (
     <div className="flex justify-end">
       <Button width="w-32" height="h-10">
@@ -29,6 +30,20 @@ function LoginBotton(text){
     </div>
   )
 }
+
+function HomePageLoginBotton(){
+  return (
+    HomePageBotton("Login")
+  )
+}
+
+function HomePageSignUpBotton(){
+  return (
+    HomePageBotton("Sign Up")
+  )
+}
+
+// MAKE SIGNUP TOO
 
 function LoginDiv(){
   return (
@@ -44,6 +59,20 @@ function LoginDiv(){
     </div></>
   )
 
+}
+
+function HomePageTabs(){
+  return (
+    <Tab.Panels>
+    <Tab.Panel className="w-96 h-1/3 bg-iso-white p-10 rounded-b-md rounded-tr-md">
+      {LoginDiv()}
+      {HomePageSignUpBotton()}
+    </Tab.Panel><Tab.Panel className="w-96 h-1/3 bg-iso-white p-10 rounded-b-md rounded-tr-md">
+        {LoginDiv()}
+        {HomePageSignUpBotton()}
+      </Tab.Panel>
+    </Tab.Panels> 
+  )
 }
 
 // Why forgot username and password in signup?
@@ -64,18 +93,11 @@ function HomePage() {
         <div>
           <Tab.Group>
             {
-              TabList( [ LoginSignupTab("Login"), LoginSignupTab("Signup") ] )
+              HomePageTabList()
             }
-            <Tab.Panels>
-              <Tab.Panel className="w-96 h-1/3 bg-iso-white p-10 rounded-b-md rounded-tr-md">
-                { LoginDiv() }
-                { LoginBotton("Login") }
-              </Tab.Panel>
-              <Tab.Panel className="w-96 h-1/3 bg-iso-white p-10 rounded-b-md rounded-tr-md">
-                { LoginDiv() }
-                { LoginBotton("Sign Up") }
-              </Tab.Panel>
-            </Tab.Panels>
+            {
+              HomePageTabs()
+            }
           </Tab.Group>
         </div>
       </div>
