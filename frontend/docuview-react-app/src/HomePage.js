@@ -5,7 +5,7 @@ import { Tab } from "@headlessui/react";
 
 function TabList(tabs) {
   return (
-    <Tab.List>{ tabs }</Tab.List>
+    <Tab.List>{ tabs.map(x => x) }</Tab.List>
   )
 }
 
