@@ -10,15 +10,43 @@ function TabList(tabs) {
 }
 
 function LoginSignupTab(text){
-              return ( 
-                <Tab
-                  className={`rounded-t-md ui-selected:bg-iso-white ui-not-selected:bg-iso-grey h-10 w-32`}
-                >
-                  { text }
-                </Tab> 
-              );
+  return ( 
+    <Tab
+      className={`rounded-t-md ui-selected:bg-iso-white ui-not-selected:bg-iso-grey h-10 w-32`}
+    >
+      { text }
+    </Tab> 
+  );
 }
 
+function LoginBotton(text){
+  return (
+    <div className="flex justify-end">
+      <Button width="w-32" height="h-10">
+        {" "}
+        { text }{" "}
+      </Button>
+    </div>
+  )
+}
+
+function LoginDiv(){
+  return (
+    <>
+    <label> Username </label>
+    <input className="h-10 w-full px-5 bg-iso-grey rounded-md" />
+    <div className="flex w-full h-10 justify-end">
+      {" "}
+      <span> Forgot Username </span>{" "}
+    </div><label> Password </label><input className="h-10 w-full px-5 bg-iso-grey rounded-md" /><div className="flex w-full h-10 justify-end">
+      {" "}
+      <span> Forgot Password </span>{" "}
+    </div></>
+  )
+
+}
+
+// Why forgot username and password in signup?
 
 function HomePage() {
   //TODO 1: reduce boilerplate html; too many divs so u would need to move some divs into components folder
@@ -45,48 +73,12 @@ function HomePage() {
             }
             <Tab.Panels>
               <Tab.Panel className="w-96 h-1/3 bg-iso-white p-10 rounded-b-md rounded-tr-md">
-                <label> Username </label>
-                <input className="h-10 w-full px-5 bg-iso-grey rounded-md" />
-                <div className="flex w-full h-10 justify-end">
-                  {" "}
-                  <span> Forgot Username </span>{" "}
-                </div>
-                <label> Password </label>
-                <input className="h-10 w-full px-5 bg-iso-grey rounded-md" />
-                <div className="flex w-full h-10 justify-end">
-                  {" "}
-                  <span> Forgot Password </span>{" "}
-                </div>
-
-                <div className="flex justify-end">
-                  <Button width="w-32" height="h-10">
-                    {" "}
-                    Login{" "}
-                  </Button>
-                </div>
+                { LoginDiv() }
+                { LoginBotton("Login") }
               </Tab.Panel>
               <Tab.Panel className="w-96 h-1/3 bg-iso-white p-10 rounded-b-md rounded-tr-md">
-                <div>
-                  <label> Username </label>
-                  <input className="h-10 w-full px-5 bg-iso-grey rounded-md" />
-                  <div className="flex w-full h-10 justify-end">
-                    {" "}
-                    <span> Forgot Username </span>{" "}
-                  </div>
-                  <label> Password </label>
-                  <input className="h-10 w-full px-5 bg-iso-grey rounded-md" />
-                  <div className="flex w-full h-10 justify-end">
-                    {" "}
-                    <span> Forgot Password </span>{" "}
-                  </div>
-
-                  <div className="flex justify-end">
-                    <Button width="w-32" height="h-10">
-                      {" "}
-                      Sign Up{" "}
-                    </Button>
-                  </div>
-                </div>
+                { LoginDiv() }
+                { LoginBotton("Sign Up") }
               </Tab.Panel>
             </Tab.Panels>
           </Tab.Group>
