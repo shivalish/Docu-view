@@ -64,12 +64,7 @@ function HomePage() {
         <div>
           <Tab.Group>
             {
-              TabList(
-                [ 
-                  LoginSignupTab("Login"),
-                  LoginSignupTab("Signup")
-                ]
-              )
+              TabList( [ LoginSignupTab("Login"), LoginSignupTab("Signup") ] )
             }
             <Tab.Panels>
               <Tab.Panel className="w-96 h-1/3 bg-iso-white p-10 rounded-b-md rounded-tr-md">
