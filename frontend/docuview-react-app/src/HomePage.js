@@ -3,9 +3,16 @@ import Header from "./atoms/Header.jsx";
 import Button from "./atoms/Button.jsx";
 import { Tab } from "@headlessui/react";
 
-function LoginSignup(){
-
+function LoginSignupTab(text){
+              return ( 
+                <Tab
+                  className={`rounded-t-md ui-selected:bg-iso-white ui-not-selected:bg-iso-grey h-10 w-32`}
+                >
+                  { text }
+                </Tab> 
+              );
 }
+
 
 function HomePage() {
   //TODO 1: reduce boilerplate html; too many divs so u would need to move some divs into components folder
@@ -23,14 +30,8 @@ function HomePage() {
         <div>
           <Tab.Group>
             <Tab.List>
-              <Tab
-                className={`rounded-t-md ui-selected:bg-iso-white ui-not-selected:bg-iso-grey h-10 w-32`}
-              >
-                Login
-              </Tab>
-              <Tab className= {"rounded-t-md ui-selected:bg-iso-white ui-not-selected:bg-iso-grey h-10 w-32"}>
-                Sign Up
-              </Tab>
+              { LoginSignupTab("Login") }
+              { LoginSignupTab("Signup") }
             </Tab.List>
             <Tab.Panels>
               <Tab.Panel className="w-96 h-1/3 bg-iso-white p-10 rounded-b-md rounded-tr-md">
