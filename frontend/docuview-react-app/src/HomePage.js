@@ -36,7 +36,12 @@ function HomePageTabs(){
     <div className="flex h-full w-1/3 justify-center items-center">
       <Tab.Group>
         <Tab.List>
-          { [ "Login", "Sign Up" ].map(x => <Tab className={`rounded-t-md ui-selected:bg-iso-white ui-not-selected:bg-iso-grey h-10 w-32`} > {x} </Tab>) }
+          <Tab className={`rounded-t-md ui-selected:bg-iso-white ui-not-selected:bg-iso-grey h-10 w-32`} >
+            Login
+          </Tab>
+          <Tab className={`rounded-t-md ui-selected:bg-iso-white ui-not-selected:bg-iso-grey h-10 w-32`} >
+            Sign Up
+          </Tab>
         </Tab.List> 
         <Tab.Panels>
           <Tab.Panel className="w-96 h-1/3 bg-iso-white p-10 rounded-b-md rounded-tr-md">
