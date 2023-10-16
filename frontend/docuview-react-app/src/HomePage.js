@@ -71,7 +71,7 @@ function HomePage() {
         <div>
           <Tab.Group>
           <Tab.List>
-            { [ "Login", "Signup" ].map(x => HomePageLoginSignupTab(x)) }
+            { [ "Login", "Sign Up" ].map(x => HomePageLoginSignupTab(x)) }
           </Tab.List> 
           < HomePageTabs />
           </Tab.Group>
