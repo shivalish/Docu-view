@@ -37,8 +37,10 @@ function HomePage() {
           <Tab.Group>
             {
               TabList(
-                LoginSignupTab("Login"),
-                LoginSignupTab("Signup")
+                [ 
+                  LoginSignupTab("Login"),
+                  LoginSignupTab("Signup")
+                ]
               )
             }
             <Tab.Panels>
