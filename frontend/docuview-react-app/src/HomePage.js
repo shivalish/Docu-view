@@ -35,7 +35,9 @@ function HomePageTabs(){
           {" "}
           <span> Forgot Password </span>{" "}
         </div>
-        <HomePageBotton text="Login" />
+        <div className="flex justify-end">
+          <HomePageBotton text="Login" />
+        </div>
       </Tab.Panel>
       <Tab.Panel className="w-96 h-1/3 bg-iso-white p-10 rounded-b-md rounded-tr-md">
         <label> Username </label>
@@ -47,7 +49,9 @@ function HomePageTabs(){
           {" "}
           {" "}
         </div>
-        <HomePageBotton text="Sign Up" />
+        <div className="flex justify-end">
+          <HomePageBotton text="Sign Up" />
+        </div>
       </Tab.Panel>
     </Tab.Panels> 
   )
