@@ -61,14 +61,31 @@ function LoginDiv(){
 
 }
 
+function SignUpDiv(){
+  return (
+    <>
+    <label> Username </label>
+    <input className="h-10 w-full px-5 bg-iso-grey rounded-md" />
+    <div className="flex w-full h-10 justify-end">
+      {" "}
+      {" "}
+    </div><label> Password </label><input className="h-10 w-full px-5 bg-iso-grey rounded-md" /><div className="flex w-full h-10 justify-end">
+      {" "}
+      {" "}
+    </div></>
+  )
+
+}
+
 function HomePageTabs(){
   return (
     <Tab.Panels>
-    <Tab.Panel className="w-96 h-1/3 bg-iso-white p-10 rounded-b-md rounded-tr-md">
-      {LoginDiv()}
-      {HomePageSignUpBotton()}
-    </Tab.Panel><Tab.Panel className="w-96 h-1/3 bg-iso-white p-10 rounded-b-md rounded-tr-md">
+      <Tab.Panel className="w-96 h-1/3 bg-iso-white p-10 rounded-b-md rounded-tr-md">
         {LoginDiv()}
+        {HomePageLoginBotton()}
+      </Tab.Panel>
+      <Tab.Panel className="w-96 h-1/3 bg-iso-white p-10 rounded-b-md rounded-tr-md">
+        {SignUpDiv()}
         {HomePageSignUpBotton()}
       </Tab.Panel>
     </Tab.Panels> 
