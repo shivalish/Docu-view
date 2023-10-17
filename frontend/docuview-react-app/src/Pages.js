@@ -1,28 +1,19 @@
-import React, { useState } from 'react'
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import MainPage from './MainPage';
-import HomePage from './HomePage';
+import AuthPage from './AuthPage';
 
 function Pages() {
-
-    const [page, setPage] = useState("Home")
-
-    function getPage() {
-        switch (page) {
-            case "Main":
-                return <MainPage setPage={setPage} />
-            case "Home":
-                return <HomePage setPage={setPage} />
-            default:
-                return <MainPage setPage={setPage} />
-        }
-    }
-
-
     return (
-        <div class='w-screen h-screen'>
-            {getPage()}
-        </div>
-    )
+        <Router>
+            <div className='w-screen h-screen'>
+                <Routes>
+                    <Route path="/" element={<AuthPage />} />
+                    <Route path="/main" element={<MainPage />} />
+                </Routes>
+            </div>
+        </Router>
+    );
 }
 
 export default Pages;

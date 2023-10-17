@@ -2,14 +2,15 @@ import React from "react";
 import Header from "./atoms/Header.jsx";
 import Button from "./atoms/Button.jsx";
 import { Tab } from "@headlessui/react";
+import { useNavigate } from "react-router-dom";
 
 // COMPONENTS TO MOVE //
 
 // Buttons can do things, but where are you going to get the data from ?
-function HomePageBotton({ text, OnClick }){
+function HomePageButton({ text, OnClick }){
   return (
       <div className="flex justify-end">
-        <Button width="w-32" height="h-10" OnClick={() => OnClick}>
+        <Button width="w-32" height="h-10" OnClick={OnClick}>
           {" "}
           { text }{" "}
         </Button>
@@ -32,6 +33,8 @@ function HomePageInput( { label } ){
 // Do what you will with this, idk what exactly you want to do
 
 function HomePageTabs(){
+  const navigate = useNavigate();
+
   return (
     <div className="flex h-full w-1/3 justify-center items-center">
       <div>
@@ -58,7 +61,7 @@ function HomePageTabs(){
                 {" "}
                 <span> Forgot Password </span>{" "}
               </div>
-              <HomePageBotton text="Login" />
+              <HomePageButton text="Login" OnClick={() => navigate('/main')}/>
             </Tab.Panel>
             <Tab.Panel className="w-96 h-1/3 bg-iso-white p-10 rounded-b-md rounded-tr-md">
               <HomePageInput label="Username" />
@@ -71,7 +74,7 @@ function HomePageTabs(){
                 {" "}
                 {" "}
               </div>
-              <HomePageBotton text="Sign Up" />
+              <HomePageButton text="Sign Up" OnClick={() => navigate('/main')}/>
             </Tab.Panel>
           </Tab.Panels>
         </Tab.Group>
@@ -87,13 +90,17 @@ function HomePage() {
   //TODO 4: tweak font sizes and standardize font
 
   return (
-    <div className="flex flex-wrap w-screen h-screen bg-iso-blue">
+    <div className="flex flex-col w-screen h-screen bg-iso-blue">
       <Header />
-      <div className="h-full w-1/3" />
-      < HomePageTabs />
-      <div className="h-full w-1/3" />
+      <div className="flex flex-grow items-center justify-center">
+        <div className="w-1/3"></div>
+        <HomePageTabs />
+        <div className="w-1/3"></div>
+      </div>
+      <div className="flex-grow"></div>
     </div>
   );
+  
 }
 
 export default HomePage;

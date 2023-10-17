@@ -6,7 +6,7 @@ export default function Button({ children, width, height, OnClick }) {
   return (
     <button
       type="button"
-      onClick={() => OnClick}
+      onClick={OnClick}
       className={classNames(
         "bg-iso-blue-grey font-bold text-white rounded-md",
         width,
