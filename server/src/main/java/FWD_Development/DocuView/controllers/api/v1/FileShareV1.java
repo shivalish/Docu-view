@@ -42,7 +42,10 @@ import org.springframework.dao.EmptyResultDataAccessException;
 //      proposals_date_end
 
 
-@CrossOrigin(origins = "http://localhost:3000") // Default React port
+// @CrossOrigin(origins = "http://localhost:3000") // Default React port
 @RestController
 @RequestMapping("/api/v1/fileshare")
-public class FileShareV1 {};
+public class FileShareV1 implements Hardcoded{
+
+
+};
