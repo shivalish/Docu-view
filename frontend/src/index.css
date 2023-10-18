@@ -4,9 +4,8 @@
 
 * {
   box-sizing: border-box;
-  font-family:Verdana, Geneva, Tahoma, sans-serif
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
-
 
 /* reusable tailwind classes */
 @layer components {
@@ -17,8 +16,4 @@
   .tab {
     @apply rounded-t-md ui-selected:bg-iso-white ui-not-selected:bg-iso-grey h-10 w-32;
   }
-
-
-
-
 }
