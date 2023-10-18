@@ -6,7 +6,10 @@ module.exports = {
       colors: {
       'iso-blue': '#21303A',
       'iso-white': '#FFFFFF',
-      'iso-blue-grey': '#4A5B63',
+      'iso-blue-grey': {
+        100: '#4A5B63',
+        200: '#6E7B82'
+      },
       'iso-grey': '#d9d9d9'
       }
     },
