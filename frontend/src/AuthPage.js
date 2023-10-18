@@ -4,9 +4,6 @@ import Button from "./atoms/Button.jsx";
 import { Tab } from "@headlessui/react";
 import { useNavigate } from "react-router-dom";
 
-// COMPONENTS TO MOVE //
-
-// Buttons can do things, but where are you going to get the data from ?
 function HomePageButton({ text, OnClick }){
   return (
       <div className="flex justify-end">
@@ -48,7 +45,7 @@ function HomePageTabs(){
               <HomePageInput label="Password" hidden={true} forgot={true} forgotText={"Forgot Password"}/>
               <HomePageButton text="Login" OnClick={movePage}/>
             </Tab.Panel>
-            <Tab.Panel className="w-96 h-1/3 bg-iso-white p-10 rounded-b-md rounded-tr-md">
+            <Tab.Panel className="flex flex-col gap-4 w-96 h-1/3 bg-iso-white p-10 rounded-b-md rounded-tr-md">
               <HomePageInput label="Username" />
               <HomePageInput label="Password" />
               <HomePageButton text="Sign Up" OnClick={movePage}/>
