@@ -72,7 +72,7 @@ start server from inside `.server`  dir
 
 Note: before executing, exectute ``chmod +x server/mvnw`` to allow file to executed
 start server from parent dir
-``export JAVA_HOME=/usr ; mvn package -f pom.xml ; mvnw.cmd -f pom.xml spring-boot:run``
+``export JAVA_HOME=/usr ; mvn package -f server/pom.xml ; ./mvnw -f server/pom.xml spring-boot:run``
 
 ### Commands (Mac)
 
