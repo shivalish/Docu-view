@@ -11,70 +11,47 @@ function HomePageButton({ text, OnClick }){
   return (
       <div className="flex justify-end">
         <Button width="w-32" height="h-10" OnClick={OnClick}>
-          {" "}
-          { text }{" "}
+          { text }
         </Button>
       </div>
   )
 }
 
 // Moved it for clarity (used 4 times in the single part)
-function HomePageInput( { label } ){
+function HomePageInput( { label, hidden=false, forgot=false, forgotText } ){
   return (
-    <><label> {label} </label><input className="h-10 w-full px-5 bg-iso-grey rounded-md" /></>
+    <div className="flex flex-col w-full">
+      <label> {label} </label>
+      <input type={hidden && "password"} className="h-10 w-full px-5 bg-iso-grey rounded-md"/>
+      {forgot && (<span className="h-10 text-right">{forgotText}</span>)}
+    </div>
   )
 }
 
-//////////////////////
-
-
-// Forgot Username and Forgot Password do nothing ?
-
-// Do what you will with this, idk what exactly you want to do
-
 function HomePageTabs(){
   const navigate = useNavigate();
-
+  const movePage = () => navigate('/main');
   return (
     <div className="flex h-full w-1/3 justify-center items-center">
       <div>
         <Tab.Group>
           <Tab.List>
-            <Tab
-              className={`rounded-t-md ui-selected:bg-iso-white ui-not-selected:bg-iso-grey h-10 w-32`}
-            >
-              Login
-            </Tab>
-            <Tab className= {"rounded-t-md ui-selected:bg-iso-white ui-not-selected:bg-iso-grey h-10 w-32"}>
-              Sign Up
-            </Tab>
+            {["Login", "Sign Up"].map((txt)=>(
+              <Tab className={`rounded-t-md ui-selected:bg-iso-white ui-not-selected:bg-iso-grey h-10 w-32`}>
+                {txt}
+              </Tab>
+            ))}
           </Tab.List> 
           <Tab.Panels>
             <Tab.Panel className="w-96 h-1/3 bg-iso-white p-10 rounded-b-md rounded-tr-md">
-              <HomePageInput label="Username" />
-              <div className="flex w-full h-10 justify-end">
-                {" "}
-                <span> Forgot Username </span>{" "}
-              </div>
-              <HomePageInput label="Password" />
-              <div className="flex w-full h-10 justify-end">
-                {" "}
-                <span> Forgot Password </span>{" "}
-              </div>
-              <HomePageButton text="Login" OnClick={() => navigate('/main')}/>
+              <HomePageInput label="Username" forgot={true} forgotText={"Forgot Username"}/>
+              <HomePageInput label="Password" hidden={true} forgot={true} forgotText={"Forgot Password"}/>
+              <HomePageButton text="Login" OnClick={movePage}/>
             </Tab.Panel>
             <Tab.Panel className="w-96 h-1/3 bg-iso-white p-10 rounded-b-md rounded-tr-md">
               <HomePageInput label="Username" />
-              <div className="flex w-full h-10 justify-end">
-                {" "}
-                {" "}
-              </div>
               <HomePageInput label="Password" />
-              <div className="flex w-full h-10 justify-end">
-                {" "}
-                {" "}
-              </div>
-              <HomePageButton text="Sign Up" OnClick={() => navigate('/main')}/>
+              <HomePageButton text="Sign Up" OnClick={movePage}/>
             </Tab.Panel>
           </Tab.Panels>
         </Tab.Group>
