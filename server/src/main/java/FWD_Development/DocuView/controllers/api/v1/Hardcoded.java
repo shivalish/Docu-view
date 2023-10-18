@@ -3,7 +3,23 @@ package FWD_Development.DocuView.controllers;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.springframework.dao.EmptyResultDataAccessException;
 import java.util.HashMap;
+
+
 
 // FILTERS
 //      file_creation
@@ -26,13 +42,16 @@ import java.util.HashMap;
 // allowing the uses to use the same vars.
 
 public interface Hardcoded{
-	class Filter {
+	
+	public class Filter {
+			
+
 	    	private String name;		// name of filter
 	    	private String type;		// filter datatype
 	    	private boolean hasFiniteStates;	// has finite states?
 	    	private boolean preDefinedStates;
 	    	private String[] finiteStatesList;
-	    	private String finiteStates;
+	    	private String finiteStatesQuery;
 	    	
 	    	// Use this if there is no finite state (i.e Search bar)
 	    	Filter(String _name, String _type){
@@ -58,7 +77,7 @@ public interface Hardcoded{
 	    		this.type = _type;
 	    		this.hasFiniteStates = true;
 	    		this.preDefinedStates = false;
-	    		this.finiteStates = _finiteStatesQuery;
+	    		this.finiteStatesQuery = _finiteStatesQuery;
 	    	}
 	    	
 	    	// only getters (READONLY FUNC)
@@ -76,20 +95,21 @@ public interface Hardcoded{
 	    	}
 	    	//////////////////////////////
 	    	
-	    	private List<String> queryExecutor(){
+	    	private List<String> queryExecutor(JdbcTemplate jdbcTemplate){
 	    		// temp
-	    		return Arrays.asList(new String[]{});
+				List<String> temp = jdbcTemplate.queryForList(finiteStatesQuery,String.class);
+	    		return temp;
 	    	};
 	    	
 	    	//temp for skeleton
-	    	public List<String> getFiniteStates(){
+	    	public List<String> getFiniteStatesQuery(JdbcTemplate jdbcTemplate){
 	    		if (!this.hasFiniteStates) { 
 	    			return Arrays.asList(new String[]{});
 	    		}
 	    		if (this.preDefinedStates) {
 	    			return Arrays.asList(finiteStatesList);
 	    		}
-	    		return queryExecutor();
+	    		return queryExecutor(jdbcTemplate);
 	    	}
 	    }
 
@@ -98,8 +118,8 @@ public interface Hardcoded{
 		new Filter("document_type", "string", new String[]{".pdf",".csv",".xlsx",".docs"}),
 		new Filter("filename", "string"),
 		new Filter("customer_name", "string"),
-		new Filter("auction_type", "string"),
-		new Filter("proposal_type", "string"),
+		new Filter("auction_type", "string", "SELECT DISTINCT auction_type FROM AUC_TYPE"),
+		new Filter("attachment_type", "string", "SELECT DISTINCT attachment_type FROM ATTACH_TYPE"),
 		new Filter("commitment_date_start", "ISO 8601"),
 		new Filter("commitment_date_end", "ISO 8601"),
 		new Filter("auction_date_start", "ISO 8601"),

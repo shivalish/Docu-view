@@ -29,6 +29,9 @@ import org.springframework.dao.EmptyResultDataAccessException;
 @RestController
 @RequestMapping("/api/v1/filters")
 public class FiltersV1 implements Hardcoded{
+    
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 	
     private static final ObjectMapper objMapper = new ObjectMapper();
     // will not change during execution, so semi-hardcoded
@@ -55,10 +58,9 @@ public class FiltersV1 implements Hardcoded{
         rootNode.put("name", get.getName());
         rootNode.put("has_finite_states", get.getHasFiniteStates());
         ArrayNode finite_states = rootNode.putArray("finite_states");
-        for (String elem : get.getFiniteStates()){
+        for (String elem : get.getFiniteStatesQuery(jdbcTemplate)){
         	finite_states.add(elem);
         }
-        
         return rootNode;
     }
 }
