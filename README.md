@@ -66,9 +66,7 @@ start application from parent directory
 Note: setup a env variable JAVA_HOME to the main dirrectory where java is installed
 start server from inside `.server`  dir
 
-``mvn package -f pom.xml``
-
-`java -jar target\DocuView-0.0.1-SNAPSHOT.jar`
+``mvn package -f pom.xml; .\mvnw.cmd -f pom.xml spring-boot:run``
 
 ### Commands (Linux):
 
