@@ -4,4 +4,21 @@
 
 * {
   box-sizing: border-box;
+  font-family:Verdana, Geneva, Tahoma, sans-serif
+}
+
+
+/* reusable tailwind classes */
+@layer components {
+  .tab-body {
+    @apply w-96 h-1/3 bg-iso-white p-10 rounded-b-md rounded-tr-md;
+  }
+
+  .tab {
+    @apply rounded-t-md ui-selected:bg-iso-white ui-not-selected:bg-iso-grey h-10 w-32;
+  }
+
+
+
+
 }
