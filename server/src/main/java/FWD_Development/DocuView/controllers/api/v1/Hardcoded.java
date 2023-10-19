@@ -1,6 +1,7 @@
 package FWD_Development.DocuView.controllers;
 
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -59,7 +60,6 @@ public interface Hardcoded{
 			private String finiteStatesQuery;
 			private String[] finiteStatesArray;
 	    	
-	    	// SearchType filters (must be id in another table)
 	    	Filter(String _name, String _type, String _originTable, String _originId, String _targetTable, String _targetId, boolean _finiteStates){
 	    		this.name = _name;
 	    		this.type = _type;
@@ -110,26 +110,29 @@ public interface Hardcoded{
 				this.finiteStatesArray = _finiteStatesArray;
 	    	}
 
+
+			// 
+			// SELECT (SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_NAME="ATTACHMENT_FILE") ATTACHMENT_FILE WHERE file_name LIKE .bmp
 			// todo. pregenrated then format
-			private String filteringQuery(String param){
+			public String filteringQueryCondition(String param){
 				String filteringQuerySQL;
 				switch(compType){
 					case '<':
 					case '>':
-						filteringQuerySQL = "SELECT * FROM " + this.originTable + " WHERE " + this.originId + String.format(" %c ", compType) + param ;
+						filteringQuerySQL = this.originTable + " WHERE " + this.originId + String.format(" %c ", compType) + param ;
 						break;
 					case 'g':
-						filteringQuerySQL = "SELECT * FROM " + this.originTable + " WHERE " + this.originId + ">=" + param ;
+						filteringQuerySQL = this.originTable + " WHERE " + this.originId + ">=" + param ;
 						break;
 					case 'l':
-						filteringQuerySQL = "SELECT * FROM " + this.originTable + " WHERE " + this.originId + "<=" + param ;
+						filteringQuerySQL = this.originTable + " WHERE " + this.originId + "<=" + param ;
 						break;
 					case '!':
-						filteringQuerySQL = "SELECT * FROM " + this.originTable + " WHERE " + this.originId + " <> " + param ;
+						filteringQuerySQL = this.originTable + " WHERE " + this.originId + " <> " + param ;
 						break;
 					case '*':
 					default:
-						filteringQuerySQL = "SELECT * FROM " + this.originTable + " WHERE " + this.originId + " LIKE " + param ;
+						filteringQuerySQL = this.originTable + " WHERE " + this.originId + " LIKE \"%" + param + "%\"";
 				}
 				return filteringQuerySQL;
 			}
@@ -186,18 +189,25 @@ public interface Hardcoded{
 		new Filter("auction_type", "string", "AUC_TYPE", "auction_type", "AUC_INFO", "auction_type", true),
 		new Filter("attachment_type", "string", "ATTACH_TYPE", "attachment_type", "ATTACH_PROPOSAL", "attachment_type", true),
 
-		new Filter("commitment_date_start", "ISO 8601", "PERIOD_INFO", "begin_date", "AUC_INFO", "commitment_period_id",false, '<'),
-		new Filter("commitment_date_end", "ISO 8601", "PERIOD_INFO", "end_date", "AUC_INFO", "commitment_period_id",false, '<'),
-		new Filter("auction_date_start", "ISO 8601", "AUC_INFO", "auction_begin_date", "AUC_INFO", "auction_period_id",false, '<'),
-		new Filter("auction_date_end", "ISO 8601", "AUC_INFO", "auction_end_date", "AUC_INFO", "auction_period_id",false, '<'),
+		new Filter("commitment_date_start", "ISO 8601", "PERIOD_INFO", "begin_date", "AUC_INFO", "commitment_period_id",false, 'l'),
+		new Filter("commitment_date_end", "ISO 8601", "PERIOD_INFO", "end_date", "AUC_INFO", "commitment_period_id",false, 'g'),
+		new Filter("auction_date_start", "ISO 8601", "AUC_INFO", "auction_begin_date", "AUC_INFO", "auction_period_id",false, 'l'),
+		new Filter("auction_date_end", "ISO 8601", "AUC_INFO", "auction_end_date", "AUC_INFO", "auction_period_id",false, 'g'),
 
-		new Filter("proposal_date_start", "ISO 8601", "PERIOD_INFO", "begin_date", "PROPOSAL_INFO", "period_id",false, '<'),
-		new Filter("proposals_date_end", "ISO 8601", "PERIOD_INFO", "end_date", "PROPOSAL_INFO", "period_id",false, '<'),
+		new Filter("proposal_date_start", "ISO 8601", "PERIOD_INFO", "begin_date", "PROPOSAL_INFO", "period_id",false, 'l'),
+		new Filter("proposals_date_end", "ISO 8601", "PERIOD_INFO", "end_date", "PROPOSAL_INFO", "period_id",false, 'g'),
 		
 	};
 	static final Map<String, Filter> filterMap = new HashMap<String, Filter>(){{
 		for (Filter elem : filterArrray){
 			put(elem.getName(), elem);
         	}
+	}};
+
+	static final Map<String, List<Filter>> targetMap = new HashMap<String, List<Filter>>(){{
+		for (Filter elem : filterArrray){
+			if (!containsKey(elem.getTargetTable())) { put(elem.getTargetTable(), new ArrayList<Filter>()); }
+			get(elem.getTargetTable()).add(elem);
+        }
 	}};
 }		
