@@ -1,4 +1,4 @@
-package FWD_Development.DocuView.controllers;
+package FWD_Development.DocuView.controllers.api.v1;
 
 
 /* CUSTOM ADDED LIBS */
@@ -46,6 +46,8 @@ import org.springframework.dao.EmptyResultDataAccessException;
 //      proposal_date_start
 //      proposals_date_end
 
+// All this stuff, evil.
+// better impletion form, make tree that maps out all TABLES and has data of every table, THEN use that to navigate the database
 
 // @CrossOrigin(origins = "http://localhost:3000") // Default React port
 @RestController
@@ -56,15 +58,11 @@ public class DataBaseV1 implements Hardcoded{
     	private JdbcTemplate jdbcTemplate;
     	
 	private static final ObjectMapper objMapper = new ObjectMapper();
-	
-	//public JsonNode flattenResultSet(String TableName, ResultSet rs){
-	//	ObjectNode rootNode = objMapper.createObjectNode();
-	//	ArrayList list = new ArrayList(50);
-	//	List<String> keysList;
-	//	// while(targetMap.containsKey())
-	//}
-	
-	// does nothing yet, testing only
+
+	public JsonNode flattenNode(){
+		return objMapper.createObjectNode();
+	}
+
 	@GetMapping("")
 	public JsonNode getDocs(@RequestParam Map<String,String> allRequestParams){
 		// ObjectNode rootNode = objMapper.valueToTree(allRequestParams);
@@ -100,10 +98,11 @@ public class DataBaseV1 implements Hardcoded{
 			if ( !strLst.isEmpty() ) { tableQueries.put(set.getKey(), String.join(" AND ", strLst)); }
 		}
 		
+		// compile non root tables
 		Map<String, String> metaQueries = new HashMap<>();
 		for (Map.Entry<String, Map<String, String>> set : tableMap.entrySet()){
 		 	if (set.getKey() == "ATTACH_PROPOSAL") { continue; }
-		 	List<String> strLst = allQueries(set, tableQueries);
+		 	List<String> strLst = compileQuery(set, tableQueries);
 		 	if ( !strLst.isEmpty() && tableQueries.containsKey(set.getKey())) { 
 		 		metaQueries.put(set.getKey(), tableQueries.get(set.getKey()) + " AND " + String.join(" AND ", strLst)); 
 		 	}
@@ -117,12 +116,11 @@ public class DataBaseV1 implements Hardcoded{
 		for (Map.Entry<String, String> set : metaQueries.entrySet()){
 			tableQueries.put(set.getKey(), set.getValue());
 		}
-		// Evil stuff, if someone knows how to do this better pls fix
-		System.out.println(tableQueries.toString());
+		// compile root table
 		metaQueries = new HashMap<>();
 		for (Map.Entry<String, Map<String, String>> set : tableMap.entrySet()){
 			if (set.getKey() != "ATTACH_PROPOSAL") { continue; }
-			List<String> strLst = allQueries(set, tableQueries);
+			List<String> strLst = compileQuery(set, tableQueries);
 		 	if ( !strLst.isEmpty() && tableQueries.containsKey(set.getKey())) { 
 		 		metaQueries.put(set.getKey(), tableQueries.get(set.getKey()) + " AND " + String.join(" AND ", strLst)); 
 		 	}
@@ -153,12 +151,13 @@ public class DataBaseV1 implements Hardcoded{
 		return rootNode;
 	}
 	
-	private List<String> allQueries(Map.Entry<String, Map<String, String>> set, Map<String, String> tableQueries){
+	private List<String> compileQuery(Map.Entry<String, Map<String, String>> set, Map<String, String> tableQueries){
 		List<String> strLst = new ArrayList<>();
 		String query;
 		for (Map.Entry<String, String> set2 : set.getValue().entrySet()){
-			
+			// if not in tableQueries, it is already compiled
 	 		if ( !tableQueries.containsKey(set2.getValue()) ) { continue; }
+			// TODO pls help me find a better way to do this, I need the primary key and this is hack stuff
 	 		String primaryKeyColumn = jdbcTemplate.queryForObject(
 						"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE " +
 						"WHERE TABLE_NAME = '"+ set2.getValue() +"' AND CONSTRAINT_NAME = 'PRIMARY'",
@@ -171,7 +170,6 @@ public class DataBaseV1 implements Hardcoded{
 					set2.getValue(), 
 					tableQueries.get(set2.getValue())
 				);
-			System.out.println(query);
 			List<String> holder = jdbcTemplate.query(query, new RowMapper<String>() {
 				public String mapRow(ResultSet rs, int rowNum) throws SQLException {
 					return rs.getString(1);
