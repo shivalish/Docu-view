@@ -101,22 +101,16 @@ public class DataBaseV1 implements Hardcoded{
 	public JsonNode getDocs(@RequestParam Map<String,String> allRequestParams){
 		// ObjectNode rootNode = objMapper.valueToTree(allRequestParams);
 		ObjectNode rootNode = objMapper.createObjectNode();
+		
 		Map<String, String> tableQueries = new HashMap<>();
 		for (Map.Entry<String, List<Filter>> set : targetMap.entrySet()) {
 			List<String> strLst = new ArrayList<>();
+			String query;
 			for (Filter filter : set.getValue()){
 				if (!allRequestParams.containsKey(filter.getName())){ continue; }
-				//will fail without privlege (add to hardcoded?)
-				
-				String query = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE " +
-						"WHERE TABLE_NAME = '"+ filter.getOriginTable() +"' AND CONSTRAINT_NAME = 'PRIMARY'";
-				String primaryKeyColumn = jdbcTemplate.queryForObject(
-						query,
-						String.class
-				);
 				query = String.format(
 						"SELECT %s FROM %s;", 
-						primaryKeyColumn, 
+						filter.getTargetId(), 
 						filter.filteringQueryCondition(allRequestParams.get(filter.getName()))
 					);
 				List<String> holder = jdbcTemplate.query(query, new RowMapper<String>() {
@@ -124,27 +118,54 @@ public class DataBaseV1 implements Hardcoded{
 						return rs.getString(1);
 					}
 				});
-				query = filter.getTargetId() + " IN (\"" + String.join("\", \"", holder) + "\");";
-				//strLst = jdbcTemplate.query(query, new RowMapper<String>() {
-				//	public String mapRow(ResultSet rs, int rowNum) throws SQLException {
-				//		return rs.getString(1) + " " + rs.getString(2) + " " + rs.getString(3);
-				//	}
-				//});
+				query = filter.getTargetId() + " IN (\"" + String.join("\", \"", holder) + "\")";
 				strLst.add(query);
 			}
-			//tableQueries.put(set.getKey(), String.join(" AND ", strLst));
-			if ( strLst.isEmpty() ) { rootNode.put(set.getKey(), ""); }
-			else { rootNode.put(set.getKey(), set.getKey() + " WHERE " + String.join(" AND ", strLst)); }
+			//rootNode.put(set.getKey(), String.join(" AND ", strLst));
+			if ( !strLst.isEmpty() ) { tableQueries.put(set.getKey(), set.getKey() + " WHERE " + String.join(" AND ", strLst)); }
+			System.out.println(tableQueries.toString());
 		}
-		// String query;
-		// Map<String, String> metaQueries = new HashMap<>();
-		// for (Map.Entry<String, String> set, tableQueries){
-		// 	if (set.getKey() == "ATTACH_PROPOSAL") { continue; }
-		// 	String query = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE " +
-		// 				"WHERE TABLE_NAME = '" + set.getKey() +"' AND CONSTRAINT_NAME = 'PRIMARY'";
-		// 	query = "SELECT"
-		// 	 
-		// }
+		
+		 
+		
+		Map<String, String> metaQueries = new HashMap<>();
+		for (Map.Entry<String, Map<String, String>> set : tableMap.entrySet()){
+			List<String> strLst = new ArrayList<>();
+			String query;
+		 	if (set.getKey() == "ATTACH_PROPOSAL") { continue; }
+		 	for (Map.Entry<String, String> set2 : set.getValue().entrySet()){
+		 		if ( !tableQueries.containsKey(set2.getValue()) ) { continue; }
+		 		query =  String.format(
+						"SELECT %s FROM %s;", 
+						set2.getKey(), 
+						tableQueries.get(set2.getValue())
+					);
+				List<String> holder = jdbcTemplate.query(query, new RowMapper<String>() {
+					public String mapRow(ResultSet rs, int rowNum) throws SQLException {
+						return rs.getString(1);
+					}
+				});
+				query = set2.getKey() + " IN (\"" + String.join("\", \"", holder) + "\");";
+				strLst.add(query);
+		 	}
+		 	if ( !strLst.isEmpty() && tableQueries.containsKey(set.getKey())) { 
+		 		metaQueries.put(set.getKey(), tableQueries.get(set.getKey()) + " AND " + String.join(" AND ", strLst)); 
+		 	}
+		 	else if (tableQueries.containsKey(set.getKey())) {
+		 		metaQueries.put( set.getKey(), tableQueries.get(set.getKey()));
+		 	}
+		 	else {}
+		}
+		for (Map.Entry<String, String> set : metaQueries.entrySet()){
+			tableQueries.put(set.getKey(), set.getValue());
+		}
+		
+		// HARDCODED PART ?fix?
+		
+		
+		
+		System.out.println(tableQueries.toString());
+		
 		return rootNode;
 	}
 	
