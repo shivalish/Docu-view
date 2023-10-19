@@ -122,51 +122,85 @@ public class DataBaseV1 implements Hardcoded{
 				strLst.add(query);
 			}
 			//rootNode.put(set.getKey(), String.join(" AND ", strLst));
-			if ( !strLst.isEmpty() ) { tableQueries.put(set.getKey(), set.getKey() + " WHERE " + String.join(" AND ", strLst)); }
-			System.out.println(tableQueries.toString());
+			if ( !strLst.isEmpty() ) { tableQueries.put(set.getKey(), String.join(" AND ", strLst)); }
 		}
-		
-		 
 		
 		Map<String, String> metaQueries = new HashMap<>();
 		for (Map.Entry<String, Map<String, String>> set : tableMap.entrySet()){
-			List<String> strLst = new ArrayList<>();
-			String query;
 		 	if (set.getKey() == "ATTACH_PROPOSAL") { continue; }
-		 	for (Map.Entry<String, String> set2 : set.getValue().entrySet()){
-		 		if ( !tableQueries.containsKey(set2.getValue()) ) { continue; }
-		 		query =  String.format(
-						"SELECT %s FROM %s;", 
-						set2.getKey(), 
-						tableQueries.get(set2.getValue())
-					);
-				List<String> holder = jdbcTemplate.query(query, new RowMapper<String>() {
-					public String mapRow(ResultSet rs, int rowNum) throws SQLException {
-						return rs.getString(1);
-					}
-				});
-				query = set2.getKey() + " IN (\"" + String.join("\", \"", holder) + "\");";
-				strLst.add(query);
-		 	}
+		 	List<String> strLst = allQueries(set, tableQueries);
 		 	if ( !strLst.isEmpty() && tableQueries.containsKey(set.getKey())) { 
 		 		metaQueries.put(set.getKey(), tableQueries.get(set.getKey()) + " AND " + String.join(" AND ", strLst)); 
 		 	}
 		 	else if (tableQueries.containsKey(set.getKey())) {
 		 		metaQueries.put( set.getKey(), tableQueries.get(set.getKey()));
 		 	}
-		 	else {}
+		 	else if (!strLst.isEmpty()){
+		 		metaQueries.put( set.getKey(), String.join(" AND ", strLst));
+		 	}
 		}
 		for (Map.Entry<String, String> set : metaQueries.entrySet()){
 			tableQueries.put(set.getKey(), set.getValue());
 		}
-		
-		// HARDCODED PART ?fix?
-		
-		
-		
+		// Evil stuff, if someone knows how to do this better pls fix
 		System.out.println(tableQueries.toString());
+		metaQueries = new HashMap<>();
+		for (Map.Entry<String, Map<String, String>> set : tableMap.entrySet()){
+			if (set.getKey() != "ATTACH_PROPOSAL") { continue; }
+			List<String> strLst = allQueries(set, tableQueries);
+		 	if ( !strLst.isEmpty() && tableQueries.containsKey(set.getKey())) { 
+		 		metaQueries.put(set.getKey(), tableQueries.get(set.getKey()) + " AND " + String.join(" AND ", strLst)); 
+		 	}
+		 	else if (tableQueries.containsKey(set.getKey())) {
+		 		metaQueries.put( set.getKey(), tableQueries.get(set.getKey()));
+		 	}
+		 	else if (!strLst.isEmpty()){
+		 		metaQueries.put( set.getKey(), String.join(" AND ", strLst));
+		 	}
+		}
+		List<String> holder;
+		if ( metaQueries.containsKey("ATTACH_PROPOSAL") ){
+			holder = jdbcTemplate.query("SELECT * FROM ATTACH_PROPOSAL WHERE "+ metaQueries.get("ATTACH_PROPOSAL"), new RowMapper<String>() {
+						public String mapRow(ResultSet rs, int rowNum) throws SQLException {
+							return rs.getString(1) + " " + rs.getString(2) + " " + rs.getString(3);
+						}
+					});
+		}
+		else {
+			holder = jdbcTemplate.query("SELECT * FROM ATTACH_PROPOSAL", new RowMapper<String>() {
+						public String mapRow(ResultSet rs, int rowNum) throws SQLException {
+							return rs.getString(1) + " " + rs.getString(2) + " " + rs.getString(3);
+						}
+					});
+		}
+		rootNode.put("ATTACH_PROPOSAL", holder.toString());
 		
 		return rootNode;
+	}
+	
+	private List<String> allQueries(Map.Entry<String, Map<String, String>> set, Map<String, String> tableQueries){
+		List<String> strLst = new ArrayList<>();
+		String query;
+		for (Map.Entry<String, String> set2 : set.getValue().entrySet()){
+			
+	 		if ( !tableQueries.containsKey(set2.getValue()) ) { continue; }
+	 		query =  String.format(
+					"SELECT %s FROM %s WHERE %s;", 
+					set2.getKey(),
+					set2.getValue(), 
+					tableQueries.get(set2.getValue())
+				);
+			System.out.println(query);
+			List<String> holder = jdbcTemplate.query(query, new RowMapper<String>() {
+				public String mapRow(ResultSet rs, int rowNum) throws SQLException {
+					return rs.getString(1);
+				}
+			});
+			
+			query = set2.getKey() + " IN (\"" + String.join("\", \"", holder) + "\");";
+			strLst.add(query);
+	 	}
+	 	return strLst;
 	}
 	
 };
