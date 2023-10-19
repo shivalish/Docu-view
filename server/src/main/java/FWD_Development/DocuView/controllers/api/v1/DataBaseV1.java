@@ -53,10 +53,50 @@ import org.springframework.dao.EmptyResultDataAccessException;
 public class DataBaseV1 implements Hardcoded{
 
 	@Autowired
-    private JdbcTemplate jdbcTemplate;
+    	private JdbcTemplate jdbcTemplate;
+    	private static final Map<String, Map<String, String>> tableMap = initializeFilterMap();
 
+	    private static Map<String, Map<String, String>> initializeFilterMap() {
+		Map<String, Map<String, String>> map = new HashMap<>();
+
+		Map<String, String> attachmentHolder = new HashMap<>();
+		attachmentHolder.put("attachment_id", "ATTACHMENT_FILE");
+		attachmentHolder.put("proposal_id", "PROPOSAL_INFO");
+		attachmentHolder.put("attachment_type", "ATTACH_TYPE");
+		map.put("ATTACH_PROPOSAL", attachmentHolder);
+
+		attachmentHolder = new HashMap<>();
+		attachmentHolder.put("project_id", "PROJ_INFO");
+		attachmentHolder.put("project_type", "PROJ_TYPE");
+		attachmentHolder.put("resource_id", "RES_INFO");
+		attachmentHolder.put("customer_id", "CUS_INFO");
+		attachmentHolder.put("auction_id", "AUC_INFO");
+		attachmentHolder.put("period_id", "PERIOD_INFO");
+		map.put("PROPOSAL_INFO", attachmentHolder);
+		
+		attachmentHolder = new HashMap<>();
+		attachmentHolder.put("commitment_period_id", "PERIOD_INFO");
+		attachmentHolder.put("auction_period_id", "PERIOD_INFO");
+		attachmentHolder.put("auction_type", "AUC_TYPE");
+		map.put("AUC_INFO", attachmentHolder);
+		
+		attachmentHolder = new HashMap<>();
+		attachmentHolder.put("resource_type", "RES_TYPE");
+		map.put("RES_INFO", attachmentHolder);
+		
+
+		return map;
+	    }
 	private static final ObjectMapper objMapper = new ObjectMapper();
 	
+	public JsonNode flattenResultSet(String TableName, ResultSet rs){
+		ObjectNode rootNode = objMapper.createObjectNode();
+		ArrayList list = new ArrayList(50);
+		List<String> keysList;
+		// while(targetMap.containsKey())
+	}
+	
+	// does nothing yet, testing only
 	@GetMapping("")
 	public JsonNode getDocs(@RequestParam Map<String,String> allRequestParams){
 		// ObjectNode rootNode = objMapper.valueToTree(allRequestParams);
@@ -66,6 +106,7 @@ public class DataBaseV1 implements Hardcoded{
 			String acc = "";
 			for (Filter filter : set.getValue()){
 				if (!allRequestParams.containsKey(filter.getName())){ continue; }
+				//will fail without privlege (add to hardcoded?)
 				String primaryKeyColumn = jdbcTemplate.queryForObject(
 						"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE " +
 						"WHERE TABLE_NAME = '"+ filter.getOriginTable() +"' AND CONSTRAINT_NAME = 'PRIMARY'",

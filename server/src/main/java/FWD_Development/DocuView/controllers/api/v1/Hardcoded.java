@@ -50,15 +50,15 @@ public interface Hardcoded{
 
 	    	private String name;		// name of filter
 	    	private String type;		// filter datatype
-			private String originTable;
-			private String originId;	
-			private String targetTable;
-			private String targetId;
-			private boolean finiteStates;
+		private String originTable;
+		private String originId;	
+		private String targetTable;
+		private String targetId;
+		private boolean finiteStates;
 
-			private char compType = '*';
-			private String finiteStatesQuery;
-			private String[] finiteStatesArray;
+		private char compType = '*';
+		private String finiteStatesQuery;
+		private String[] finiteStatesArray;
 	    	
 	    	Filter(String _name, String _type, String _originTable, String _originId, String _targetTable, String _targetId, boolean _finiteStates){
 	    		this.name = _name;
@@ -198,13 +198,13 @@ public interface Hardcoded{
 		new Filter("proposals_date_end", "ISO 8601", "PERIOD_INFO", "end_date", "PROPOSAL_INFO", "period_id",false, 'g'),
 		
 	};
-	static final Map<String, Filter> filterMap = new HashMap<String, Filter>(){{
+	static final Map<String, Filter> filterMap = new HashMap<>(){{
 		for (Filter elem : filterArrray){
 			put(elem.getName(), elem);
         	}
 	}};
 
-	static final Map<String, List<Filter>> targetMap = new HashMap<String, List<Filter>>(){{
+	static final Map<String, List<Filter>> targetMap = new HashMap<>(){{
 		for (Filter elem : filterArrray){
 			if (!containsKey(elem.getTargetTable())) { put(elem.getTargetTable(), new ArrayList<Filter>()); }
 			get(elem.getTargetTable()).add(elem);
