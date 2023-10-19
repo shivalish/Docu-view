@@ -76,14 +76,16 @@ public class DataBaseV1 implements Hardcoded{
 			String query;
 			for (Filter filter : set.getValue()){
 				if (!allRequestParams.containsKey(filter.getName())){ continue; }
+				// data issue, find better way to do this. Make table in hardcodeded?
 				String primaryKeyColumn = jdbcTemplate.queryForObject(
 						"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE " +
 						"WHERE TABLE_NAME = '"+ filter.getOriginTable() +"' AND CONSTRAINT_NAME = 'PRIMARY'",
 						String.class
 				);
 				query = String.format(
-						"SELECT %s FROM %s;", 
-						primaryKeyColumn, 
+						"SELECT %s FROM %s WHERE %s;", 
+						primaryKeyColumn,
+						filter.getOriginTable(),
 						filter.filteringQueryCondition(allRequestParams.get(filter.getName()))
 					);
 				List<String> holder = jdbcTemplate.query(query, new RowMapper<String>() {

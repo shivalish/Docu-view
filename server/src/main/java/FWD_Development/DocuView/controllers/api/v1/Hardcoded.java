@@ -118,25 +118,26 @@ public interface Hardcoded{
 				String filteringQuerySQL;
 				switch(compType){
 					case ')':
-						filteringQuerySQL = this.originTable + " WHERE " + this.originId + " < " + "\"" + param + "\";";
+						filteringQuerySQL = this.originId + " < " + "\"" + param + "\";";
+						break;
 					case '(':
-						filteringQuerySQL = this.originTable + " WHERE " + this.originId + " > " + "\"" + param + "\";";
+						filteringQuerySQL = this.originId + " > " + "\"" + param + "\";";
 						break;
 					case ']':
-						filteringQuerySQL = this.originTable + " WHERE " + this.originId + ">=" + "\"" + param + "\";";
+						filteringQuerySQL = this.originId + ">=" + "\"" + param + "\";";
 						break;
 					case '[':
-						filteringQuerySQL = this.originTable + " WHERE " + this.originId + "<=" + "\"" + param + "\";";
+						filteringQuerySQL = this.originId + "<=" + "\"" + param + "\";";
 						break;
 					case '!':
-						filteringQuerySQL = this.originTable + " WHERE " + this.originId + " <> " + "\"" + param + "\";";
+						filteringQuerySQL = this.originId + " <> " + "\"" + param + "\";";
 						break;
 					case '=':
-						filteringQuerySQL = this.originTable + " WHERE " + this.originId + " = " + "\"" + param + "\";";
+						filteringQuerySQL = this.originId + " = " + "\"" + param + "\";";
 						break;
 					case '*':
 					default:
-						filteringQuerySQL = this.originTable + " WHERE " + this.originId + " LIKE \"%" + param + "%\"";
+						filteringQuerySQL = this.originId + " LIKE \"%" + param + "%\"";
 				}
 				return filteringQuerySQL;
 			}
