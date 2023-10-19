@@ -119,16 +119,16 @@ public interface Hardcoded{
 				switch(compType){
 					case '<':
 					case '>':
-						filteringQuerySQL = this.originTable + " WHERE " + this.originId + String.format(" %c ", compType) + param ;
+						filteringQuerySQL = this.originTable + " WHERE " + this.originId + String.format(" %c ", compType) + "\"" + param + "\";";
 						break;
 					case 'g':
-						filteringQuerySQL = this.originTable + " WHERE " + this.originId + ">=" + param ;
+						filteringQuerySQL = this.originTable + " WHERE " + this.originId + ">=" + "\"" + param + "\";";
 						break;
 					case 'l':
-						filteringQuerySQL = this.originTable + " WHERE " + this.originId + "<=" + param ;
+						filteringQuerySQL = this.originTable + " WHERE " + this.originId + "<=" + "\"" + param + "\";";
 						break;
 					case '!':
-						filteringQuerySQL = this.originTable + " WHERE " + this.originId + " <> " + param ;
+						filteringQuerySQL = this.originTable + " WHERE " + this.originId + " <> " + "\"" + param + "\";";
 						break;
 					case '*':
 					default:

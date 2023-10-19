@@ -89,50 +89,62 @@ public class DataBaseV1 implements Hardcoded{
 	    }
 	private static final ObjectMapper objMapper = new ObjectMapper();
 	
-	public JsonNode flattenResultSet(String TableName, ResultSet rs){
-		ObjectNode rootNode = objMapper.createObjectNode();
-		ArrayList list = new ArrayList(50);
-		List<String> keysList;
-		// while(targetMap.containsKey())
-	}
+	//public JsonNode flattenResultSet(String TableName, ResultSet rs){
+	//	ObjectNode rootNode = objMapper.createObjectNode();
+	//	ArrayList list = new ArrayList(50);
+	//	List<String> keysList;
+	//	// while(targetMap.containsKey())
+	//}
 	
 	// does nothing yet, testing only
 	@GetMapping("")
 	public JsonNode getDocs(@RequestParam Map<String,String> allRequestParams){
 		// ObjectNode rootNode = objMapper.valueToTree(allRequestParams);
 		ObjectNode rootNode = objMapper.createObjectNode();
+		Map<String, String> tableQueries = new HashMap<>();
 		for (Map.Entry<String, List<Filter>> set : targetMap.entrySet()) {
-			List<String> strLst = Arrays.asList("");
-			String acc = "";
+			List<String> strLst = new ArrayList<>();
 			for (Filter filter : set.getValue()){
 				if (!allRequestParams.containsKey(filter.getName())){ continue; }
 				//will fail without privlege (add to hardcoded?)
+				
+				String query = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE " +
+						"WHERE TABLE_NAME = '"+ filter.getOriginTable() +"' AND CONSTRAINT_NAME = 'PRIMARY'";
 				String primaryKeyColumn = jdbcTemplate.queryForObject(
-						"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE " +
-						"WHERE TABLE_NAME = '"+ filter.getOriginTable() +"' AND CONSTRAINT_NAME = 'PRIMARY'",
+						query,
 						String.class
 				);
-				String query = String.format(
+				query = String.format(
 						"SELECT %s FROM %s;", 
 						primaryKeyColumn, 
 						filter.filteringQueryCondition(allRequestParams.get(filter.getName()))
 					);
-				strLst = jdbcTemplate.query(query, new RowMapper<String>() {
+				List<String> holder = jdbcTemplate.query(query, new RowMapper<String>() {
 					public String mapRow(ResultSet rs, int rowNum) throws SQLException {
 						return rs.getString(1);
 					}
 				});
-				query = "SELECT * FROM " + filter.getTargetTable() + " WHERE " + filter.getTargetId() + " IN (\"" + String.join("\", \"", strLst) + "\");";
-				strLst = jdbcTemplate.query(query, new RowMapper<String>() {
-					public String mapRow(ResultSet rs, int rowNum) throws SQLException {
-						return rs.getString(1) + " " + rs.getString(2) + " " + rs.getString(3);
-					}
-				});
-				System.out.println(strLst.toString());
+				query = filter.getTargetId() + " IN (\"" + String.join("\", \"", holder) + "\");";
+				//strLst = jdbcTemplate.query(query, new RowMapper<String>() {
+				//	public String mapRow(ResultSet rs, int rowNum) throws SQLException {
+				//		return rs.getString(1) + " " + rs.getString(2) + " " + rs.getString(3);
+				//	}
+				//});
+				strLst.add(query);
 			}
-			rootNode.put(set.getKey(), "");
+			//tableQueries.put(set.getKey(), String.join(" AND ", strLst));
+			if ( strLst.isEmpty() ) { rootNode.put(set.getKey(), ""); }
+			else { rootNode.put(set.getKey(), set.getKey() + " WHERE " + String.join(" AND ", strLst)); }
 		}
-		// QUERIES BASED ON HIERARCHY
+		// String query;
+		// Map<String, String> metaQueries = new HashMap<>();
+		// for (Map.Entry<String, String> set, tableQueries){
+		// 	if (set.getKey() == "ATTACH_PROPOSAL") { continue; }
+		// 	String query = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE " +
+		// 				"WHERE TABLE_NAME = '" + set.getKey() +"' AND CONSTRAINT_NAME = 'PRIMARY'";
+		// 	query = "SELECT"
+		// 	 
+		// }
 		return rootNode;
 	}
 	
