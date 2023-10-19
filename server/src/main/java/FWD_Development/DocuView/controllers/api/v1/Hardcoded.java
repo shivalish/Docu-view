@@ -41,6 +41,7 @@ import java.util.HashMap;
 // Hardcoded is a antipattern interface to allow vars to share the same immutable variables,
 // allowing the uses to use the same vars.
 
+// TODO get rid of independant
 public interface Hardcoded{
 	
 	public class Filter {
@@ -48,84 +49,151 @@ public interface Hardcoded{
 
 	    	private String name;		// name of filter
 	    	private String type;		// filter datatype
-	    	private boolean hasFiniteStates;	// has finite states?
-	    	private boolean preDefinedStates;
-	    	private String[] finiteStatesList;
-	    	private String finiteStatesQuery;
+			private String originTable;
+			private String originId;	
+			private String targetTable;
+			private String targetId;
+			private boolean finiteStates;
+
+			private char compType = '*';
+			private String finiteStatesQuery;
+			private String[] finiteStatesArray;
 	    	
-	    	// Use this if there is no finite state (i.e Search bar)
-	    	Filter(String _name, String _type){
+	    	// SearchType filters (must be id in another table)
+	    	Filter(String _name, String _type, String _originTable, String _originId, String _targetTable, String _targetId, boolean _finiteStates){
 	    		this.name = _name;
 	    		this.type = _type;
-	    		this.hasFiniteStates = false;
-	    		this.preDefinedStates = false;
+				this.originTable = _originTable;
+				this.originId = _originId;
+				this.targetTable = _targetTable;
+				this.targetId = _targetId;
+				this.finiteStates = _finiteStates;
+
+				this.finiteStatesQuery =  String.format("SELECT DISTINCT %s FROM %s", originId, originTable);
 	    	}
-	    	
-	    	
-	    	// Use this if finite states are defined by developer instead of DB
-	    	Filter(String _name, String _type, String[] _finiteStates){
+
+			Filter(String _name, String _type, String _originTable, String _originId, String _targetTable, String _targetId, boolean _finiteStates, char _compType){
 	    		this.name = _name;
 	    		this.type = _type;
-	    		this.hasFiniteStates = true;
-	    		this.preDefinedStates = true;
-	    		this.finiteStatesList = _finiteStates;
+				this.originTable = _originTable;
+				this.originId = _originId;
+				this.targetTable = _targetTable;
+				this.targetId = _targetId;
+				this.finiteStates = _finiteStates;
+				this.compType = _compType;
+
+				this.finiteStatesQuery =  String.format("SELECT DISTINCT %s FROM %s", originId, originTable);
 	    	}
-	    	
-	    	// Use this if finite stated are defined by DB
-	    	Filter(String _name, String _type, String _finiteStatesQuery){
+
+			Filter(String _name, String _type, String _originTable, String _originId, String _targetTable, String _targetId, String[] _finiteStatesArray){
 	    		this.name = _name;
 	    		this.type = _type;
-	    		this.hasFiniteStates = true;
-	    		this.preDefinedStates = false;
-	    		this.finiteStatesQuery = _finiteStatesQuery;
+				this.originTable = _originTable;
+				this.originId = _originId;
+				this.targetTable = _targetTable;
+				this.targetId = _targetId;
+				this.finiteStates = true;
+
+				this.finiteStatesArray = _finiteStatesArray;
 	    	}
-	    	
-	    	// only getters (READONLY FUNC)
-	    	public String getName(){
-	    		return this.name;
+
+			Filter(String _name, String _type, String _originTable, String _originId, String _targetTable, String _targetId, String[] _finiteStatesArray, char _compType){
+	    		this.name = _name;
+	    		this.type = _type;
+				this.originTable = _originTable;
+				this.originId = _originId;
+				this.targetTable = _targetTable;
+				this.targetId = _targetId;
+				this.finiteStates = true;
+				this.compType = _compType;
+
+				this.finiteStatesArray = _finiteStatesArray;
 	    	}
-	    	public String getType(){
-	    		return this.type;
-	    	}
-	    	public boolean getPreDefinedStates(){
-	    		return this.preDefinedStates;
-	    	}
-	    	public boolean getHasFiniteStates(){
-	    		return this.hasFiniteStates;
-	    	}
+
+			// todo. pregenrated then format
+			private String filteringQuery(String param){
+				String filteringQuerySQL;
+				switch(compType){
+					case '<':
+					case '>':
+						filteringQuerySQL = "SELECT * FROM " + this.originTable + " WHERE " + this.originId + String.format(" %c ", compType) + param ;
+						break;
+					case 'g':
+						filteringQuerySQL = "SELECT * FROM " + this.originTable + " WHERE " + this.originId + ">=" + param ;
+						break;
+					case 'l':
+						filteringQuerySQL = "SELECT * FROM " + this.originTable + " WHERE " + this.originId + "<=" + param ;
+						break;
+					case '!':
+						filteringQuerySQL = "SELECT * FROM " + this.originTable + " WHERE " + this.originId + " <> " + param ;
+						break;
+					case '*':
+					default:
+						filteringQuerySQL = "SELECT * FROM " + this.originTable + " WHERE " + this.originId + " LIKE " + param ;
+				}
+				return filteringQuerySQL;
+			}
+			public String getName(){
+				return this.name;
+			}
+
+			public String getType(){
+				return this.type;
+			}
+
+			public String getOriginTable(){
+				return this.originTable;
+			}
+
+			public String getOriginId(){
+				return this.originId;
+			}
+
+			public String getTargetTable(){
+				return this.targetTable;
+			}
+
+			public String getTargetId(){
+				return this.targetId;
+			}
+
+			public boolean getFiniteStates(){
+				return this.finiteStates;
+			}	    	
 	    	//////////////////////////////
 	    	
 	    	private List<String> queryExecutor(JdbcTemplate jdbcTemplate){
-	    		// temp
 				List<String> temp = jdbcTemplate.queryForList(finiteStatesQuery,String.class);
 	    		return temp;
 	    	};
 	    	
 	    	//temp for skeleton
 	    	public List<String> getFiniteStatesQuery(JdbcTemplate jdbcTemplate){
-	    		if (!this.hasFiniteStates) { 
-	    			return Arrays.asList(new String[]{});
-	    		}
-	    		if (this.preDefinedStates) {
-	    			return Arrays.asList(finiteStatesList);
-	    		}
+	    		if (!this.finiteStates) { return Arrays.asList(new String[] {}); }
+				if (this.finiteStatesArray != null) { return Arrays.asList(this.finiteStatesArray); }
 	    		return queryExecutor(jdbcTemplate);
 	    	}
 	    }
 
+
+	// > greater, < less than, = equal, ! not equal, g greater than inclusive, l less than inclusive, * contains (defualt)
+	//"SELECT DISTINCT auction_type FROM AUC_TYPE"  "SELECT DISTINCT attachment_type FROM ATTACH_TYPE" , new String[]{".pdf",".csv",".xlsx",".docs"}
 	static final Filter[] filterArrray = new Filter[] {
-		new Filter("file_creation", "ISO 8601"),
-		new Filter("document_type", "string", new String[]{".pdf",".csv",".xlsx",".docs"}),
-		new Filter("filename", "string"),
-		new Filter("customer_name", "string"),
-		new Filter("auction_type", "string", "SELECT DISTINCT auction_type FROM AUC_TYPE"),
-		new Filter("attachment_type", "string", "SELECT DISTINCT attachment_type FROM ATTACH_TYPE"),
-		new Filter("commitment_date_start", "ISO 8601"),
-		new Filter("commitment_date_end", "ISO 8601"),
-		new Filter("auction_date_start", "ISO 8601"),
-		new Filter("auction_date_end", "ISO 8601"),
-		new Filter("proposal_date_start", "ISO 8601"),
-		new Filter("proposals_date_end", "ISO 8601"),
+		new Filter("file_creation", "ISO 8601", "ATTACHMENT_FILE" ,"create_date", "ATTACH_PROPOSAL", "attachment_id", false),
+		new Filter("file_extension", "string", "ATTACHMENT_FILE" ,"file_name", "ATTACH_PROPOSAL", "attachment_id", new String[]{".bmp", ".doc", ".docx", ".htm", ".html", ".jpg", ".msg", ".pdf", ".txt", ".xlsm", ".xlsx", ".zip", ".zipx"}),
+		new Filter("filename", "string", "ATTACHMENT_FILE" ,"file_name", "ATTACH_PROPOSAL", "attachment_id", false),
+		new Filter("customer_name", "string", "CUST_INFO", "customer_name", "PROPOSAL_INFO" ,"customer_id", false),
+		new Filter("auction_type", "string", "AUC_TYPE", "auction_type", "AUC_INFO", "auction_type", true),
+		new Filter("attachment_type", "string", "ATTACH_TYPE", "attachment_type", "ATTACH_PROPOSAL", "attachment_type", true),
+
+		new Filter("commitment_date_start", "ISO 8601", "PERIOD_INFO", "begin_date", "AUC_INFO", "commitment_period_id",false, '<'),
+		new Filter("commitment_date_end", "ISO 8601", "PERIOD_INFO", "end_date", "AUC_INFO", "commitment_period_id",false, '<'),
+		new Filter("auction_date_start", "ISO 8601", "AUC_INFO", "auction_begin_date", "AUC_INFO", "auction_period_id",false, '<'),
+		new Filter("auction_date_end", "ISO 8601", "AUC_INFO", "auction_end_date", "AUC_INFO", "auction_period_id",false, '<'),
+
+		new Filter("proposal_date_start", "ISO 8601", "PERIOD_INFO", "begin_date", "PROPOSAL_INFO", "period_id",false, '<'),
+		new Filter("proposals_date_end", "ISO 8601", "PERIOD_INFO", "end_date", "PROPOSAL_INFO", "period_id",false, '<'),
+		
 	};
 	static final Map<String, Filter> filterMap = new HashMap<String, Filter>(){{
 		for (Filter elem : filterArrray){

@@ -56,7 +56,7 @@ public class FiltersV1 implements Hardcoded{
         if (!filterMap.containsKey(filter_name)) { return rootNode; }
         Filter get = filterMap.get(filter_name);
         rootNode.put("name", get.getName());
-        rootNode.put("has_finite_states", get.getHasFiniteStates());
+        rootNode.put("has_finite_states", get.getFiniteStates());
         ArrayNode finite_states = rootNode.putArray("finite_states");
         for (String elem : get.getFiniteStatesQuery(jdbcTemplate)){
         	finite_states.add(elem);
