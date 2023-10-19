@@ -54,39 +54,7 @@ public class DataBaseV1 implements Hardcoded{
 
 	@Autowired
     	private JdbcTemplate jdbcTemplate;
-    	private static final Map<String, Map<String, String>> tableMap = initializeFilterMap();
-
-	    private static Map<String, Map<String, String>> initializeFilterMap() {
-		Map<String, Map<String, String>> map = new HashMap<>();
-
-		Map<String, String> attachmentHolder = new HashMap<>();
-		attachmentHolder.put("attachment_id", "ATTACHMENT_FILE");
-		attachmentHolder.put("proposal_id", "PROPOSAL_INFO");
-		attachmentHolder.put("attachment_type", "ATTACH_TYPE");
-		map.put("ATTACH_PROPOSAL", attachmentHolder);
-
-		attachmentHolder = new HashMap<>();
-		attachmentHolder.put("project_id", "PROJ_INFO");
-		attachmentHolder.put("project_type", "PROJ_TYPE");
-		attachmentHolder.put("resource_id", "RES_INFO");
-		attachmentHolder.put("customer_id", "CUS_INFO");
-		attachmentHolder.put("auction_id", "AUC_INFO");
-		attachmentHolder.put("period_id", "PERIOD_INFO");
-		map.put("PROPOSAL_INFO", attachmentHolder);
-		
-		attachmentHolder = new HashMap<>();
-		attachmentHolder.put("commitment_period_id", "PERIOD_INFO");
-		attachmentHolder.put("auction_period_id", "PERIOD_INFO");
-		attachmentHolder.put("auction_type", "AUC_TYPE");
-		map.put("AUC_INFO", attachmentHolder);
-		
-		attachmentHolder = new HashMap<>();
-		attachmentHolder.put("resource_type", "RES_TYPE");
-		map.put("RES_INFO", attachmentHolder);
-		
-
-		return map;
-	    }
+    	
 	private static final ObjectMapper objMapper = new ObjectMapper();
 	
 	//public JsonNode flattenResultSet(String TableName, ResultSet rs){
@@ -108,9 +76,14 @@ public class DataBaseV1 implements Hardcoded{
 			String query;
 			for (Filter filter : set.getValue()){
 				if (!allRequestParams.containsKey(filter.getName())){ continue; }
+				String primaryKeyColumn = jdbcTemplate.queryForObject(
+						"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE " +
+						"WHERE TABLE_NAME = '"+ filter.getOriginTable() +"' AND CONSTRAINT_NAME = 'PRIMARY'",
+						String.class
+				);
 				query = String.format(
 						"SELECT %s FROM %s;", 
-						filter.getTargetId(), 
+						primaryKeyColumn, 
 						filter.filteringQueryCondition(allRequestParams.get(filter.getName()))
 					);
 				List<String> holder = jdbcTemplate.query(query, new RowMapper<String>() {
@@ -184,9 +157,15 @@ public class DataBaseV1 implements Hardcoded{
 		for (Map.Entry<String, String> set2 : set.getValue().entrySet()){
 			
 	 		if ( !tableQueries.containsKey(set2.getValue()) ) { continue; }
+	 		String primaryKeyColumn = jdbcTemplate.queryForObject(
+						"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE " +
+						"WHERE TABLE_NAME = '"+ set2.getValue() +"' AND CONSTRAINT_NAME = 'PRIMARY'",
+						String.class
+				);
+			// this should be the standard, will fix
 	 		query =  String.format(
 					"SELECT %s FROM %s WHERE %s;", 
-					set2.getKey(),
+					primaryKeyColumn,
 					set2.getValue(), 
 					tableQueries.get(set2.getValue())
 				);

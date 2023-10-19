@@ -117,18 +117,22 @@ public interface Hardcoded{
 			public String filteringQueryCondition(String param){
 				String filteringQuerySQL;
 				switch(compType){
-					case '<':
-					case '>':
-						filteringQuerySQL = this.originTable + " WHERE " + this.originId + String.format(" %c ", compType) + "\"" + param + "\";";
+					case ')':
+						filteringQuerySQL = this.originTable + " WHERE " + this.originId + " < " + "\"" + param + "\";";
+					case '(':
+						filteringQuerySQL = this.originTable + " WHERE " + this.originId + " > " + "\"" + param + "\";";
 						break;
-					case 'g':
+					case ']':
 						filteringQuerySQL = this.originTable + " WHERE " + this.originId + ">=" + "\"" + param + "\";";
 						break;
-					case 'l':
+					case '[':
 						filteringQuerySQL = this.originTable + " WHERE " + this.originId + "<=" + "\"" + param + "\";";
 						break;
 					case '!':
 						filteringQuerySQL = this.originTable + " WHERE " + this.originId + " <> " + "\"" + param + "\";";
+						break;
+					case '=':
+						filteringQuerySQL = this.originTable + " WHERE " + this.originId + " = " + "\"" + param + "\";";
 						break;
 					case '*':
 					default:
@@ -179,7 +183,7 @@ public interface Hardcoded{
 	    }
 
 
-	// > greater, < less than, = equal, ! not equal, g greater than inclusive, l less than inclusive, * contains (defualt)
+	// ] upperbound (incl) , [ lowerbound (incl), ) upperbound, ( lowerbound, = equal, ! not equal, * contains (defualt)
 	//"SELECT DISTINCT auction_type FROM AUC_TYPE"  "SELECT DISTINCT attachment_type FROM ATTACH_TYPE" , new String[]{".pdf",".csv",".xlsx",".docs"}
 	static final Filter[] filterArrray = new Filter[] {
 		new Filter("file_creation", "ISO 8601", "ATTACHMENT_FILE" ,"create_date", "ATTACH_PROPOSAL", "attachment_id", false),
@@ -189,13 +193,13 @@ public interface Hardcoded{
 		new Filter("auction_type", "string", "AUC_TYPE", "auction_type", "AUC_INFO", "auction_type", true),
 		new Filter("attachment_type", "string", "ATTACH_TYPE", "attachment_type", "ATTACH_PROPOSAL", "attachment_type", true),
 
-		new Filter("commitment_date_start", "ISO 8601", "PERIOD_INFO", "begin_date", "AUC_INFO", "commitment_period_id",false, 'l'),
-		new Filter("commitment_date_end", "ISO 8601", "PERIOD_INFO", "end_date", "AUC_INFO", "commitment_period_id",false, 'g'),
-		new Filter("auction_date_start", "ISO 8601", "AUC_INFO", "auction_begin_date", "AUC_INFO", "auction_period_id",false, 'l'),
-		new Filter("auction_date_end", "ISO 8601", "AUC_INFO", "auction_end_date", "AUC_INFO", "auction_period_id",false, 'g'),
+		new Filter("commitment_date_start", "ISO 8601", "PERIOD_INFO", "begin_date", "AUC_INFO", "commitment_period_id",false, '['),
+		new Filter("commitment_date_end", "ISO 8601", "PERIOD_INFO", "end_date", "AUC_INFO", "commitment_period_id",false, ']'),
+		new Filter("auction_date_start", "ISO 8601", "AUC_INFO", "auction_begin_date", "AUC_INFO", "auction_period_id",false, '['),
+		new Filter("auction_date_end", "ISO 8601", "AUC_INFO", "auction_end_date", "AUC_INFO", "auction_period_id",false, ']'),
 
-		new Filter("proposal_date_start", "ISO 8601", "PERIOD_INFO", "begin_date", "PROPOSAL_INFO", "period_id",false, 'l'),
-		new Filter("proposals_date_end", "ISO 8601", "PERIOD_INFO", "end_date", "PROPOSAL_INFO", "period_id",false, 'g'),
+		new Filter("proposal_date_start", "ISO 8601", "PERIOD_INFO", "begin_date", "PROPOSAL_INFO", "period_id",false, '['),
+		new Filter("proposals_date_end", "ISO 8601", "PERIOD_INFO", "end_date", "PROPOSAL_INFO", "period_id",false, ']'),
 		
 	};
 	static final Map<String, Filter> filterMap = new HashMap<>(){{
@@ -210,4 +214,38 @@ public interface Hardcoded{
 			get(elem.getTargetTable()).add(elem);
         }
 	}};
+	
+	static final Map<String, Map<String, String>> tableMap = initializeFilterMap();
+
+	    private static Map<String, Map<String, String>> initializeFilterMap() {
+		Map<String, Map<String, String>> map = new HashMap<>();
+
+		Map<String, String> attachmentHolder = new HashMap<>();
+		attachmentHolder.put("attachment_id", "ATTACHMENT_FILE");
+		attachmentHolder.put("proposal_id", "PROPOSAL_INFO");
+		attachmentHolder.put("attachment_type", "ATTACH_TYPE");
+		map.put("ATTACH_PROPOSAL", attachmentHolder);
+
+		attachmentHolder = new HashMap<>();
+		attachmentHolder.put("project_id", "PROJ_INFO");
+		attachmentHolder.put("project_type", "PROJ_TYPE");
+		attachmentHolder.put("resource_id", "RES_INFO");
+		attachmentHolder.put("customer_id", "CUS_INFO");
+		attachmentHolder.put("auction_id", "AUC_INFO");
+		attachmentHolder.put("period_id", "PERIOD_INFO");
+		map.put("PROPOSAL_INFO", attachmentHolder);
+		
+		attachmentHolder = new HashMap<>();
+		attachmentHolder.put("commitment_period_id", "PERIOD_INFO");
+		attachmentHolder.put("auction_period_id", "PERIOD_INFO");
+		attachmentHolder.put("auction_type", "AUC_TYPE");
+		map.put("AUC_INFO", attachmentHolder);
+		
+		attachmentHolder = new HashMap<>();
+		attachmentHolder.put("resource_type", "RES_TYPE");
+		map.put("RES_INFO", attachmentHolder);
+		
+
+		return map;
+	    }
 }		
