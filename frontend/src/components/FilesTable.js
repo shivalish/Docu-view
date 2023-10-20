@@ -34,27 +34,51 @@ function FilesTable() {
             uploadDate: 1697768252692,
             fileSizeMB: 500
         }, {
-            fileName: "testFile5",
+            fileName: "eepyFile",
             customer: "EvilJake",
             uploadDate: 1697268112692,
             fileSizeMB: 100
         }, {
-            fileName: "testFile6",
+            fileName: "stinkyFile",
             customer: "EvilAdam",
             uploadDate: 1197268253332,
             fileSizeMB: 1560
         }, {
-            fileName: "testFile7",
+            fileName: "bestFile",
             customer: "EvilShiyu",
             uploadDate: 1297268253332,
             fileSizeMB: 150
         }, {
-            fileName: "testFile8",
+            fileName: "largeFile",
             customer: "EvilWenhan",
             uploadDate: 1697168252692,
             fileSizeMB: 2142
         }]
     )
+
+    /* key should be the key in the object files you want to sort by as a string ('fileName', 'customer', etc) and byAscending is boolean for sort order */
+    const sortFiles = (key, byAscending) => {
+        if (!files || files.length === 0 || !Object.keys(files[0]).includes(key)) {
+            return;
+        }
+        setFiles((oldFiles) => {
+            let newFiles = [...oldFiles];
+            newFiles.sort((fileA, fileB) => {
+                if (typeof fileA[key] === "string") {
+                    return byAscending ?
+                        fileA[key].localeCompare(fileB[key])
+                        :
+                        fileB[key].localeCompare(fileA[key]);
+                } else {
+                    return byAscending ?
+                        fileA[key] - fileB[key]
+                        :
+                        fileB[key] - fileA[key];
+                }
+            })
+            return newFiles;
+        })
+    }
 
 
     return (

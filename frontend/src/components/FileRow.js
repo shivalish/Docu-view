@@ -17,15 +17,11 @@ function formatFileSize(mbSize) {
     if(mbSize < 1000) {
         return `${mbSize} MB`;
     } else {
-        let gbSize = 0;
-        let remainingMb = mbSize;
-        while(remainingMb >= 1000) {
-            gbSize++;
-            remainingMb -= 1000;
-        }
-        return `${gbSize}${remainingMb > 0 ? `${(remainingMb / 1000).toFixed(2)}` : ''} GB`
+        const gbSize = mbSize / 1000;
+        return `${gbSize.toFixed(2)} GB`;
     }
 }
+
 
 const FileRow = ({ fileName, customer, uploadDate, fileSizeMb }) => {
     return (
