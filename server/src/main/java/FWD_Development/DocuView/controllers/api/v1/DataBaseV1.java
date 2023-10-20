@@ -164,11 +164,15 @@ public class DataBaseV1 implements Hardcoded{
 		List<ObjectNode> holder = jdbcTemplate.query(query, new RowMapper<ObjectNode>() {
 					public ObjectNode mapRow(ResultSet rs, int rowNum) throws SQLException {
 						return resultSetToJson(rs);
-					}});			
+					}});
+		// Timed aprox avg of this section : 100 ms			
 		
 		for (ObjectNode json : holder){
+			// outerArray.add( json ); 
 			outerArray.add( flattenQuery(json, root) );
+			// Timed aprox avg of this section : 700 ms
 		}
+		// total run time aprox avg : 800 ms
 		return outerArray;
 	}
 	
