@@ -192,7 +192,7 @@ public interface Hardcoded{
 	    }
 
 
-	// ] upperbound (incl) , [ lowerbound (incl), ) upperbound, ( lowerbound, = equal, ! not equal, * contains (defualt), ^ upper wildcard, . lower wildcard
+	//  ] upper bound (incl) , [ lower bound (incl), ) upper bound, ( lower bound, = equal, ! not equal, * contains (default), ^ upper wildcard, . lower wildcard
 	//"SELECT DISTINCT auction_type FROM AUC_TYPE"  "SELECT DISTINCT attachment_type FROM ATTACH_TYPE" , new String[]{".pdf",".csv",".xlsx",".docs"}
 	static final Filter[] filterArrray = new Filter[] {
 		new Filter("file_creation", "ISO 8601", "ATTACHMENT_FILE" ,"create_date", "ATTACH_PROPOSAL", "attachment_id", false),
@@ -209,9 +209,9 @@ public interface Hardcoded{
 		new Filter("auction_date_end", "ISO 8601", "AUC_INFO", "auction_end_date", "AUC_INFO", "auction_period_id",false, ']'),
 
 		new Filter("proposal_date_start", "ISO 8601", "PERIOD_INFO", "begin_date", "PROPOSAL_INFO", "period_id",false, '['),
-		new Filter("proposals_date_end", "ISO 8601", "PERIOD_INFO", "end_date", "PROPOSAL_INFO", "period_id",false, ']'),
-		
+		new Filter("proposals_date_end", "ISO 8601", "PERIOD_INFO", "end_date", "PROPOSAL_INFO", "period_id",false, ']'),	
 	};
+
 	static final Map<String, Filter> filterMap = new HashMap<>(){{
 		for (Filter elem : filterArrray){
 			put(elem.getName(), elem);
@@ -224,40 +224,6 @@ public interface Hardcoded{
 			get(elem.getTargetTable()).add(elem);
         }
 	}};
-	
-	static final Map<String, Map<String, String>> tableMap = initializeFilterMap();
-
-	    private static Map<String, Map<String, String>> initializeFilterMap() {
-		Map<String, Map<String, String>> map = new HashMap<>();
-
-		Map<String, String> attachmentHolder = new HashMap<>();
-		attachmentHolder.put("attachment_id", "ATTACHMENT_FILE");
-		attachmentHolder.put("proposal_id", "PROPOSAL_INFO");
-		attachmentHolder.put("attachment_type", "ATTACH_TYPE");
-		map.put("ATTACH_PROPOSAL", attachmentHolder);
-
-		attachmentHolder = new HashMap<>();
-		attachmentHolder.put("project_id", "PROJ_INFO");
-		attachmentHolder.put("project_type", "PROJ_TYPE");
-		attachmentHolder.put("resource_id", "RES_INFO");
-		attachmentHolder.put("customer_id", "CUS_INFO");
-		attachmentHolder.put("auction_id", "AUC_INFO");
-		attachmentHolder.put("period_id", "PERIOD_INFO");
-		map.put("PROPOSAL_INFO", attachmentHolder);
-		
-		attachmentHolder = new HashMap<>();
-		attachmentHolder.put("commitment_period_id", "PERIOD_INFO");
-		attachmentHolder.put("auction_period_id", "PERIOD_INFO");
-		attachmentHolder.put("auction_type", "AUC_TYPE");
-		map.put("AUC_INFO", attachmentHolder);
-		
-		attachmentHolder = new HashMap<>();
-		attachmentHolder.put("resource_type", "RES_TYPE");
-		map.put("RES_INFO", attachmentHolder);
-		
-
-		return map;
-	}
 
 	public class DataBaseNode{
 			private String name;
