@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.sql.ResultSetMetaData;
 
 import org.springframework.dao.EmptyResultDataAccessException;
 
@@ -61,8 +62,14 @@ public class DataBaseV1 implements Hardcoded{
 	private static final ObjectMapper objMapper = new ObjectMapper();
 	
 	// TODO
-	public JsonNode flattenNode(){
-		return objMapper.createObjectNode();
+	public static JsonNode resultSetToJson(ResultSet resultSet) throws SQLException {
+		ObjectNode out = objMapper.createObjectNode();
+		ResultSetMetaData rsmd = resultSet.getMetaData();
+		for (int i = 1; i <= rsmd.getColumnCount(); i++){
+
+			out.put(rsmd.getColumnName(i), resultSet.getString(rsmd.getColumnName(i)));
+		}
+		return out;
 	}
 
 	private void filterDataBase(DataBaseNode node, Map<String,String> allRequestParams, Map<String, String> _tableQueries) {
@@ -116,7 +123,7 @@ public class DataBaseV1 implements Hardcoded{
 	@GetMapping("")
 	public JsonNode getDocs(@RequestParam Map<String,String> allRequestParams){
 		// ObjectNode rootNode = objMapper.valueToTree(allRequestParams);
-		ObjectNode rootNode = objMapper.createObjectNode();
+		ArrayNode outerArray = objMapper.createArrayNode();
 
 		Map<String, String> _tableQueries = new HashMap<>();
 		filterDataBase(dataBaseTree.getRoot(), allRequestParams, _tableQueries);
@@ -127,8 +134,15 @@ public class DataBaseV1 implements Hardcoded{
 						dataBaseTree.getRoot().getName(),
 						_tableQueries.get(dataBaseTree.getRoot().getName())
 					);
-		rootNode.put("ATTACH_PROPOSAL", query);
-		return rootNode;
+		List<JsonNode> holder = jdbcTemplate.query(query, new RowMapper<JsonNode>() {
+					public JsonNode mapRow(ResultSet rs, int rowNum) throws SQLException {
+						return resultSetToJson(rs);
+					}});			
+		
+		for (JsonNode json : holder){
+			outerArray.add( json );
+		}
+		return outerArray;
 	}
 	
 };
