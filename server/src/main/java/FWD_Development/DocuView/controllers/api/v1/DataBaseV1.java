@@ -117,10 +117,6 @@ public class DataBaseV1 implements Hardcoded{
 						connectedNode.getName(),
 						_tableQueries.get(connectedNode.getName())
 					);
-					//List<String> holder = jdbcTemplate.query(query, new RowMapper<String>() {
-					//public String mapRow(ResultSet rs, int rowNum) throws SQLException {
-					//	return rs.getString(1);
-					//}});
 					query = set.getKey() + " IN (" + query + ")";
 					strLst.add(query);
 					_tableQueries.remove(connectedNode.getName());
