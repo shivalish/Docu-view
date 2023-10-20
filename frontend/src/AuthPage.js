@@ -4,90 +4,71 @@ import Button from "./atoms/Button.jsx";
 import { Tab } from "@headlessui/react";
 import { useNavigate } from "react-router-dom";
 
-// COMPONENTS TO MOVE //
-
-// Buttons can do things, but where are you going to get the data from ?
-function HomePageButton({ text, OnClick }){
+function HomePageButton({ text, OnClick }) {
   return (
-      <div className="flex justify-end">
-        <Button width="w-32" height="h-10" OnClick={OnClick}>
-          {" "}
-          { text }{" "}
-        </Button>
-      </div>
-  )
+    <div className="flex justify-end py-1">
+      <Button width="w-32" height="h-10" OnClick={OnClick}>
+        {text}
+      </Button>
+    </div>
+  );
 }
 
 // Moved it for clarity (used 4 times in the single part)
-function HomePageInput( { label } ){
+function HomePageInput({ label, hidden = false, forgot = false, forgotText }) {
   return (
-    <><label> {label} </label><input className="h-10 w-full px-5 bg-iso-grey rounded-md" /></>
-  )
+    <div className="flex flex-col w-full">
+      <label> {label} </label>
+      <input
+        type={hidden && "password"}
+        className="h-10 w-full px-5 bg-iso-grey rounded-md"
+      />
+      {forgot && <span className="h-5 text-right">{forgotText}</span>}
+    </div>
+  );
 }
 
-//////////////////////
-
-
-// Forgot Username and Forgot Password do nothing ?
-
-// Do what you will with this, idk what exactly you want to do
-
-function HomePageTabs(){
+function HomePageTabs() {
   const navigate = useNavigate();
-
+  const movePage = () => navigate("/main");
   return (
     <div className="flex h-full w-1/3 justify-center items-center">
       <div>
         <Tab.Group>
           <Tab.List>
-            <Tab
-              className={`rounded-t-md ui-selected:bg-iso-white ui-not-selected:bg-iso-grey h-10 w-32`}
-            >
-              Login
-            </Tab>
-            <Tab className= {"rounded-t-md ui-selected:bg-iso-white ui-not-selected:bg-iso-grey h-10 w-32"}>
-              Sign Up
-            </Tab>
-          </Tab.List> 
+            {["Login", "Sign Up"].map((txt) => (
+              <Tab className={"tab"}>{txt}</Tab>
+            ))}
+          </Tab.List>
           <Tab.Panels>
-            <Tab.Panel className="w-96 h-1/3 bg-iso-white p-10 rounded-b-md rounded-tr-md">
-              <HomePageInput label="Username" />
-              <div className="flex w-full h-10 justify-end">
-                {" "}
-                <span> Forgot Username </span>{" "}
-              </div>
-              <HomePageInput label="Password" />
-              <div className="flex w-full h-10 justify-end">
-                {" "}
-                <span> Forgot Password </span>{" "}
-              </div>
-              <HomePageButton text="Login" OnClick={() => navigate('/main')}/>
+            <Tab.Panel className="tab-body">
+              <HomePageInput
+                label="Username"
+                forgot={true}
+                forgotText={"Forgot Username"}
+              />
+              <HomePageInput
+                label="Password"
+                hidden={true}
+                forgot={true}
+                forgotText={"Forgot Password"}
+              />
+              <HomePageButton text="Login" OnClick={movePage} />
             </Tab.Panel>
-            <Tab.Panel className="w-96 h-1/3 bg-iso-white p-10 rounded-b-md rounded-tr-md">
+            <Tab.Panel className="flex flex-col tab-body gap-5">
               <HomePageInput label="Username" />
-              <div className="flex w-full h-10 justify-end">
-                {" "}
-                {" "}
-              </div>
-              <HomePageInput label="Password" />
-              <div className="flex w-full h-10 justify-end">
-                {" "}
-                {" "}
-              </div>
-              <HomePageButton text="Sign Up" OnClick={() => navigate('/main')}/>
+              <HomePageInput label="Password" hidden={true} />
+              <HomePageButton text="Sign Up" OnClick={movePage} />
             </Tab.Panel>
           </Tab.Panels>
         </Tab.Group>
-      </ div>
+      </div>
     </div>
-  )
+  );
 }
 
 function HomePage() {
-  //TODO 1: reduce boilerplate html; too many divs so u would need to move some divs into components folder
-  //TODO 2: reduce boilerplate tailwind css; maybe add a tailwind class to index.css and use here
   //TODO 3: implement text rememberance when switching tabs
-  //TODO 4: tweak font sizes and standardize font
 
   return (
     <div className="flex flex-col w-screen h-screen bg-iso-blue">
@@ -100,7 +81,6 @@ function HomePage() {
       <div className="flex-grow"></div>
     </div>
   );
-  
 }
 
 export default HomePage;
