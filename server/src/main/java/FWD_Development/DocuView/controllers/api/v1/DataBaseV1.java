@@ -81,20 +81,20 @@ public class DataBaseV1 implements Hardcoded{
 			String key = set.getKey();
 			String value = set.getValue().asText();
 			if ( !connectedNodes.containsKey(set.getKey()) ){ out.put(key, value); continue; }
+			DataBaseNode targetTable = connectedNodes.get(key);
+			String format = "SELECT * FROM %s WHERE CAST(%s AS CHAR) = \'%s\';";
+			//String format = "SELECT * FROM %s WHERE %s IN (\"%s\");"; \\ slower by around 600
 			String query = String.format(
-						"SELECT * FROM %s WHERE %s IN (\"%s\");", 
-						connectedNodes.get(key).getName(),
-						connectedNodes.get(key).getPrimaryKey(),
+						format, 
+						targetTable.getName(),
+						targetTable.getPrimaryKey(),
 						value
 					);
-			System.out.println(query);
 			// use list to handle unexpected straglers (should be impossible but you never know)
 			List<ObjectNode> holder = jdbcTemplate.query(query, new RowMapper<ObjectNode>() {
 					public ObjectNode mapRow(ResultSet rs, int rowNum) throws SQLException {
 						return resultSetToJson(rs);
 					}});
-			System.out.println(holder);
-			System.out.println(connectedNodes.get(key));
 			ObjectNode append = flattenQuery(holder.get(0), connectedNodes.get(key));
 			out.set(key, append);
 		}
@@ -153,13 +153,10 @@ public class DataBaseV1 implements Hardcoded{
 
 	@GetMapping("")
 	public JsonNode getDocs(@RequestParam Map<String,String> allRequestParams){
-		// ObjectNode rootNode = objMapper.valueToTree(allRequestParams);
 		ArrayNode outerArray = objMapper.createArrayNode();
 		Map<String, String> tableQueries = new HashMap<>();
 		DataBaseNode root = dataBaseTree.getRoot();
 		filterDataBase(root, allRequestParams, tableQueries);
-		System.out.println(tableQueries);
-
 		String query = String.format(
 						"SELECT * FROM %s WHERE %s;", 
 						root.getName(),
