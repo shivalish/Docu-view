@@ -297,7 +297,7 @@ public interface Hardcoded{
 		holder.add("project_id", "PROJ_INFO", "project_id");
 		holder.add("project_type", "PROJ_TYPE", "project_type");
 		holder.add("resource_id", "RES_INFO", "resource_id");
-		holder.add("customer_id", "CUS_INFO", "customer_id");
+		holder.add("customer_id", "CUST_INFO", "customer_id");
 		holder.add("auction_id", "AUC_INFO", "auction_id");
 		holder.add("period_id", "PERIOD_INFO", "period_id");
 		

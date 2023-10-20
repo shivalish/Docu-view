@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import java.util.Iterator;
 import java.util.HashMap;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -61,16 +62,46 @@ public class DataBaseV1 implements Hardcoded{
     	
 	private static final ObjectMapper objMapper = new ObjectMapper();
 	
-	// TODO
-	public static JsonNode resultSetToJson(ResultSet resultSet) throws SQLException {
+	private static ObjectNode resultSetToJson(ResultSet resultSet) throws SQLException {
 		ObjectNode out = objMapper.createObjectNode();
 		ResultSetMetaData rsmd = resultSet.getMetaData();
 		for (int i = 1; i <= rsmd.getColumnCount(); i++){
-
 			out.put(rsmd.getColumnName(i), resultSet.getString(rsmd.getColumnName(i)));
 		}
 		return out;
 	}
+	
+	// make better implementation using queries (hava no idea how to do that
+	private ObjectNode flattenQuery(ObjectNode obj, DataBaseNode table){
+		ObjectNode out = objMapper.createObjectNode();
+		Map<String, DataBaseNode> connectedNodes = table.getConnected();
+		Iterator<Map.Entry<String,JsonNode>> it = obj.fields();
+		while (it.hasNext()){
+			Map.Entry<String,JsonNode> set = it.next();
+			String key = set.getKey();
+			String value = set.getValue().asText();
+			if ( !connectedNodes.containsKey(set.getKey()) ){ out.put(key, value); continue; }
+			String query = String.format(
+						"SELECT * FROM %s WHERE %s IN (\"%s\");", 
+						connectedNodes.get(key).getName(),
+						connectedNodes.get(key).getPrimaryKey(),
+						value
+					);
+			System.out.println(query);
+			// use list to handle unexpected straglers (should be impossible but you never know)
+			List<ObjectNode> holder = jdbcTemplate.query(query, new RowMapper<ObjectNode>() {
+					public ObjectNode mapRow(ResultSet rs, int rowNum) throws SQLException {
+						return resultSetToJson(rs);
+					}});
+			System.out.println(holder);
+			System.out.println(connectedNodes.get(key));
+			ObjectNode append = flattenQuery(holder.get(0), connectedNodes.get(key));
+			out.set(key, append);
+		}
+		return out;
+	}
+	
+	
 
 	private void filterDataBase(DataBaseNode node, Map<String,String> allRequestParams, Map<String, String> _tableQueries) {
         if (node != null) {
@@ -124,30 +155,25 @@ public class DataBaseV1 implements Hardcoded{
 	public JsonNode getDocs(@RequestParam Map<String,String> allRequestParams){
 		// ObjectNode rootNode = objMapper.valueToTree(allRequestParams);
 		ArrayNode outerArray = objMapper.createArrayNode();
-
-		Map<String, String> _tableQueries = new HashMap<>();
-		filterDataBase(dataBaseTree.getRoot(), allRequestParams, _tableQueries);
-		System.out.println(_tableQueries);
+		Map<String, String> tableQueries = new HashMap<>();
+		DataBaseNode root = dataBaseTree.getRoot();
+		filterDataBase(root, allRequestParams, tableQueries);
+		System.out.println(tableQueries);
 
 		String query = String.format(
 						"SELECT * FROM %s WHERE %s;", 
-						dataBaseTree.getRoot().getName(),
-						_tableQueries.get(dataBaseTree.getRoot().getName())
+						root.getName(),
+						tableQueries.get(root.getName())
 					);
-		List<JsonNode> holder = jdbcTemplate.query(query, new RowMapper<JsonNode>() {
-					public JsonNode mapRow(ResultSet rs, int rowNum) throws SQLException {
+		List<ObjectNode> holder = jdbcTemplate.query(query, new RowMapper<ObjectNode>() {
+					public ObjectNode mapRow(ResultSet rs, int rowNum) throws SQLException {
 						return resultSetToJson(rs);
 					}});			
 		
-		for (JsonNode json : holder){
-			outerArray.add( json );
+		for (ObjectNode json : holder){
+			outerArray.add( flattenQuery(json, root) );
 		}
 		return outerArray;
 	}
 	
 };
-
-//for (Map.Entry<String,String> set : allRequestParams.entrySet()){
-//	if (!filterMap.containsKey(set.getKey())) { continue; }
-//		rootNode.put(set.getKey(), filterMap.get(set.getKey()).filteringQueryCondition(set.getValue()));
-//}
