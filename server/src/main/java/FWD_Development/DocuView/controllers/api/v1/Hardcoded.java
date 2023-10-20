@@ -136,6 +136,13 @@ public interface Hardcoded{
 					case '=':
 						filteringQuerySQL = this.originId + " = " + "\"" + param + "\";";
 						break;
+
+					case '^':
+						filteringQuerySQL = this.originId + " LIKE \"%" + param + "\"";
+						break;
+					case '.':
+						filteringQuerySQL = this.originId + " LIKE \"" + param + "%\"";
+						break;
 					case '*':
 					default:
 						filteringQuerySQL = this.originId + " LIKE \"%" + param + "%\"";
@@ -185,11 +192,11 @@ public interface Hardcoded{
 	    }
 
 
-	// ] upperbound (incl) , [ lowerbound (incl), ) upperbound, ( lowerbound, = equal, ! not equal, * contains (defualt)
+	// ] upperbound (incl) , [ lowerbound (incl), ) upperbound, ( lowerbound, = equal, ! not equal, * contains (defualt), ^ upper wildcard, . lower wildcard
 	//"SELECT DISTINCT auction_type FROM AUC_TYPE"  "SELECT DISTINCT attachment_type FROM ATTACH_TYPE" , new String[]{".pdf",".csv",".xlsx",".docs"}
 	static final Filter[] filterArrray = new Filter[] {
 		new Filter("file_creation", "ISO 8601", "ATTACHMENT_FILE" ,"create_date", "ATTACH_PROPOSAL", "attachment_id", false),
-		new Filter("file_extension", "string", "ATTACHMENT_FILE" ,"file_name", "ATTACH_PROPOSAL", "attachment_id", new String[]{".bmp", ".doc", ".docx", ".htm", ".html", ".jpg", ".msg", ".pdf", ".txt", ".xlsm", ".xlsx", ".zip", ".zipx"}),
+		new Filter("file_extension", "string", "ATTACHMENT_FILE" ,"file_name", "ATTACH_PROPOSAL", "attachment_id", new String[]{".bmp", ".doc", ".docx", ".htm", ".html", ".jpg", ".msg", ".pdf", ".txt", ".xlsm", ".xlsx", ".zip", ".zipx"}, '^'),
 		new Filter("filename", "string", "ATTACHMENT_FILE" ,"file_name", "ATTACH_PROPOSAL", "attachment_id", false),
 		new Filter("customer_name", "string", "CUST_INFO", "customer_name", "PROPOSAL_INFO" ,"customer_id", false),
 		new Filter("auction_type", "string", "AUC_TYPE", "auction_type", "AUC_INFO", "auction_type", true),
