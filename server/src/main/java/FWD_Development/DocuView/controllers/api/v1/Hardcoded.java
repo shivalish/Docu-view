@@ -119,22 +119,22 @@ public interface Hardcoded{
 				String filteringQuerySQL;
 				switch(compType){
 					case ')':
-						filteringQuerySQL = this.originId + " < " + "\"" + param + "\";";
+						filteringQuerySQL = this.originId + " < " + "\"" + param + "\"";
 						break;
 					case '(':
-						filteringQuerySQL = this.originId + " > " + "\"" + param + "\";";
+						filteringQuerySQL = this.originId + " > " + "\"" + param + "\"";
 						break;
 					case ']':
-						filteringQuerySQL = this.originId + ">=" + "\"" + param + "\";";
+						filteringQuerySQL = this.originId + ">=" + "\"" + param + "\"";
 						break;
 					case '[':
-						filteringQuerySQL = this.originId + "<=" + "\"" + param + "\";";
+						filteringQuerySQL = this.originId + "<=" + "\"" + param + "\"";
 						break;
 					case '!':
-						filteringQuerySQL = this.originId + " <> " + "\"" + param + "\";";
+						filteringQuerySQL = this.originId + " <> " + "\"" + param + "\"";
 						break;
 					case '=':
-						filteringQuerySQL = this.originId + " = " + "\"" + param + "\";";
+						filteringQuerySQL = this.originId + " = " + "\"" + param + "\"";
 						break;
 
 					case '^':

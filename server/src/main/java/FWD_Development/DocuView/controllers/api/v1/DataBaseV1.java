@@ -71,7 +71,6 @@ public class DataBaseV1 implements Hardcoded{
 		return out;
 	}
 	
-	// make better implementation using queries (hava no idea how to do that
 	private ObjectNode flattenQuery(ObjectNode obj, DataBaseNode table){
 		ObjectNode out = objMapper.createObjectNode();
 		Map<String, DataBaseNode> connectedNodes = table.getConnected();
@@ -82,7 +81,7 @@ public class DataBaseV1 implements Hardcoded{
 			String value = set.getValue().asText();
 			if ( !connectedNodes.containsKey(set.getKey()) ){ out.put(key, value); continue; }
 			DataBaseNode targetTable = connectedNodes.get(key);
-			String format = "SELECT * FROM %s WHERE CAST(%s AS CHAR) = \'%s\';";
+			String format = "SELECT * FROM %s WHERE CAST(%s AS CHAR) = \'%s\'";
 			//String format = "SELECT * FROM %s WHERE %s IN (\"%s\");"; \\ slower by around 600
 			String query = String.format(
 						format, 
@@ -102,7 +101,7 @@ public class DataBaseV1 implements Hardcoded{
 	}
 	
 	
-
+	// single string implementation ( works with a max depth of 32 )
 	private void filterDataBase(DataBaseNode node, Map<String,String> allRequestParams, Map<String, String> _tableQueries) {
         if (node != null) {
             Map<String, DataBaseNode> connectedNodes = node.getConnected();
@@ -113,16 +112,16 @@ public class DataBaseV1 implements Hardcoded{
 				
 				if (_tableQueries.containsKey(connectedNode.getName())){
 					String query = String.format(
-						"SELECT %s FROM %s WHERE %s;", 
+						"SELECT %s FROM %s WHERE %s", 
 						connectedNode.getPrimaryKey(),
 						connectedNode.getName(),
 						_tableQueries.get(connectedNode.getName())
 					);
-					List<String> holder = jdbcTemplate.query(query, new RowMapper<String>() {
-					public String mapRow(ResultSet rs, int rowNum) throws SQLException {
-						return rs.getString(1);
-					}});
-					query = set.getKey() + " IN (\"" + String.join("\", \"", holder) + "\")";
+					//List<String> holder = jdbcTemplate.query(query, new RowMapper<String>() {
+					//public String mapRow(ResultSet rs, int rowNum) throws SQLException {
+					//	return rs.getString(1);
+					//}});
+					query = set.getKey() + " IN (" + query + ")";
 					strLst.add(query);
 					_tableQueries.remove(connectedNode.getName());
 				};
@@ -134,16 +133,16 @@ public class DataBaseV1 implements Hardcoded{
 				if (!allRequestParams.containsKey(filter.getName())){ continue; }
 				String primaryKeyColumn = node.getConnectedId(filter.getTargetId()).getPrimaryKey();
 				query = String.format(
-						"SELECT %s FROM %s WHERE %s;", 
+						"SELECT %s FROM %s WHERE %s", 
 						primaryKeyColumn,
 						filter.getOriginTable(),
 						filter.filteringQueryCondition(allRequestParams.get(filter.getName()))
 					);
-				List<String> holder = jdbcTemplate.query(query, new RowMapper<String>() {
-					public String mapRow(ResultSet rs, int rowNum) throws SQLException {
-						return rs.getString(1);
-					}});
-				query = filter.getTargetId() + " IN (\"" + String.join("\", \"", holder) + "\")";
+				//List<String> holder = jdbcTemplate.query(query, new RowMapper<String>() {
+				//	public String mapRow(ResultSet rs, int rowNum) throws SQLException {
+				//		return rs.getString(1);
+				//	}});
+				query = filter.getTargetId() + " IN (" + query + ")";
 				strLst.add(query);
 			}
 			if ( !strLst.isEmpty() ) { _tableQueries.put(node.getName(), String.join(" AND ", strLst)); }
