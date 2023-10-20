@@ -1,4 +1,4 @@
-package FWD_Development.DocuView.controllers;
+package FWD_Development.DocuView.controllers.api.v1;
 
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.dao.EmptyResultDataAccessException;
 import java.util.HashMap;
@@ -193,6 +194,7 @@ public interface Hardcoded{
 		new Filter("customer_name", "string", "CUST_INFO", "customer_name", "PROPOSAL_INFO" ,"customer_id", false),
 		new Filter("auction_type", "string", "AUC_TYPE", "auction_type", "AUC_INFO", "auction_type", true),
 		new Filter("attachment_type", "string", "ATTACH_TYPE", "attachment_type", "ATTACH_PROPOSAL", "attachment_type", true),
+		new Filter("resource_type", "string", "RES_TYPE", "resource_type", "RES_INFO", "resource_type", true),
 
 		new Filter("commitment_date_start", "ISO 8601", "PERIOD_INFO", "begin_date", "AUC_INFO", "commitment_period_id",false, '['),
 		new Filter("commitment_date_end", "ISO 8601", "PERIOD_INFO", "end_date", "AUC_INFO", "commitment_period_id",false, ']'),
@@ -248,5 +250,94 @@ public interface Hardcoded{
 		
 
 		return map;
-	    }
+	}
+
+	public class DataBaseNode{
+			private String name;
+			private String primaryKey;
+			// key : Table
+			private  Map<String, DataBaseNode> connected;
+
+			public DataBaseNode(String _name, String _primaryKey){
+				this.name = _name;
+				this.primaryKey = _primaryKey;
+				connected = new HashMap<>();
+			}
+			
+			public String getName(){
+				return this.name;
+			}
+
+			public String getPrimaryKey(){
+				return this.primaryKey;
+			}
+
+			public Map<String, DataBaseNode> getConnected(){
+				return this.connected;
+			}
+
+			public DataBaseNode getConnectedId(String key){
+				return this.connected.get(key);
+			}
+
+			public boolean isLeaf(){
+				return this.connected.isEmpty();
+			}
+
+			public boolean isPreLeaf(){
+				if (this.connected.isEmpty()) { return false; }
+				return connected.values().stream().allMatch(i->i.isLeaf());
+			}
+			
+			public void add(String refId, String name, String primaryKey){
+				connected.put(refId, new DataBaseNode(name, primaryKey));
+			}
+
+		}
+
+	public class DataBaseTree {
+
+		DataBaseNode root;
+
+		DataBaseTree(String rootName, String rootPrimaryKey){
+			root = new DataBaseNode(rootName, rootPrimaryKey);
+		}
+
+		public DataBaseNode getRoot(){
+			return root;
+		}
+
+		
+	}
+
+	DataBaseTree dataBaseTree = initializeDataBaseTree();
+
+	private static DataBaseTree initializeDataBaseTree(){
+		DataBaseTree out = new DataBaseTree("ATTACH_PROPOSAL", "");
+		DataBaseNode root = out.getRoot();
+
+		root.add("attachment_id", "ATTACHMENT_FILE", "attachment_id");
+		root.add("proposal_id", "PROPOSAL_INFO", "proposal_id");
+		root.add("attachment_type", "ATTACH_TYPE", "attachment_type");
+
+		DataBaseNode holder = root.getConnectedId("proposal_id");
+		holder.add("project_id", "PROJ_INFO", "project_id");
+		holder.add("project_type", "PROJ_TYPE", "project_type");
+		holder.add("resource_id", "RES_INFO", "resource_id");
+		holder.add("customer_id", "CUS_INFO", "customer_id");
+		holder.add("auction_id", "AUC_INFO", "auction_id");
+		holder.add("period_id", "PERIOD_INFO", "period_id");
+		
+		DataBaseNode holder1 = holder.getConnectedId("auction_id");
+		holder1.add("commitment_period_id", "PERIOD_INFO", "period_id");
+		holder1.add("auction_period_id", "PERIOD_INFO", "period_id");
+		holder1.add("auction_type", "AUC_TYPE", "auction_type");
+		
+		DataBaseNode holder2 = holder.getConnectedId("resource_id");
+		holder2.add("reasource_type", "RES_TYPE", "reasource_type");
+
+		return out;
+	}
+
+
 }		

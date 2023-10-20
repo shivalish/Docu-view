@@ -1,4 +1,4 @@
-package FWD_Development.DocuView.controllers;
+package FWD_Development.DocuView.controllers.api.v1;
 
 
 /* CUSTOM ADDED LIBS */
@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 import java.util.HashMap;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -46,6 +47,8 @@ import org.springframework.dao.EmptyResultDataAccessException;
 //      proposal_date_start
 //      proposals_date_end
 
+// All this stuff, evil.
+// better impletion form, make tree that maps out all TABLES and has data of every table, THEN use that to navigate the database
 
 // @CrossOrigin(origins = "http://localhost:3000") // Default React port
 @RestController
@@ -57,31 +60,41 @@ public class DataBaseV1 implements Hardcoded{
     	
 	private static final ObjectMapper objMapper = new ObjectMapper();
 	
-	//public JsonNode flattenResultSet(String TableName, ResultSet rs){
-	//	ObjectNode rootNode = objMapper.createObjectNode();
-	//	ArrayList list = new ArrayList(50);
-	//	List<String> keysList;
-	//	// while(targetMap.containsKey())
-	//}
-	
-	// does nothing yet, testing only
-	@GetMapping("")
-	public JsonNode getDocs(@RequestParam Map<String,String> allRequestParams){
-		// ObjectNode rootNode = objMapper.valueToTree(allRequestParams);
-		ObjectNode rootNode = objMapper.createObjectNode();
-		
-		Map<String, String> tableQueries = new HashMap<>();
-		for (Map.Entry<String, List<Filter>> set : targetMap.entrySet()) {
+	// TODO
+	public JsonNode flattenNode(){
+		return objMapper.createObjectNode();
+	}
+
+	private void filterDataBase(DataBaseNode node, Map<String,String> allRequestParams, Map<String, String> _tableQueries) {
+        if (node != null) {
+            Map<String, DataBaseNode> connectedNodes = node.getConnected();
 			List<String> strLst = new ArrayList<>();
+            for (Map.Entry<String, DataBaseNode> set: connectedNodes.entrySet()) {
+				DataBaseNode connectedNode = set.getValue();
+                filterDataBase(connectedNode, allRequestParams, _tableQueries);
+				
+				if (_tableQueries.containsKey(connectedNode.getName())){
+					String query = String.format(
+						"SELECT %s FROM %s WHERE %s;", 
+						connectedNode.getPrimaryKey(),
+						connectedNode.getName(),
+						_tableQueries.get(connectedNode.getName())
+					);
+					List<String> holder = jdbcTemplate.query(query, new RowMapper<String>() {
+					public String mapRow(ResultSet rs, int rowNum) throws SQLException {
+						return rs.getString(1);
+					}});
+					query = set.getKey() + " IN (\"" + String.join("\", \"", holder) + "\")";
+					strLst.add(query);
+					_tableQueries.remove(connectedNode.getName());
+				};
+			}
+
+			if (!targetMap.containsKey(node.getName())) { return ; }
 			String query;
-			for (Filter filter : set.getValue()){
+			for (Filter filter : targetMap.get(node.getName())){
 				if (!allRequestParams.containsKey(filter.getName())){ continue; }
-				// data issue, find better way to do this. Make table in hardcodeded?
-				String primaryKeyColumn = jdbcTemplate.queryForObject(
-						"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE " +
-						"WHERE TABLE_NAME = '"+ filter.getOriginTable() +"' AND CONSTRAINT_NAME = 'PRIMARY'",
-						String.class
-				);
+				String primaryKeyColumn = node.getConnectedId(filter.getTargetId()).getPrimaryKey();
 				query = String.format(
 						"SELECT %s FROM %s WHERE %s;", 
 						primaryKeyColumn,
@@ -91,97 +104,31 @@ public class DataBaseV1 implements Hardcoded{
 				List<String> holder = jdbcTemplate.query(query, new RowMapper<String>() {
 					public String mapRow(ResultSet rs, int rowNum) throws SQLException {
 						return rs.getString(1);
-					}
-				});
+					}});
 				query = filter.getTargetId() + " IN (\"" + String.join("\", \"", holder) + "\")";
 				strLst.add(query);
 			}
-			//rootNode.put(set.getKey(), String.join(" AND ", strLst));
-			if ( !strLst.isEmpty() ) { tableQueries.put(set.getKey(), String.join(" AND ", strLst)); }
-		}
-		
-		Map<String, String> metaQueries = new HashMap<>();
-		for (Map.Entry<String, Map<String, String>> set : tableMap.entrySet()){
-		 	if (set.getKey() == "ATTACH_PROPOSAL") { continue; }
-		 	List<String> strLst = allQueries(set, tableQueries);
-		 	if ( !strLst.isEmpty() && tableQueries.containsKey(set.getKey())) { 
-		 		metaQueries.put(set.getKey(), tableQueries.get(set.getKey()) + " AND " + String.join(" AND ", strLst)); 
-		 	}
-		 	else if (tableQueries.containsKey(set.getKey())) {
-		 		metaQueries.put( set.getKey(), tableQueries.get(set.getKey()));
-		 	}
-		 	else if (!strLst.isEmpty()){
-		 		metaQueries.put( set.getKey(), String.join(" AND ", strLst));
-		 	}
-		}
-		for (Map.Entry<String, String> set : metaQueries.entrySet()){
-			tableQueries.put(set.getKey(), set.getValue());
-		}
-		// Evil stuff, if someone knows how to do this better pls fix
-		System.out.println(tableQueries.toString());
-		metaQueries = new HashMap<>();
-		for (Map.Entry<String, Map<String, String>> set : tableMap.entrySet()){
-			if (set.getKey() != "ATTACH_PROPOSAL") { continue; }
-			List<String> strLst = allQueries(set, tableQueries);
-		 	if ( !strLst.isEmpty() && tableQueries.containsKey(set.getKey())) { 
-		 		metaQueries.put(set.getKey(), tableQueries.get(set.getKey()) + " AND " + String.join(" AND ", strLst)); 
-		 	}
-		 	else if (tableQueries.containsKey(set.getKey())) {
-		 		metaQueries.put( set.getKey(), tableQueries.get(set.getKey()));
-		 	}
-		 	else if (!strLst.isEmpty()){
-		 		metaQueries.put( set.getKey(), String.join(" AND ", strLst));
-		 	}
-		}
-		List<String> holder;
-		if ( metaQueries.containsKey("ATTACH_PROPOSAL") ){
-			holder = jdbcTemplate.query("SELECT * FROM ATTACH_PROPOSAL WHERE "+ metaQueries.get("ATTACH_PROPOSAL"), new RowMapper<String>() {
-						public String mapRow(ResultSet rs, int rowNum) throws SQLException {
-							return rs.getString(1) + " " + rs.getString(2) + " " + rs.getString(3);
-						}
-					});
-		}
-		else {
-			holder = jdbcTemplate.query("SELECT * FROM ATTACH_PROPOSAL", new RowMapper<String>() {
-						public String mapRow(ResultSet rs, int rowNum) throws SQLException {
-							return rs.getString(1) + " " + rs.getString(2) + " " + rs.getString(3);
-						}
-					});
-		}
-		rootNode.put("ATTACH_PROPOSAL", holder.toString());
-		
+			if ( !strLst.isEmpty() ) { _tableQueries.put(node.getName(), String.join(" AND ", strLst)); }
+        }
+    }
+
+
+	@GetMapping("")
+	public JsonNode getDocs(@RequestParam Map<String,String> allRequestParams){
+		// ObjectNode rootNode = objMapper.valueToTree(allRequestParams);
+		ObjectNode rootNode = objMapper.createObjectNode();
+
+		Map<String, String> _tableQueries = new HashMap<>();
+		filterDataBase(dataBaseTree.getRoot(), allRequestParams, _tableQueries);
+		System.out.println(_tableQueries);
+
+		String query = String.format(
+						"SELECT * FROM %s WHERE %s;", 
+						dataBaseTree.getRoot().getName(),
+						_tableQueries.get(dataBaseTree.getRoot().getName())
+					);
+		rootNode.put("ATTACH_PROPOSAL", query);
 		return rootNode;
-	}
-	
-	private List<String> allQueries(Map.Entry<String, Map<String, String>> set, Map<String, String> tableQueries){
-		List<String> strLst = new ArrayList<>();
-		String query;
-		for (Map.Entry<String, String> set2 : set.getValue().entrySet()){
-			
-	 		if ( !tableQueries.containsKey(set2.getValue()) ) { continue; }
-	 		String primaryKeyColumn = jdbcTemplate.queryForObject(
-						"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE " +
-						"WHERE TABLE_NAME = '"+ set2.getValue() +"' AND CONSTRAINT_NAME = 'PRIMARY'",
-						String.class
-				);
-			// this should be the standard, will fix
-	 		query =  String.format(
-					"SELECT %s FROM %s WHERE %s;", 
-					primaryKeyColumn,
-					set2.getValue(), 
-					tableQueries.get(set2.getValue())
-				);
-			System.out.println(query);
-			List<String> holder = jdbcTemplate.query(query, new RowMapper<String>() {
-				public String mapRow(ResultSet rs, int rowNum) throws SQLException {
-					return rs.getString(1);
-				}
-			});
-			
-			query = set2.getKey() + " IN (\"" + String.join("\", \"", holder) + "\");";
-			strLst.add(query);
-	 	}
-	 	return strLst;
 	}
 	
 };

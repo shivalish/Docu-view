@@ -1,4 +1,4 @@
-package FWD_Development.DocuView.controllers;
+package FWD_Development.DocuView.controllers.api.v1;
 
 /* CUSTOM ADDED LIBS */
 import java.util.ArrayList;
@@ -31,36 +31,37 @@ import org.springframework.dao.EmptyResultDataAccessException;
 public class FiltersV1 implements Hardcoded{
     
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+        private JdbcTemplate jdbcTemplate;
 	
     private static final ObjectMapper objMapper = new ObjectMapper();
-    // will not change during execution, so semi-hardcoded
-    private static ObjectNode filtersNode;
-    public FiltersV1(){
-        filtersNode = objMapper.createObjectNode();
-        for (Map.Entry<String, Filter> set : filterMap.entrySet()){
-            filtersNode.put(set.getKey(), set.getValue().getType());
+    
+    private ArrayNode outerArray;
+
+    private ArrayNode initializeOuterArray(){
+         ArrayNode outerArray = objMapper.createArrayNode();
+        for (Map.Entry<String, Filter> entry : filterMap.entrySet()) {
+            String name = entry.getKey();
+            Filter filter = entry.getValue();
+
+            ObjectNode currentJson = objMapper.createObjectNode();
+            currentJson.put("name", name);
+            currentJson.put("type", filter.getType());
+            currentJson.put("has_finite_states", filter.getFiniteStates());
+
+            ArrayNode finiteStatesArray = currentJson.putArray("finite_states");
+            List<String> finiteStates = filter.getFiniteStatesQuery(jdbcTemplate);
+            for (String elem : finiteStates) {
+                finiteStatesArray.add(elem);
+            }
+            outerArray.add(currentJson);
         }
+        return outerArray;
     }
     
     @GetMapping("")
     public JsonNode filters() {
-        ObjectNode rootNode = objMapper.createObjectNode();
-        rootNode.set("list", filtersNode);
-        return rootNode;
-    }
-    
-    @GetMapping("/{filter_name}")
-    public JsonNode filters(@PathVariable String filter_name) {
-        ObjectNode rootNode = objMapper.createObjectNode();
-        if (!filterMap.containsKey(filter_name)) { return rootNode; }
-        Filter get = filterMap.get(filter_name);
-        rootNode.put("name", get.getName());
-        rootNode.put("has_finite_states", get.getFiniteStates());
-        ArrayNode finite_states = rootNode.putArray("finite_states");
-        for (String elem : get.getFiniteStatesQuery(jdbcTemplate)){
-        	finite_states.add(elem);
-        }
-        return rootNode;
+        //cache to 
+        if (outerArray == null) {outerArray = initializeOuterArray();}
+       return outerArray;
     }
 }

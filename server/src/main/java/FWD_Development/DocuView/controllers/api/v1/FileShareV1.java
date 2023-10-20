@@ -1,4 +1,4 @@
-package FWD_Development.DocuView.controllers;
+package FWD_Development.DocuView.controllers.api.v1;
 
 
 /* CUSTOM ADDED LIBS */
