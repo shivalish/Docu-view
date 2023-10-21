@@ -61,6 +61,34 @@ public class DataBaseV1 implements Hardcoded{
     	private JdbcTemplate jdbcTemplate;
     	
 	private static final ObjectMapper objMapper = new ObjectMapper();
+
+	private static DataBaseTree dataBaseTree;
+
+	private static DataBaseTree initializeDataBaseTree(JdbcTemplate jdbcTemplate){
+		DataBaseTree out = new DataBaseTree("ATTACH_PROPOSAL", "", jdbcTemplate);
+		DataBaseNode root = out.getRoot();
+
+		root.add("attachment_id", "ATTACHMENT_FILE");
+		root.add("proposal_id", "PROPOSAL_INFO");
+		root.add("attachment_type", "ATTACH_TYPE");
+
+		DataBaseNode holder = root.getConnectedId("proposal_id");
+		holder.add("project_id", "PROJ_INFO");
+		holder.add("project_type", "PROJ_TYPE");
+		holder.add("resource_id", "RES_INFO");
+		holder.add("customer_id", "CUST_INFO");
+		holder.add("auction_id", "AUC_INFO");
+		holder.add("period_id", "PERIOD_INFO");
+		
+		DataBaseNode holder1 = holder.getConnectedId("auction_id");
+		holder1.add("commitment_period_id", "PERIOD_INFO");
+		holder1.add("auction_period_id", "PERIOD_INFO");
+		holder1.add("auction_type", "AUC_TYPE");
+		
+		DataBaseNode holder2 = holder.getConnectedId("resource_id");
+		holder2.add("resource_type", "RES_TYPE");
+		return out;
+	}
 	
 	private static ObjectNode resultSetToJson(ResultSet resultSet) throws SQLException {
 		ObjectNode out = objMapper.createObjectNode();
@@ -71,7 +99,7 @@ public class DataBaseV1 implements Hardcoded{
 		return out;
 	}
 	
-	private ObjectNode flattenQuery(ObjectNode obj, DataBaseNode table){
+	private ObjectNode naiveExpandQuery(ObjectNode obj, DataBaseNode table){
 		ObjectNode out = objMapper.createObjectNode();
 		Map<String, DataBaseNode> connectedNodes = table.getConnected();
 		Iterator<Map.Entry<String,JsonNode>> it = obj.fields();
@@ -81,20 +109,14 @@ public class DataBaseV1 implements Hardcoded{
 			String value = set.getValue().asText();
 			if ( !connectedNodes.containsKey(set.getKey()) ){ out.put(key, value); continue; }
 			DataBaseNode targetTable = connectedNodes.get(key);
-			String format = "SELECT * FROM %s WHERE CAST(%s AS CHAR) = \'%s\'";
 			//String format = "SELECT * FROM %s WHERE %s IN (\"%s\");"; \\ slower by around 600
-			String query = String.format(
-						format, 
-						targetTable.getName(),
-						targetTable.getPrimaryKey(),
-						value
-					);
+			String query = "SELECT * FROM " + targetTable.getName() + " WHERE CAST(" + targetTable.getPrimaryKey() + " AS CHAR) = \'" + value + "\'";
 			// use list to handle unexpected straglers (should be impossible but you never know)
 			List<ObjectNode> holder = jdbcTemplate.query(query, new RowMapper<ObjectNode>() {
 					public ObjectNode mapRow(ResultSet rs, int rowNum) throws SQLException {
 						return resultSetToJson(rs);
 					}});
-			ObjectNode append = flattenQuery(holder.get(0), connectedNodes.get(key));
+			ObjectNode append = naiveExpandQuery(holder.get(0), connectedNodes.get(key));
 			out.set(key, append);
 		}
 		return out;
@@ -111,12 +133,7 @@ public class DataBaseV1 implements Hardcoded{
                 filterDataBase(connectedNode, allRequestParams, _tableQueries);
 				
 				if (_tableQueries.containsKey(connectedNode.getName())){
-					String query = String.format(
-						"SELECT %s FROM %s WHERE %s", 
-						connectedNode.getPrimaryKey(),
-						connectedNode.getName(),
-						_tableQueries.get(connectedNode.getName())
-					);
+					String query = "SELECT " + connectedNode.getPrimaryKey() + " FROM "+ connectedNode.getName() +" WHERE " + _tableQueries.get(connectedNode.getName());
 					query = set.getKey() + " IN (" + query + ")";
 					strLst.add(query);
 					_tableQueries.remove(connectedNode.getName());
@@ -128,16 +145,7 @@ public class DataBaseV1 implements Hardcoded{
 			for (Filter filter : targetMap.get(node.getName())){
 				if (!allRequestParams.containsKey(filter.getName())){ continue; }
 				String primaryKeyColumn = node.getConnectedId(filter.getTargetId()).getPrimaryKey();
-				query = String.format(
-						"SELECT %s FROM %s WHERE %s", 
-						primaryKeyColumn,
-						filter.getOriginTable(),
-						filter.filteringQueryCondition(allRequestParams.get(filter.getName()))
-					);
-				//List<String> holder = jdbcTemplate.query(query, new RowMapper<String>() {
-				//	public String mapRow(ResultSet rs, int rowNum) throws SQLException {
-				//		return rs.getString(1);
-				//	}});
+				query = "SELECT " + primaryKeyColumn +" FROM "+filter.getOriginTable()+" WHERE " + filter.filteringQueryCondition(allRequestParams.get(filter.getName()));
 				query = filter.getTargetId() + " IN (" + query + ")";
 				strLst.add(query);
 			}
@@ -148,27 +156,29 @@ public class DataBaseV1 implements Hardcoded{
 
 	@GetMapping("")
 	public JsonNode getDocs(@RequestParam Map<String,String> allRequestParams){
+		if ( dataBaseTree == null) { dataBaseTree = initializeDataBaseTree(jdbcTemplate); }
+		System.out.println(dataBaseTree.getTreeInnerJoin());
 		ArrayNode outerArray = objMapper.createArrayNode();
 		Map<String, String> tableQueries = new HashMap<>();
 		DataBaseNode root = dataBaseTree.getRoot();
 		filterDataBase(root, allRequestParams, tableQueries);
-		String query = String.format(
-						"SELECT * FROM %s WHERE %s;", 
-						root.getName(),
-						tableQueries.get(root.getName())
-					);
+		if (!tableQueries.containsKey(root.getName())) { tableQueries.put(root.getName(), "TRUE"); }
+		String query = "SELECT * FROM " + root.getName() + " WHERE "+ tableQueries.get(root.getName()) +";";
 		List<ObjectNode> holder = jdbcTemplate.query(query, new RowMapper<ObjectNode>() {
 					public ObjectNode mapRow(ResultSet rs, int rowNum) throws SQLException {
 						return resultSetToJson(rs);
 					}});
-		// Timed aprox avg of this section : 100 ms			
+		query = "SELECT * FROM (SELECT * FROM " + root.getName() + " WHERE " + tableQueries.get(root.getName()) + " ) AS " + root.getName().toLowerCase() + "\n"+ dataBaseTree.getTreeInnerJoin() + ";";
+		System.out.println(query);
+
+		holder = jdbcTemplate.query(query, new RowMapper<ObjectNode>() {
+					public ObjectNode mapRow(ResultSet rs, int rowNum) throws SQLException {
+						return resultSetToJson(rs);
+					}});
 		
-		for (ObjectNode json : holder){
-			// outerArray.add( json ); 
-			outerArray.add( flattenQuery(json, root) );
-			// Timed aprox avg of this section : 700 ms
+		for (ObjectNode json : holder){ 
+			outerArray.add( json );
 		}
-		// total run time aprox avg : 800 ms
 		return outerArray;
 	}
 	

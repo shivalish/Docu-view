@@ -225,92 +225,117 @@ public interface Hardcoded{
         }
 	}};
 
-	public class DataBaseNode{
-			private String name;
-			private String primaryKey;
-			// key : Table
-			private  Map<String, DataBaseNode> connected;
+	public class DataBaseNode {
+		private JdbcTemplate jdbcTemplate;
+		private String name;
+		private String primaryKey;
+		private Map<String, DataBaseNode> connected;
+		private List<String> columns;
 
-			public DataBaseNode(String _name, String _primaryKey){
-				this.name = _name;
-				this.primaryKey = _primaryKey;
-				connected = new HashMap<>();
+		private List<String> _getColumns(){
+			List<String> columns = new ArrayList<>();
+			for (Map<String, Object> row : jdbcTemplate.queryForList("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '" + name + "';")) {
+				columns.add((String)row.get("column_name"));
 			}
-			
-			public String getName(){
-				return this.name;
-			}
-
-			public String getPrimaryKey(){
-				return this.primaryKey;
-			}
-
-			public Map<String, DataBaseNode> getConnected(){
-				return this.connected;
-			}
-
-			public DataBaseNode getConnectedId(String key){
-				return this.connected.get(key);
-			}
-
-			public boolean isLeaf(){
-				return this.connected.isEmpty();
-			}
-
-			public boolean isPreLeaf(){
-				if (this.connected.isEmpty()) { return false; }
-				return connected.values().stream().allMatch(i->i.isLeaf());
-			}
-			
-			public void add(String refId, String name, String primaryKey){
-				connected.put(refId, new DataBaseNode(name, primaryKey));
-			}
-
+			return columns;
 		}
 
+		private String _getPrimaryKey(){
+			List<Map<String, Object>> holder = jdbcTemplate.queryForList("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_NAME = '" + name + "' AND CONSTRAINT_NAME = 'PRIMARY';");
+			if (holder.isEmpty()) { return ""; }
+			return (String)holder.get(0).get("COLUMN_NAME");
+
+		}
+	
+		public DataBaseNode(String _name, JdbcTemplate jdbcTemplate) {
+			this.jdbcTemplate = jdbcTemplate;
+			this.name = _name;
+			this.primaryKey = this._getPrimaryKey();
+			this.connected = new HashMap<>();
+			this.columns = this._getColumns();
+		}
+	
+		public String getName() {
+			return this.name;
+		}
+
+		public List<String> getColumns(){
+			return this.columns;
+		}
+	
+		public String getPrimaryKey() {
+			return this.primaryKey;
+		}
+	
+		public Map<String, DataBaseNode> getConnected() {
+			return this.connected;
+		}
+	
+		public DataBaseNode getConnectedId(String key) {
+			return this.connected.get(key);
+		}
+	
+		public boolean isLeaf() {
+			return this.connected.isEmpty();
+		}
+	
+		public void add(String refId, String tableName) {
+			connected.put(refId, new DataBaseNode(tableName, this.jdbcTemplate));
+		}
+	}
+	//add
 	public class DataBaseTree {
 
 		DataBaseNode root;
+		String TreeInnerJoin;
 
-		DataBaseTree(String rootName, String rootPrimaryKey){
-			root = new DataBaseNode(rootName, rootPrimaryKey);
+		DataBaseTree(String rootName, String rootPrimaryKey, JdbcTemplate jdbcTemplate){
+			root = new DataBaseNode(rootName, jdbcTemplate);
 		}
 
 		public DataBaseNode getRoot(){
 			return root;
 		}
 
+		public String getTreeInnerJoin(){
+			if (TreeInnerJoin == null) {this.TreeInnerJoin = this.treeInnerJoinGenerate(root, "");}
+			return TreeInnerJoin;
+		}
+
+		//
+		//
+		//
 		
+		private String treeInnerJoinGenerate(DataBaseNode node, String path){
+			if (node != null) {
+				Map<String, DataBaseNode> connectedNodes = node.getConnected();
+				List<String> strLst = new ArrayList<>();
+				for (Map.Entry<String, DataBaseNode> set: connectedNodes.entrySet()) {
+					String alias = (path == "") ? set.getKey() : path + "_" + set.getKey();
+					List<String> columns_alias = new ArrayList<>();
+					for(String column : set.getValue().getColumns()){
+						columns_alias.add(set.getValue().getName() + "." + column + " AS " +  alias + "_" + column.toLowerCase());
+					}
+					String query;
+					if ( path == "" ){
+						query = "INNER JOIN " + "( SELECT " + String.join(", ", columns_alias) + " FROM " + set.getValue().getName() +")" + " AS " + alias + "_Table"
+							+ " ON " + root.getName() + "." + set.getKey() + " = " + alias + "_" + set.getValue().getPrimaryKey()
+							+ "\n" + treeInnerJoinGenerate(set.getValue(), alias);
+					}
+					else{
+						query = "INNER JOIN " + "( SELECT " + String.join(", ", columns_alias) + " FROM " + set.getValue().getName() +")" + " AS " + alias + "_Table"
+							+ " ON " + path + "_" + set.getKey() + " = " + alias + "_" + set.getValue().getPrimaryKey()
+							+ "\n" + treeInnerJoinGenerate(set.getValue(), alias);
+					}
+					strLst.add(query);
+				}
+				return String.join("", strLst);
+			}
+			return "";
+		}
 	}
 
-	DataBaseTree dataBaseTree = initializeDataBaseTree();
+	
 
-	private static DataBaseTree initializeDataBaseTree(){
-		DataBaseTree out = new DataBaseTree("ATTACH_PROPOSAL", "");
-		DataBaseNode root = out.getRoot();
-
-		root.add("attachment_id", "ATTACHMENT_FILE", "attachment_id");
-		root.add("proposal_id", "PROPOSAL_INFO", "proposal_id");
-		root.add("attachment_type", "ATTACH_TYPE", "attachment_type");
-
-		DataBaseNode holder = root.getConnectedId("proposal_id");
-		holder.add("project_id", "PROJ_INFO", "project_id");
-		holder.add("project_type", "PROJ_TYPE", "project_type");
-		holder.add("resource_id", "RES_INFO", "resource_id");
-		holder.add("customer_id", "CUST_INFO", "customer_id");
-		holder.add("auction_id", "AUC_INFO", "auction_id");
-		holder.add("period_id", "PERIOD_INFO", "period_id");
-		
-		DataBaseNode holder1 = holder.getConnectedId("auction_id");
-		holder1.add("commitment_period_id", "PERIOD_INFO", "period_id");
-		holder1.add("auction_period_id", "PERIOD_INFO", "period_id");
-		holder1.add("auction_type", "AUC_TYPE", "auction_type");
-		
-		DataBaseNode holder2 = holder.getConnectedId("resource_id");
-		holder2.add("reasource_type", "RES_TYPE", "reasource_type");
-
-		return out;
-	}
-
-
+	
 }		

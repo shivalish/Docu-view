@@ -23,7 +23,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.springframework.dao.EmptyResultDataAccessException;
 
 // @CrossOrigin(origins = "http://localhost:3000") // Default React port
 @RestController
@@ -60,7 +59,6 @@ public class FiltersV1 implements Hardcoded{
     
     @GetMapping("")
     public JsonNode filters() {
-        //cache to 
         if (outerArray == null) {outerArray = initializeOuterArray();}
        return outerArray;
     }
