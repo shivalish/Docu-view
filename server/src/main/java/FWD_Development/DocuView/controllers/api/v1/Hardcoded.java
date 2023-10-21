@@ -283,7 +283,7 @@ public interface Hardcoded{
 			connected.put(refId, new DataBaseNode(tableName, this.jdbcTemplate));
 		}
 	}
-
+	//add
 	public class DataBaseTree {
 
 		DataBaseNode root;
@@ -298,7 +298,7 @@ public interface Hardcoded{
 		}
 
 		public String getTreeInnerJoin(){
-			if (TreeInnerJoin == null) {this.TreeInnerJoin = this.treeInnerJoinGenerate(root, root.getName().toLowerCase());}
+			if (TreeInnerJoin == null) {this.TreeInnerJoin = this.treeInnerJoinGenerate(root, "");}
 			return TreeInnerJoin;
 		}
 
@@ -311,15 +311,15 @@ public interface Hardcoded{
 				Map<String, DataBaseNode> connectedNodes = node.getConnected();
 				List<String> strLst = new ArrayList<>();
 				for (Map.Entry<String, DataBaseNode> set: connectedNodes.entrySet()) {
-					String alias = path + "_" + set.getKey();
+					String alias = (path == "") ? set.getKey() : path + "_" + set.getKey();
 					List<String> columns_alias = new ArrayList<>();
 					for(String column : set.getValue().getColumns()){
-						columns_alias.add(set.getValue().getName() + "." + column + " AS " + path + "_" + set.getKey() + "_" + column.toLowerCase());
+						columns_alias.add(set.getValue().getName() + "." + column + " AS " +  alias + "_" + column.toLowerCase());
 					}
 					String query;
-					if ( root.getName().toLowerCase().equals(path) ){
+					if ( path == "" ){
 						query = "INNER JOIN " + "( SELECT " + String.join(", ", columns_alias) + " FROM " + set.getValue().getName() +")" + " AS " + alias + "_Table"
-							+ " ON " + path + "." + set.getKey() + " = " + alias + "_" + set.getValue().getPrimaryKey()
+							+ " ON " + root.getName() + "." + set.getKey() + " = " + alias + "_" + set.getValue().getPrimaryKey()
 							+ "\n" + treeInnerJoinGenerate(set.getValue(), alias);
 					}
 					else{
