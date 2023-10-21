@@ -65,7 +65,7 @@ public class DataBaseV1 implements Hardcoded{
 	private static DataBaseTree dataBaseTree;
 
 	private static DataBaseTree initializeDataBaseTree(JdbcTemplate jdbcTemplate){
-		DataBaseTree out = new DataBaseTree("ATTACH_PROPOSAL", "", jdbcTemplate);
+		DataBaseTree out = new DataBaseTree("ATTACH_PROPOSAL", jdbcTemplate);
 		DataBaseNode root = out.getRoot();
 
 		root.add("attachment_id", "ATTACHMENT_FILE");
@@ -90,6 +90,7 @@ public class DataBaseV1 implements Hardcoded{
 		return out;
 	}
 	
+	// NOT USED BUT LEAVE HERE FOR REFERENCE
 	private static ObjectNode resultSetToJson(ResultSet resultSet) throws SQLException {
 		ObjectNode out = objMapper.createObjectNode();
 		ResultSetMetaData rsmd = resultSet.getMetaData();
@@ -98,7 +99,8 @@ public class DataBaseV1 implements Hardcoded{
 		}
 		return out;
 	}
-	
+
+	// NOT USED BUT LEAVE HERE FOR REFERENCE
 	private ObjectNode naiveExpandQuery(ObjectNode obj, DataBaseNode table){
 		ObjectNode out = objMapper.createObjectNode();
 		Map<String, DataBaseNode> connectedNodes = table.getConnected();
@@ -123,7 +125,7 @@ public class DataBaseV1 implements Hardcoded{
 	}
 	
 	
-	// single string implementation ( works with a max depth of 32 )
+	// NOT USED BUT LEAVE HERE FOR REFERENCE
 	private void filterDataBase(DataBaseNode node, Map<String,String> allRequestParams, Map<String, String> _tableQueries) {
         if (node != null) {
             Map<String, DataBaseNode> connectedNodes = node.getConnected();
@@ -155,31 +157,13 @@ public class DataBaseV1 implements Hardcoded{
 
 
 	@GetMapping("")
-	public JsonNode getDocs(@RequestParam Map<String,String> allRequestParams){
-		if ( dataBaseTree == null) { dataBaseTree = initializeDataBaseTree(jdbcTemplate); }
-		System.out.println(dataBaseTree.getTreeInnerJoin());
-		ArrayNode outerArray = objMapper.createArrayNode();
-		Map<String, String> tableQueries = new HashMap<>();
-		DataBaseNode root = dataBaseTree.getRoot();
-		filterDataBase(root, allRequestParams, tableQueries);
-		if (!tableQueries.containsKey(root.getName())) { tableQueries.put(root.getName(), "TRUE"); }
-		String query = "SELECT * FROM " + root.getName() + " WHERE "+ tableQueries.get(root.getName()) +";";
-		List<ObjectNode> holder = jdbcTemplate.query(query, new RowMapper<ObjectNode>() {
-					public ObjectNode mapRow(ResultSet rs, int rowNum) throws SQLException {
-						return resultSetToJson(rs);
-					}});
-		query = "SELECT * FROM (SELECT * FROM " + root.getName() + " WHERE " + tableQueries.get(root.getName()) + " ) AS " + root.getName().toLowerCase() + "\n"+ dataBaseTree.getTreeInnerJoin() + ";";
-		System.out.println(query);
-
-		holder = jdbcTemplate.query(query, new RowMapper<ObjectNode>() {
-					public ObjectNode mapRow(ResultSet rs, int rowNum) throws SQLException {
-						return resultSetToJson(rs);
-					}});
-		
-		for (ObjectNode json : holder){ 
-			outerArray.add( json );
-		}
-		return outerArray;
+	public List<Map<String, Object>> getDocs(@RequestParam Map<String,String> allRequestParams){
+		if ( dataBaseTree == null) { dataBaseTree = initializeDataBaseTree(jdbcTemplate); };
+		String filters =   dataBaseTree.getFilters(allRequestParams);
+		if (filters.equals("")) {filters = "TRUE";}
+		String query = dataBaseTree.getTreeInnerJoin() + " WHERE " + filters;
+		//List<Map<String,Object>> holder = 
+		return jdbcTemplate.queryForList(query);
 	}
 	
 };
