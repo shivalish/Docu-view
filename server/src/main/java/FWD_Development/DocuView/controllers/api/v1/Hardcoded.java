@@ -149,6 +149,41 @@ public interface Hardcoded{
 				}
 				return filteringQuerySQL;
 			}
+
+			public String filteringQueryFormat(){
+				String filteringQuerySQL;
+				switch(compType){
+					case ')':
+						filteringQuerySQL = this.originId + " < " + "\'%s\'";
+						break;
+					case '(':
+						filteringQuerySQL = this.originId + " > " + "\'%s\'";
+						break;
+					case ']':
+						filteringQuerySQL = this.originId + ">=" + "\'%s\'";
+						break;
+					case '[':
+						filteringQuerySQL = this.originId + "<=" + "\'%s\'";
+						break;
+					case '!':
+						filteringQuerySQL = this.originId + " <> " + "\'%s\'";
+						break;
+					case '=':
+						filteringQuerySQL = this.originId + " = " + "\'%s\'";
+						break;
+
+					case '^':
+						filteringQuerySQL = this.originId + " LIKE \'%%%s\'";
+						break;
+					case '.':
+						filteringQuerySQL = this.originId + " LIKE \'%s%%\'";
+						break;
+					case '*':
+					default:
+						filteringQuerySQL = this.originId + " LIKE \'%%%s%%\'";
+				}
+				return filteringQuerySQL;
+			}
 			public String getName(){
 				return this.name;
 			}
@@ -341,7 +376,7 @@ public interface Hardcoded{
 			Map <String, String> out = new HashMap<>();
 			for (Filter f : filterArrray){
 				if (!nodes.containsKey(f.getTargetTable())) { continue ;}
-				out.put(f.getName(), nodes.get(f.getTargetTable()).getPath()  + "_" + f.getTargetId() + "_" + f.filteringQueryCondition("%%s"));
+				out.put(f.getName(), nodes.get(f.getTargetTable()).getPath()  + "_" + f.getTargetId() + "_" + f.filteringQueryFormat());
 			}
 			return out;
 		}

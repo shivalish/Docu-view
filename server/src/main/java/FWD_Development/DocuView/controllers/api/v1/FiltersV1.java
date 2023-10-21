@@ -41,7 +41,6 @@ public class FiltersV1 implements Hardcoded{
         for (Map.Entry<String, Filter> entry : filterMap.entrySet()) {
             String name = entry.getKey();
             Filter filter = entry.getValue();
-
             ObjectNode currentJson = objMapper.createObjectNode();
             currentJson.put("name", name);
             currentJson.put("type", filter.getType());
