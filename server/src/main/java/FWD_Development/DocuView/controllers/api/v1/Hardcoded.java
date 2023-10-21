@@ -119,33 +119,33 @@ public interface Hardcoded{
 				String filteringQuerySQL;
 				switch(compType){
 					case ')':
-						filteringQuerySQL = this.originId + " < " + "\"" + param + "\"";
+						filteringQuerySQL = this.originId + " < " + "\'" + param + "\'";
 						break;
 					case '(':
-						filteringQuerySQL = this.originId + " > " + "\"" + param + "\"";
+						filteringQuerySQL = this.originId + " > " + "\'" + param + "\'";
 						break;
 					case ']':
-						filteringQuerySQL = this.originId + ">=" + "\"" + param + "\"";
+						filteringQuerySQL = this.originId + ">=" + "\'" + param + "\'";
 						break;
 					case '[':
-						filteringQuerySQL = this.originId + "<=" + "\"" + param + "\"";
+						filteringQuerySQL = this.originId + "<=" + "\'" + param + "\'";
 						break;
 					case '!':
-						filteringQuerySQL = this.originId + " <> " + "\"" + param + "\"";
+						filteringQuerySQL = this.originId + " <> " + "\'" + param + "\'";
 						break;
 					case '=':
-						filteringQuerySQL = this.originId + " = " + "\"" + param + "\"";
+						filteringQuerySQL = this.originId + " = " + "\'" + param + "\'";
 						break;
 
 					case '^':
-						filteringQuerySQL = this.originId + " LIKE \"%" + param + "\"";
+						filteringQuerySQL = this.originId + " LIKE \'%" + param + "\'";
 						break;
 					case '.':
-						filteringQuerySQL = this.originId + " LIKE \"" + param + "%\"";
+						filteringQuerySQL = this.originId + " LIKE \'" + param + "%\'";
 						break;
 					case '*':
 					default:
-						filteringQuerySQL = this.originId + " LIKE \"%" + param + "%\"";
+						filteringQuerySQL = this.originId + " LIKE \'%" + param + "%\'";
 				}
 				return filteringQuerySQL;
 			}
@@ -231,6 +231,8 @@ public interface Hardcoded{
 		private String primaryKey;
 		private Map<String, DataBaseNode> connected;
 		private List<String> columns;
+		private String path;
+		private DataBaseTree tree;
 
 		private List<String> _getColumns(){
 			List<String> columns = new ArrayList<>();
@@ -247,16 +249,22 @@ public interface Hardcoded{
 
 		}
 	
-		public DataBaseNode(String _name, JdbcTemplate jdbcTemplate) {
+		public DataBaseNode(String _name, JdbcTemplate jdbcTemplate, String path, DataBaseTree tree) {
 			this.jdbcTemplate = jdbcTemplate;
 			this.name = _name;
 			this.primaryKey = this._getPrimaryKey();
 			this.connected = new HashMap<>();
 			this.columns = this._getColumns();
+			this.path = path;
+			this.tree =  tree;
 		}
 	
 		public String getName() {
 			return this.name;
+		}
+
+		public String getPath(){
+			return this.path;
 		}
 
 		public List<String> getColumns(){
@@ -280,58 +288,93 @@ public interface Hardcoded{
 		}
 	
 		public void add(String refId, String tableName) {
-			connected.put(refId, new DataBaseNode(tableName, this.jdbcTemplate));
+			DataBaseNode node = new DataBaseNode(tableName, this.jdbcTemplate, this.path + "_" + refId, this.tree);
+			connected.put(refId, node);
+			this.tree.addNode(node);
 		}
 	}
 	//add
 	public class DataBaseTree {
 
-		DataBaseNode root;
-		String TreeInnerJoin;
+		private DataBaseNode root;
+		private String TreeInnerJoin;
+		private Map <String, DataBaseNode> nodes;
+		private Map <String, String> paramFormatStrings;
 
-		DataBaseTree(String rootName, String rootPrimaryKey, JdbcTemplate jdbcTemplate){
-			root = new DataBaseNode(rootName, jdbcTemplate);
+		DataBaseTree(String rootName, JdbcTemplate jdbcTemplate){
+			root = new DataBaseNode(rootName, jdbcTemplate, rootName.toLowerCase(), this);
+			nodes = new HashMap<>();
+			nodes.put(rootName, root);
 		}
 
 		public DataBaseNode getRoot(){
 			return root;
 		}
 
-		public String getTreeInnerJoin(){
-			if (TreeInnerJoin == null) {this.TreeInnerJoin = this.treeInnerJoinGenerate(root, "");}
-			return TreeInnerJoin;
+		public void addNode(DataBaseNode node){
+			if (node == null) {return ;}
+			nodes.put(node.getName(), node);
 		}
 
-		//
-		//
-		//
+		public Map <String, DataBaseNode> getNodes(){
+			return this.nodes;
+		}
+
+		public DataBaseNode getNode(String tableName){
+			if (!this.nodes.containsKey(tableName)) {return null;}
+			return this.nodes.get(tableName);
+		}
+
 		
-		private String treeInnerJoinGenerate(DataBaseNode node, String path){
-			if (node != null) {
-				Map<String, DataBaseNode> connectedNodes = node.getConnected();
-				List<String> strLst = new ArrayList<>();
-				for (Map.Entry<String, DataBaseNode> set: connectedNodes.entrySet()) {
-					String alias = (path == "") ? set.getKey() : path + "_" + set.getKey();
-					List<String> columns_alias = new ArrayList<>();
-					for(String column : set.getValue().getColumns()){
-						columns_alias.add(set.getValue().getName() + "." + column + " AS " +  alias + "_" + column.toLowerCase());
-					}
-					String query;
-					if ( path == "" ){
-						query = "INNER JOIN " + "( SELECT " + String.join(", ", columns_alias) + " FROM " + set.getValue().getName() +")" + " AS " + alias + "_Table"
-							+ " ON " + root.getName() + "." + set.getKey() + " = " + alias + "_" + set.getValue().getPrimaryKey()
-							+ "\n" + treeInnerJoinGenerate(set.getValue(), alias);
-					}
-					else{
-						query = "INNER JOIN " + "( SELECT " + String.join(", ", columns_alias) + " FROM " + set.getValue().getName() +")" + " AS " + alias + "_Table"
-							+ " ON " + path + "_" + set.getKey() + " = " + alias + "_" + set.getValue().getPrimaryKey()
-							+ "\n" + treeInnerJoinGenerate(set.getValue(), alias);
-					}
-					strLst.add(query);
-				}
-				return String.join("", strLst);
+
+		public String getFilters(Map<String,String> allRequestParams){
+			if (paramFormatStrings == null) {paramFormatStrings = generateFilters();}
+			List<String> query = new ArrayList<>();
+			for (Map.Entry<String, String> set : paramFormatStrings.entrySet()){
+				if ( !allRequestParams.containsKey(set.getKey()) ){ continue; }
+				query.add(String.format(set.getValue(), allRequestParams.get(set.getKey())));
 			}
-			return "";
+			return String.join(" AND ", query);
+		}
+
+		private Map <String, String> generateFilters(){
+			Map <String, String> out = new HashMap<>();
+			for (Filter f : filterArrray){
+				if (!nodes.containsKey(f.getTargetTable())) { continue ;}
+				out.put(f.getName(), nodes.get(f.getTargetTable()).getPath()  + "_" + f.getTargetId() + "_" + f.filteringQueryCondition("%%s"));
+			}
+			return out;
+		}
+
+		public String getTreeInnerJoin(){
+			if (TreeInnerJoin == null) {
+				List<String> columns_alias = new ArrayList<>();
+				for(String column : root.getColumns()){
+					columns_alias.add(root.getName() + "." + column + " AS " +  root.getPath() + "_" + column.toLowerCase());
+				}
+				this.TreeInnerJoin = "SELECT * FROM ( SELECT " + String.join(", ", columns_alias) + " FROM " + root.getName() +") AS" + root.getPath() + "\n"+ this.treeInnerJoinGenerate(root);
+			
+			}
+			return TreeInnerJoin;
+		}
+		
+		private String treeInnerJoinGenerate(DataBaseNode node){
+			if (node == null) { return ""; }
+			Map<String, DataBaseNode> connectedNodes = node.getConnected();
+			List<String> strLst = new ArrayList<>();
+			for (Map.Entry<String, DataBaseNode> set: connectedNodes.entrySet()) {
+				String alias = set.getValue().getPath();
+				List<String> columns_alias = new ArrayList<>();
+				for(String column : set.getValue().getColumns()){
+					columns_alias.add(set.getValue().getName() + "." + column + " AS " +  alias + "_" + column.toLowerCase());
+				}
+				String query = "INNER JOIN " + "( SELECT " + String.join(", ", columns_alias) + " FROM " + set.getValue().getName() +")" + " AS " + alias + "_Table"
+					+ " ON " + node.getPath() + "_" + set.getKey() + " = " + alias + "_" + set.getValue().getPrimaryKey()
+					+ "\n" + treeInnerJoinGenerate(set.getValue());
+				strLst.add(query);
+			}
+			return String.join("", strLst);
+			
 		}
 	}
 
