@@ -8,7 +8,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import FWD_Development.DocuView.controllers.api.v1.DataBaseTree.DataBaseNode;
 
-
 //  ] upper bound (incl) , [ lower bound (incl), ) upper bound, ( lower bound, = equal, ! not equal, * contains (default), ^ upper wildcard, . lower wildcard
 	//"SELECT DISTINCT auction_type FROM AUC_TYPE"  "SELECT DISTINCT attachment_type FROM ATTACH_TYPE" , new String[]{".pdf",".csv",".xlsx",".docs"}
 public class Filter {
@@ -35,7 +34,6 @@ public class Filter {
 				this.targetTable = _targetTable;
 				this.targetId = _targetId;
 				this.finiteStates = _finiteStates;
-
 				this.filteringQuerySQLFormat =  generatefilteringQueryFormat();
 
 				this.finiteStatesQuery =  String.format("SELECT DISTINCT %s FROM %s", originId, originTable.getName());
@@ -50,7 +48,7 @@ public class Filter {
 				this.targetId = _targetId;
 				this.finiteStates = _finiteStates;
 				this.compType = _compType;
-
+        
 				this.filteringQuerySQLFormat =  generatefilteringQueryFormat();
 
 				this.finiteStatesQuery =  String.format("SELECT DISTINCT %s FROM %s", originId, originTable.getName());
@@ -79,7 +77,7 @@ public class Filter {
 				this.targetId = _targetId;
 				this.finiteStates = true;
 				this.compType = _compType;
-
+        
 				this.filteringQuerySQLFormat =  generatefilteringQueryFormat();
 
 				this.finiteStatesArray = _finiteStatesArray;
@@ -161,7 +159,6 @@ public class Filter {
 			public String filteringQueryFormat(){
 				return filteringQuerySQLFormat;
 			}
-
 			public String getName(){
 				return this.name;
 			}

@@ -120,7 +120,7 @@ public class Hardcoded{
 
 		Hardcoded.dataBaseTree.addFilters(filterArray);
 	}
-
+  
 	private void initializeOuterArray(){
 		outerArray = objMapper.createArrayNode();
 	   for (Map.Entry<String, Filter> entry : Hardcoded.dataBaseTree.getFilterMap().entrySet()) {
@@ -139,8 +139,6 @@ public class Hardcoded{
 		   outerArray.add(currentJson);
 	   }
    }
-
-
 
 	
 }		
