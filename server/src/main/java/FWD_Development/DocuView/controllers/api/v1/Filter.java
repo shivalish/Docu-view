@@ -185,7 +185,11 @@ public class Filter {
 
 			public boolean getFiniteStates(){
 				return this.finiteStates;
-			}	    	
+			}
+			
+			public String[] finite_states_array(){
+				return this.finiteStatesArray;
+			}
 	    	//////////////////////////////
 	    	
 	    	private List<String> queryExecutor(JdbcTemplate jdbcTemplate){
