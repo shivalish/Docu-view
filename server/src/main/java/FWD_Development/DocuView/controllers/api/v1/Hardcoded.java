@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import FWD_Development.DocuView.controllers.api.v1.DataBaseTree.DataBaseNode;
+import jakarta.annotation.PostConstruct;
 
 import org.springframework.dao.EmptyResultDataAccessException;
 import java.util.HashMap;
@@ -55,17 +56,24 @@ public class Hardcoded{
 	@Autowired
     	private JdbcTemplate jdbcTemplate;
 
-	static DataBaseTree dataBaseTree = new DataBaseTree();
+	private static final ObjectMapper objMapper = new ObjectMapper();
 
-	@EventListener(ApplicationReadyEvent.class)
-	public void doSomethingAfterStartup() {
+	static DataBaseTree dataBaseTree;
+	static ArrayNode outerArray;
+
+	
+
+	@PostConstruct
+	public void hardcodedSetUp() {
 		initializeDataBaseTree(jdbcTemplate);
+		initializeOuterArray();
 	}
 
 	public static void initializeDataBaseTree(JdbcTemplate jdbcTemplate){
-		Hardcoded.dataBaseTree.setRoot("ATTACH_PROPOSAL", jdbcTemplate);
+		dataBaseTree = new DataBaseTree("ATTACH_PROPOSAL", jdbcTemplate);
 		DataBaseNode root = Hardcoded.dataBaseTree.getRoot();
-
+		
+		// future automatize updates
 		root.add("attachment_id", "ATTACHMENT_FILE");
 		root.add("proposal_id", "PROPOSAL_INFO");
 		root.add("attachment_type", "ATTACH_TYPE");
@@ -87,25 +95,50 @@ public class Hardcoded{
 		holder2.add("resource_type", "RES_TYPE");
 
 		Filter[] filterArray = new Filter[] {
-			new Filter("file_creation", "ISO 8601", "ATTACHMENT_FILE" ,"create_date", "ATTACH_PROPOSAL", "attachment_id", false),
-			new Filter("file_extension", "string", "ATTACHMENT_FILE" ,"file_name", "ATTACH_PROPOSAL", "attachment_id", new String[]{".bmp", ".doc", ".docx", ".htm", ".html", ".jpg", ".msg", ".pdf", ".txt", ".xlsm", ".xlsx", ".zip", ".zipx"}, '^'),
-			new Filter("filename", "string", "ATTACHMENT_FILE" ,"file_name", "ATTACH_PROPOSAL", "attachment_id", false),
-			new Filter("customer_name", "string", "CUST_INFO", "customer_name", "PROPOSAL_INFO" ,"customer_id", false),
-			new Filter("auction_type", "string", "AUC_TYPE", "auction_type", "AUC_INFO", "auction_type", true),
-			new Filter("attachment_type", "string", "ATTACH_TYPE", "attachment_type", "ATTACH_PROPOSAL", "attachment_type", true),
-			new Filter("resource_type", "string", "RES_TYPE", "resource_type", "RES_INFO", "resource_type", true),
+			new Filter("file_creation", "ISO 8601","create_date", root, "attachment_id", false),
+			new Filter("file_extension", "string","file_name", root, "attachment_id", new String[]{".bmp", ".doc", ".docx", ".htm", ".html", ".jpg", ".msg", ".pdf", ".txt", ".xlsm", ".xlsx", ".zip", ".zipx"}, '^'),
+			new Filter("filename", "string","file_name", root, "attachment_id", false),
+			new Filter("attachment_type", "string", "attachment_type", root, "attachment_type", true),
+
+			new Filter("customer_name", "string", "customer_name", holder,"customer_id", false),
+
+			
+			new Filter("commitment_date_start", "ISO 8601", "begin_date", holder1, "commitment_period_id",false, '['),
+			new Filter("commitment_date_end", "ISO 8601", "end_date", holder1, "commitment_period_id",false, ']'),
+			new Filter("auction_type", "string", "auction_type", holder1, "auction_type", true),
+
+			new Filter("resource_type", "string", "resource_type", holder2, "resource_type", true),
 	
-			new Filter("commitment_date_start", "ISO 8601", "PERIOD_INFO", "begin_date", "AUC_INFO", "commitment_period_id",false, '['),
-			new Filter("commitment_date_end", "ISO 8601", "PERIOD_INFO", "end_date", "AUC_INFO", "commitment_period_id",false, ']'),
-			new Filter("auction_date_start", "ISO 8601", "AUC_INFO", "auction_begin_date", "AUC_INFO", "auction_period_id",false, '['),
-			new Filter("auction_date_end", "ISO 8601", "AUC_INFO", "auction_end_date", "AUC_INFO", "auction_period_id",false, ']'),
+			
+			
+			new Filter("auction_date_start", "ISO 8601", "auction_begin_date", holder1, "auction_period_id",false, '['),
+			new Filter("auction_date_end", "ISO 8601", "auction_end_date", holder1, "auction_period_id",false, ']'),
 	
-			new Filter("proposal_date_start", "ISO 8601", "PERIOD_INFO", "begin_date", "PROPOSAL_INFO", "period_id",false, '['),
-			new Filter("proposals_date_end", "ISO 8601", "PERIOD_INFO", "end_date", "PROPOSAL_INFO", "period_id",false, ']'),	
+			new Filter("proposal_date_start", "ISO 8601", "begin_date", holder, "period_id",false, '['),
+			new Filter("proposals_date_end", "ISO 8601", "end_date", holder, "period_id",false, ']'),
 		};
 
 		Hardcoded.dataBaseTree.addFilters(filterArray);
 	}
+
+	private void initializeOuterArray(){
+		outerArray = objMapper.createArrayNode();
+	   for (Map.Entry<String, Filter> entry : Hardcoded.dataBaseTree.getFilterMap().entrySet()) {
+		   String name = entry.getKey();
+		   Filter filter = entry.getValue();
+		   ObjectNode currentJson = objMapper.createObjectNode();
+		   currentJson.put("name", name);
+		   currentJson.put("type", filter.getType());
+		   currentJson.put("has_finite_states", filter.getFiniteStates());
+
+		   ArrayNode finiteStatesArray = currentJson.putArray("finite_states");
+		   List<String> finiteStates = filter.getFiniteStatesQuery(jdbcTemplate);
+		   for (String elem : finiteStates) {
+			   finiteStatesArray.add(elem);
+		   }
+		   outerArray.add(currentJson);
+	   }
+   }
 
 
 

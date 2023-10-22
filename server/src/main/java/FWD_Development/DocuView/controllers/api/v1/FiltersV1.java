@@ -29,36 +29,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 @RequestMapping("/api/v1/filters")
 public class FiltersV1{
     
-    @Autowired
-        private JdbcTemplate jdbcTemplate;
-	
-    private static final ObjectMapper objMapper = new ObjectMapper();
-    
-    private ArrayNode outerArray;
-
-    private ArrayNode initializeOuterArray(){
-         ArrayNode outerArray = objMapper.createArrayNode();
-        for (Map.Entry<String, Filter> entry : Hardcoded.dataBaseTree.getFilterMap().entrySet()) {
-            String name = entry.getKey();
-            Filter filter = entry.getValue();
-            ObjectNode currentJson = objMapper.createObjectNode();
-            currentJson.put("name", name);
-            currentJson.put("type", filter.getType());
-            currentJson.put("has_finite_states", filter.getFiniteStates());
-
-            ArrayNode finiteStatesArray = currentJson.putArray("finite_states");
-            List<String> finiteStates = filter.getFiniteStatesQuery(jdbcTemplate);
-            for (String elem : finiteStates) {
-                finiteStatesArray.add(elem);
-            }
-            outerArray.add(currentJson);
-        }
-        return outerArray;
-    }
-    
     @GetMapping("")
     public JsonNode filters() {
-        if (outerArray == null) {outerArray = initializeOuterArray();}
-       return outerArray;
+       return Hardcoded.outerArray;
     }
 }
