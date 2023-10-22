@@ -30,6 +30,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import FWD_Development.DocuView.controllers.api.v1.DataBaseTree.DataBaseNode;
+
 import java.sql.ResultSetMetaData;
 
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -55,113 +58,17 @@ import org.springframework.dao.EmptyResultDataAccessException;
 // @CrossOrigin(origins = "http://localhost:3000") // Default React port
 @RestController
 @RequestMapping("/api/v1/database")
-public class DataBaseV1 implements Hardcoded{
+public class DataBaseV1 {
 
 	@Autowired
     	private JdbcTemplate jdbcTemplate;
-    	
-	private static final ObjectMapper objMapper = new ObjectMapper();
-
-	private static DataBaseTree dataBaseTree;
-
-	private static DataBaseTree initializeDataBaseTree(JdbcTemplate jdbcTemplate){
-		DataBaseTree out = new DataBaseTree("ATTACH_PROPOSAL", jdbcTemplate);
-		DataBaseNode root = out.getRoot();
-
-		root.add("attachment_id", "ATTACHMENT_FILE");
-		root.add("proposal_id", "PROPOSAL_INFO");
-		root.add("attachment_type", "ATTACH_TYPE");
-
-		DataBaseNode holder = root.getConnectedId("proposal_id");
-		holder.add("project_id", "PROJ_INFO");
-		holder.add("project_type", "PROJ_TYPE");
-		holder.add("resource_id", "RES_INFO");
-		holder.add("customer_id", "CUST_INFO");
-		holder.add("auction_id", "AUC_INFO");
-		holder.add("period_id", "PERIOD_INFO");
-		
-		DataBaseNode holder1 = holder.getConnectedId("auction_id");
-		holder1.add("commitment_period_id", "PERIOD_INFO");
-		holder1.add("auction_period_id", "PERIOD_INFO");
-		holder1.add("auction_type", "AUC_TYPE");
-		
-		DataBaseNode holder2 = holder.getConnectedId("resource_id");
-		holder2.add("resource_type", "RES_TYPE");
-		return out;
-	}
-	
-	// NOT USED BUT LEAVE HERE FOR REFERENCE
-	private static ObjectNode resultSetToJson(ResultSet resultSet) throws SQLException {
-		ObjectNode out = objMapper.createObjectNode();
-		ResultSetMetaData rsmd = resultSet.getMetaData();
-		for (int i = 1; i <= rsmd.getColumnCount(); i++){
-			out.put(rsmd.getColumnName(i), resultSet.getString(rsmd.getColumnName(i)));
-		}
-		return out;
-	}
-
-	// NOT USED BUT LEAVE HERE FOR REFERENCE
-	private ObjectNode naiveExpandQuery(ObjectNode obj, DataBaseNode table){
-		ObjectNode out = objMapper.createObjectNode();
-		Map<String, DataBaseNode> connectedNodes = table.getConnected();
-		Iterator<Map.Entry<String,JsonNode>> it = obj.fields();
-		while (it.hasNext()){
-			Map.Entry<String,JsonNode> set = it.next();
-			String key = set.getKey();
-			String value = set.getValue().asText();
-			if ( !connectedNodes.containsKey(set.getKey()) ){ out.put(key, value); continue; }
-			DataBaseNode targetTable = connectedNodes.get(key);
-			//String format = "SELECT * FROM %s WHERE %s IN (\"%s\");"; \\ slower by around 600
-			String query = "SELECT * FROM " + targetTable.getName() + " WHERE CAST(" + targetTable.getPrimaryKey() + " AS CHAR) = \'" + value + "\'";
-			// use list to handle unexpected straglers (should be impossible but you never know)
-			List<ObjectNode> holder = jdbcTemplate.query(query, new RowMapper<ObjectNode>() {
-					public ObjectNode mapRow(ResultSet rs, int rowNum) throws SQLException {
-						return resultSetToJson(rs);
-					}});
-			ObjectNode append = naiveExpandQuery(holder.get(0), connectedNodes.get(key));
-			out.set(key, append);
-		}
-		return out;
-	}
-	
-	
-	// NOT USED BUT LEAVE HERE FOR REFERENCE
-	private void filterDataBase(DataBaseNode node, Map<String,String> allRequestParams, Map<String, String> _tableQueries) {
-        if (node != null) {
-            Map<String, DataBaseNode> connectedNodes = node.getConnected();
-			List<String> strLst = new ArrayList<>();
-            for (Map.Entry<String, DataBaseNode> set: connectedNodes.entrySet()) {
-				DataBaseNode connectedNode = set.getValue();
-                filterDataBase(connectedNode, allRequestParams, _tableQueries);
-				
-				if (_tableQueries.containsKey(connectedNode.getName())){
-					String query = "SELECT " + connectedNode.getPrimaryKey() + " FROM "+ connectedNode.getName() +" WHERE " + _tableQueries.get(connectedNode.getName());
-					query = set.getKey() + " IN (" + query + ")";
-					strLst.add(query);
-					_tableQueries.remove(connectedNode.getName());
-				};
-			}
-
-			if (!targetMap.containsKey(node.getName())) { return ; }
-			String query;
-			for (Filter filter : targetMap.get(node.getName())){
-				if (!allRequestParams.containsKey(filter.getName())){ continue; }
-				String primaryKeyColumn = node.getConnectedId(filter.getTargetId()).getPrimaryKey();
-				query = "SELECT " + primaryKeyColumn +" FROM "+filter.getOriginTable()+" WHERE " + filter.filteringQueryCondition(allRequestParams.get(filter.getName()));
-				query = filter.getTargetId() + " IN (" + query + ")";
-				strLst.add(query);
-			}
-			if ( !strLst.isEmpty() ) { _tableQueries.put(node.getName(), String.join(" AND ", strLst)); }
-        }
-    }
-
 
 	@GetMapping("")
 	public List<Map<String, Object>> getDocs(@RequestParam Map<String,String> allRequestParams){
-		if ( dataBaseTree == null) { dataBaseTree = initializeDataBaseTree(jdbcTemplate); };
-		String filters =   dataBaseTree.getFilters(allRequestParams);
+		if ( Hardcoded.dataBaseTree.getRoot() == null) { Hardcoded.initializeDataBaseTree(jdbcTemplate); };
+		String filters =   Hardcoded.dataBaseTree.generateFilterQuery(allRequestParams);
 		if (filters.equals("")) {filters = "TRUE";}
-		String query = dataBaseTree.getTreeInnerJoin() + " WHERE " + filters;
+		String query = Hardcoded.dataBaseTree.getTreeInnerJoin() + " WHERE " + filters;
 		//List<Map<String,Object>> holder = 
 		return jdbcTemplate.queryForList(query);
 	}

@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,6 +19,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import FWD_Development.DocuView.controllers.api.v1.DataBaseTree.DataBaseNode;
+
 import org.springframework.dao.EmptyResultDataAccessException;
 import java.util.HashMap;
 
@@ -43,377 +47,57 @@ import java.util.HashMap;
 // Hardcoded is a antipattern interface to allow vars to share the same immutable variables,
 // allowing the uses to use the same vars.
 
-// TODO get rid of independant
-public interface Hardcoded{
-	
-	public class Filter {
-			
+@Component
+public class Hardcoded{
 
-	    	private String name;		// name of filter
-	    	private String type;		// filter datatype
-		private String originTable;
-		private String originId;	
-		private String targetTable;
-		private String targetId;
-		private boolean finiteStates;
+	static DataBaseTree dataBaseTree = new DataBaseTree();
 
-		private char compType = '*';
-		private String finiteStatesQuery;
-		private String[] finiteStatesArray;
-	    	
-	    	Filter(String _name, String _type, String _originTable, String _originId, String _targetTable, String _targetId, boolean _finiteStates){
-	    		this.name = _name;
-	    		this.type = _type;
-				this.originTable = _originTable;
-				this.originId = _originId;
-				this.targetTable = _targetTable;
-				this.targetId = _targetId;
-				this.finiteStates = _finiteStates;
+	public static void initializeDataBaseTree(JdbcTemplate jdbcTemplate){
+		Hardcoded.dataBaseTree.setRoot("ATTACH_PROPOSAL", jdbcTemplate);
+		DataBaseNode root = Hardcoded.dataBaseTree.getRoot();
 
-				this.finiteStatesQuery =  String.format("SELECT DISTINCT %s FROM %s", originId, originTable);
-	    	}
+		root.add("attachment_id", "ATTACHMENT_FILE");
+		root.add("proposal_id", "PROPOSAL_INFO");
+		root.add("attachment_type", "ATTACH_TYPE");
 
-			Filter(String _name, String _type, String _originTable, String _originId, String _targetTable, String _targetId, boolean _finiteStates, char _compType){
-	    		this.name = _name;
-	    		this.type = _type;
-				this.originTable = _originTable;
-				this.originId = _originId;
-				this.targetTable = _targetTable;
-				this.targetId = _targetId;
-				this.finiteStates = _finiteStates;
-				this.compType = _compType;
-
-				this.finiteStatesQuery =  String.format("SELECT DISTINCT %s FROM %s", originId, originTable);
-	    	}
-
-			Filter(String _name, String _type, String _originTable, String _originId, String _targetTable, String _targetId, String[] _finiteStatesArray){
-	    		this.name = _name;
-	    		this.type = _type;
-				this.originTable = _originTable;
-				this.originId = _originId;
-				this.targetTable = _targetTable;
-				this.targetId = _targetId;
-				this.finiteStates = true;
-
-				this.finiteStatesArray = _finiteStatesArray;
-	    	}
-
-			Filter(String _name, String _type, String _originTable, String _originId, String _targetTable, String _targetId, String[] _finiteStatesArray, char _compType){
-	    		this.name = _name;
-	    		this.type = _type;
-				this.originTable = _originTable;
-				this.originId = _originId;
-				this.targetTable = _targetTable;
-				this.targetId = _targetId;
-				this.finiteStates = true;
-				this.compType = _compType;
-
-				this.finiteStatesArray = _finiteStatesArray;
-	    	}
-
-
-			// 
-			// SELECT (SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_NAME="ATTACHMENT_FILE") ATTACHMENT_FILE WHERE file_name LIKE .bmp
-			// todo. pregenrated then format
-			public String filteringQueryCondition(String param){
-				String filteringQuerySQL;
-				switch(compType){
-					case ')':
-						filteringQuerySQL = this.originId + " < " + "\'" + param + "\'";
-						break;
-					case '(':
-						filteringQuerySQL = this.originId + " > " + "\'" + param + "\'";
-						break;
-					case ']':
-						filteringQuerySQL = this.originId + ">=" + "\'" + param + "\'";
-						break;
-					case '[':
-						filteringQuerySQL = this.originId + "<=" + "\'" + param + "\'";
-						break;
-					case '!':
-						filteringQuerySQL = this.originId + " <> " + "\'" + param + "\'";
-						break;
-					case '=':
-						filteringQuerySQL = this.originId + " = " + "\'" + param + "\'";
-						break;
-
-					case '^':
-						filteringQuerySQL = this.originId + " LIKE \'%" + param + "\'";
-						break;
-					case '.':
-						filteringQuerySQL = this.originId + " LIKE \'" + param + "%\'";
-						break;
-					case '*':
-					default:
-						filteringQuerySQL = this.originId + " LIKE \'%" + param + "%\'";
-				}
-				return filteringQuerySQL;
-			}
-
-			public String filteringQueryFormat(){
-				String filteringQuerySQL;
-				switch(compType){
-					case ')':
-						filteringQuerySQL = this.originId + " < " + "\'%s\'";
-						break;
-					case '(':
-						filteringQuerySQL = this.originId + " > " + "\'%s\'";
-						break;
-					case ']':
-						filteringQuerySQL = this.originId + ">=" + "\'%s\'";
-						break;
-					case '[':
-						filteringQuerySQL = this.originId + "<=" + "\'%s\'";
-						break;
-					case '!':
-						filteringQuerySQL = this.originId + " <> " + "\'%s\'";
-						break;
-					case '=':
-						filteringQuerySQL = this.originId + " = " + "\'%s\'";
-						break;
-
-					case '^':
-						filteringQuerySQL = this.originId + " LIKE \'%%%s\'";
-						break;
-					case '.':
-						filteringQuerySQL = this.originId + " LIKE \'%s%%\'";
-						break;
-					case '*':
-					default:
-						filteringQuerySQL = this.originId + " LIKE \'%%%s%%\'";
-				}
-				return filteringQuerySQL;
-			}
-			public String getName(){
-				return this.name;
-			}
-
-			public String getType(){
-				return this.type;
-			}
-
-			public String getOriginTable(){
-				return this.originTable;
-			}
-
-			public String getOriginId(){
-				return this.originId;
-			}
-
-			public String getTargetTable(){
-				return this.targetTable;
-			}
-
-			public String getTargetId(){
-				return this.targetId;
-			}
-
-			public boolean getFiniteStates(){
-				return this.finiteStates;
-			}	    	
-	    	//////////////////////////////
-	    	
-	    	private List<String> queryExecutor(JdbcTemplate jdbcTemplate){
-				List<String> temp = jdbcTemplate.queryForList(finiteStatesQuery,String.class);
-	    		return temp;
-	    	};
-	    	
-	    	//temp for skeleton
-	    	public List<String> getFiniteStatesQuery(JdbcTemplate jdbcTemplate){
-	    		if (!this.finiteStates) { return Arrays.asList(new String[] {}); }
-				if (this.finiteStatesArray != null) { return Arrays.asList(this.finiteStatesArray); }
-	    		return queryExecutor(jdbcTemplate);
-	    	}
-	    }
-
-
-	//  ] upper bound (incl) , [ lower bound (incl), ) upper bound, ( lower bound, = equal, ! not equal, * contains (default), ^ upper wildcard, . lower wildcard
-	//"SELECT DISTINCT auction_type FROM AUC_TYPE"  "SELECT DISTINCT attachment_type FROM ATTACH_TYPE" , new String[]{".pdf",".csv",".xlsx",".docs"}
-	static final Filter[] filterArrray = new Filter[] {
-		new Filter("file_creation", "ISO 8601", "ATTACHMENT_FILE" ,"create_date", "ATTACH_PROPOSAL", "attachment_id", false),
-		new Filter("file_extension", "string", "ATTACHMENT_FILE" ,"file_name", "ATTACH_PROPOSAL", "attachment_id", new String[]{".bmp", ".doc", ".docx", ".htm", ".html", ".jpg", ".msg", ".pdf", ".txt", ".xlsm", ".xlsx", ".zip", ".zipx"}, '^'),
-		new Filter("filename", "string", "ATTACHMENT_FILE" ,"file_name", "ATTACH_PROPOSAL", "attachment_id", false),
-		new Filter("customer_name", "string", "CUST_INFO", "customer_name", "PROPOSAL_INFO" ,"customer_id", false),
-		new Filter("auction_type", "string", "AUC_TYPE", "auction_type", "AUC_INFO", "auction_type", true),
-		new Filter("attachment_type", "string", "ATTACH_TYPE", "attachment_type", "ATTACH_PROPOSAL", "attachment_type", true),
-		new Filter("resource_type", "string", "RES_TYPE", "resource_type", "RES_INFO", "resource_type", true),
-
-		new Filter("commitment_date_start", "ISO 8601", "PERIOD_INFO", "begin_date", "AUC_INFO", "commitment_period_id",false, '['),
-		new Filter("commitment_date_end", "ISO 8601", "PERIOD_INFO", "end_date", "AUC_INFO", "commitment_period_id",false, ']'),
-		new Filter("auction_date_start", "ISO 8601", "AUC_INFO", "auction_begin_date", "AUC_INFO", "auction_period_id",false, '['),
-		new Filter("auction_date_end", "ISO 8601", "AUC_INFO", "auction_end_date", "AUC_INFO", "auction_period_id",false, ']'),
-
-		new Filter("proposal_date_start", "ISO 8601", "PERIOD_INFO", "begin_date", "PROPOSAL_INFO", "period_id",false, '['),
-		new Filter("proposals_date_end", "ISO 8601", "PERIOD_INFO", "end_date", "PROPOSAL_INFO", "period_id",false, ']'),	
-	};
-
-	static final Map<String, Filter> filterMap = new HashMap<>(){{
-		for (Filter elem : filterArrray){
-			put(elem.getName(), elem);
-        	}
-	}};
-
-	static final Map<String, List<Filter>> targetMap = new HashMap<>(){{
-		for (Filter elem : filterArrray){
-			if (!containsKey(elem.getTargetTable())) { put(elem.getTargetTable(), new ArrayList<Filter>()); }
-			get(elem.getTargetTable()).add(elem);
-        }
-	}};
-
-	public class DataBaseNode {
-		private JdbcTemplate jdbcTemplate;
-		private String name;
-		private String primaryKey;
-		private Map<String, DataBaseNode> connected;
-		private List<String> columns;
-		private String path;
-		private DataBaseTree tree;
-
-		private List<String> _getColumns(){
-			List<String> columns = new ArrayList<>();
-			for (Map<String, Object> row : jdbcTemplate.queryForList("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '" + name + "';")) {
-				columns.add((String)row.get("column_name"));
-			}
-			return columns;
-		}
-
-		private String _getPrimaryKey(){
-			List<Map<String, Object>> holder = jdbcTemplate.queryForList("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_NAME = '" + name + "' AND CONSTRAINT_NAME = 'PRIMARY';");
-			if (holder.isEmpty()) { return ""; }
-			return (String)holder.get(0).get("COLUMN_NAME");
-
-		}
-	
-		public DataBaseNode(String _name, JdbcTemplate jdbcTemplate, String path, DataBaseTree tree) {
-			this.jdbcTemplate = jdbcTemplate;
-			this.name = _name;
-			this.primaryKey = this._getPrimaryKey();
-			this.connected = new HashMap<>();
-			this.columns = this._getColumns();
-			this.path = path;
-			this.tree =  tree;
-		}
-	
-		public String getName() {
-			return this.name;
-		}
-
-		public String getPath(){
-			return this.path;
-		}
-
-		public List<String> getColumns(){
-			return this.columns;
-		}
-	
-		public String getPrimaryKey() {
-			return this.primaryKey;
-		}
-	
-		public Map<String, DataBaseNode> getConnected() {
-			return this.connected;
-		}
-	
-		public DataBaseNode getConnectedId(String key) {
-			return this.connected.get(key);
-		}
-	
-		public boolean isLeaf() {
-			return this.connected.isEmpty();
-		}
-	
-		public void add(String refId, String tableName) {
-			DataBaseNode node = new DataBaseNode(tableName, this.jdbcTemplate, this.path + "_" + refId, this.tree);
-			connected.put(refId, node);
-			this.tree.addNode(node);
-		}
-	}
-	//add
-	public class DataBaseTree {
-
-		private DataBaseNode root;
-		private String TreeInnerJoin;
-		private Map <String, DataBaseNode> nodes;
-		private Map <String, String> paramFormatStrings;
-
-		DataBaseTree(String rootName, JdbcTemplate jdbcTemplate){
-			root = new DataBaseNode(rootName, jdbcTemplate, rootName.toLowerCase(), this);
-			nodes = new HashMap<>();
-			nodes.put(rootName, root);
-		}
-
-		public DataBaseNode getRoot(){
-			return root;
-		}
-
-		public void addNode(DataBaseNode node){
-			if (node == null) {return ;}
-			nodes.put(node.getName(), node);
-		}
-
-		public Map <String, DataBaseNode> getNodes(){
-			return this.nodes;
-		}
-
-		public DataBaseNode getNode(String tableName){
-			if (!this.nodes.containsKey(tableName)) {return null;}
-			return this.nodes.get(tableName);
-		}
-
+		DataBaseNode holder = root.getConnectedId("proposal_id");
+		holder.add("project_id", "PROJ_INFO");
+		holder.add("project_type", "PROJ_TYPE");
+		holder.add("resource_id", "RES_INFO");
+		holder.add("customer_id", "CUST_INFO");
+		holder.add("auction_id", "AUC_INFO");
+		holder.add("period_id", "PERIOD_INFO");
 		
-
-		public String getFilters(Map<String,String> allRequestParams){
-			if (paramFormatStrings == null) {paramFormatStrings = generateFilters();}
-			List<String> query = new ArrayList<>();
-			for (Map.Entry<String, String> set : paramFormatStrings.entrySet()){
-				if ( !allRequestParams.containsKey(set.getKey()) ){ continue; }
-				query.add(String.format(set.getValue(), allRequestParams.get(set.getKey())));
-			}
-			return String.join(" AND ", query);
-		}
-
-		private Map <String, String> generateFilters(){
-			Map <String, String> out = new HashMap<>();
-			for (Filter f : filterArrray){
-				if (!nodes.containsKey(f.getTargetTable())) { continue ;}
-				out.put(f.getName(), nodes.get(f.getTargetTable()).getPath()  + "_" + f.getTargetId() + "_" + f.filteringQueryFormat());
-			}
-			return out;
-		}
-
-		public String getTreeInnerJoin(){
-			if (TreeInnerJoin == null) {
-				List<String> columns_alias = new ArrayList<>();
-				for(String column : root.getColumns()){
-					columns_alias.add(root.getName() + "." + column + " AS " +  root.getPath() + "_" + column.toLowerCase());
-				}
-				this.TreeInnerJoin = "SELECT * FROM ( SELECT " + String.join(", ", columns_alias) + " FROM " + root.getName() +") AS" + root.getPath() + "\n"+ this.treeInnerJoinGenerate(root);
-			
-			}
-			return TreeInnerJoin;
-		}
+		DataBaseNode holder1 = holder.getConnectedId("auction_id");
+		holder1.add("commitment_period_id", "PERIOD_INFO");
+		holder1.add("auction_period_id", "PERIOD_INFO");
+		holder1.add("auction_type", "AUC_TYPE");
 		
-		private String treeInnerJoinGenerate(DataBaseNode node){
-			if (node == null) { return ""; }
-			Map<String, DataBaseNode> connectedNodes = node.getConnected();
-			List<String> strLst = new ArrayList<>();
-			for (Map.Entry<String, DataBaseNode> set: connectedNodes.entrySet()) {
-				String alias = set.getValue().getPath();
-				List<String> columns_alias = new ArrayList<>();
-				for(String column : set.getValue().getColumns()){
-					columns_alias.add(set.getValue().getName() + "." + column + " AS " +  alias + "_" + column.toLowerCase());
-				}
-				String query = "INNER JOIN " + "( SELECT " + String.join(", ", columns_alias) + " FROM " + set.getValue().getName() +")" + " AS " + alias + "_Table"
-					+ " ON " + node.getPath() + "_" + set.getKey() + " = " + alias + "_" + set.getValue().getPrimaryKey()
-					+ "\n" + treeInnerJoinGenerate(set.getValue());
-				strLst.add(query);
-			}
-			return String.join("", strLst);
-			
-		}
+		DataBaseNode holder2 = holder.getConnectedId("resource_id");
+		holder2.add("resource_type", "RES_TYPE");
+
+		Filter[] filterArray = new Filter[] {
+			new Filter("file_creation", "ISO 8601", "ATTACHMENT_FILE" ,"create_date", "ATTACH_PROPOSAL", "attachment_id", false),
+			new Filter("file_extension", "string", "ATTACHMENT_FILE" ,"file_name", "ATTACH_PROPOSAL", "attachment_id", new String[]{".bmp", ".doc", ".docx", ".htm", ".html", ".jpg", ".msg", ".pdf", ".txt", ".xlsm", ".xlsx", ".zip", ".zipx"}, '^'),
+			new Filter("filename", "string", "ATTACHMENT_FILE" ,"file_name", "ATTACH_PROPOSAL", "attachment_id", false),
+			new Filter("customer_name", "string", "CUST_INFO", "customer_name", "PROPOSAL_INFO" ,"customer_id", false),
+			new Filter("auction_type", "string", "AUC_TYPE", "auction_type", "AUC_INFO", "auction_type", true),
+			new Filter("attachment_type", "string", "ATTACH_TYPE", "attachment_type", "ATTACH_PROPOSAL", "attachment_type", true),
+			new Filter("resource_type", "string", "RES_TYPE", "resource_type", "RES_INFO", "resource_type", true),
+	
+			new Filter("commitment_date_start", "ISO 8601", "PERIOD_INFO", "begin_date", "AUC_INFO", "commitment_period_id",false, '['),
+			new Filter("commitment_date_end", "ISO 8601", "PERIOD_INFO", "end_date", "AUC_INFO", "commitment_period_id",false, ']'),
+			new Filter("auction_date_start", "ISO 8601", "AUC_INFO", "auction_begin_date", "AUC_INFO", "auction_period_id",false, '['),
+			new Filter("auction_date_end", "ISO 8601", "AUC_INFO", "auction_end_date", "AUC_INFO", "auction_period_id",false, ']'),
+	
+			new Filter("proposal_date_start", "ISO 8601", "PERIOD_INFO", "begin_date", "PROPOSAL_INFO", "period_id",false, '['),
+			new Filter("proposals_date_end", "ISO 8601", "PERIOD_INFO", "end_date", "PROPOSAL_INFO", "period_id",false, ']'),	
+		};
+
+		Hardcoded.dataBaseTree.addFilters(filterArray);
 	}
 
-	
+
 
 	
 }		
