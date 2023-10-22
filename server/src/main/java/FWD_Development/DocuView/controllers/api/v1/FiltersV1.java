@@ -27,7 +27,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 // @CrossOrigin(origins = "http://localhost:3000") // Default React port
 @RestController
 @RequestMapping("/api/v1/filters")
-public class FiltersV1 implements Hardcoded{
+public class FiltersV1{
     
     @Autowired
         private JdbcTemplate jdbcTemplate;
@@ -38,7 +38,7 @@ public class FiltersV1 implements Hardcoded{
 
     private ArrayNode initializeOuterArray(){
          ArrayNode outerArray = objMapper.createArrayNode();
-        for (Map.Entry<String, Filter> entry : filterMap.entrySet()) {
+        for (Map.Entry<String, Filter> entry : Hardcoded.dataBaseTree.getFilterMap().entrySet()) {
             String name = entry.getKey();
             Filter filter = entry.getValue();
             ObjectNode currentJson = objMapper.createObjectNode();

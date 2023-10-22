@@ -2,6 +2,7 @@ package FWD_Development.DocuView.controllers;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -12,11 +13,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import org.springframework.dao.EmptyResultDataAccessException;
 
 @CrossOrigin(origins = "http://localhost:3000") // Default React port
 @RestController
-public class TestExample {
+public class TestExample{
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
