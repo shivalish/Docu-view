@@ -37,7 +37,6 @@ public class FiltersV1{
     private ArrayNode outerArray;
 
     private ArrayNode initializeOuterArray(){
-        if ( Hardcoded.dataBaseTree.getRoot() == null) { Hardcoded.initializeDataBaseTree(jdbcTemplate); };
          ArrayNode outerArray = objMapper.createArrayNode();
         for (Map.Entry<String, Filter> entry : Hardcoded.dataBaseTree.getFilterMap().entrySet()) {
             String name = entry.getKey();

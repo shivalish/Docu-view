@@ -9,6 +9,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -50,7 +52,15 @@ import java.util.HashMap;
 @Component
 public class Hardcoded{
 
+	@Autowired
+    	private JdbcTemplate jdbcTemplate;
+
 	static DataBaseTree dataBaseTree = new DataBaseTree();
+
+	@EventListener(ApplicationReadyEvent.class)
+	public void doSomethingAfterStartup() {
+		initializeDataBaseTree(jdbcTemplate);
+	}
 
 	public static void initializeDataBaseTree(JdbcTemplate jdbcTemplate){
 		Hardcoded.dataBaseTree.setRoot("ATTACH_PROPOSAL", jdbcTemplate);

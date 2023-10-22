@@ -65,7 +65,6 @@ public class DataBaseV1 {
 
 	@GetMapping("")
 	public List<Map<String, Object>> getDocs(@RequestParam Map<String,String> allRequestParams){
-		if ( Hardcoded.dataBaseTree.getRoot() == null) { Hardcoded.initializeDataBaseTree(jdbcTemplate); };
 		String filters =   Hardcoded.dataBaseTree.generateFilterQuery(allRequestParams);
 		if (filters.equals("")) {filters = "TRUE";}
 		String query = Hardcoded.dataBaseTree.getTreeInnerJoin() + " WHERE " + filters;
