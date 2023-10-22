@@ -56,8 +56,13 @@ function FilesTable() {
         }]
     )
 
-    /* key should be the key in the object files you want to sort by as a string ('fileName', 'customer', etc) and byAscending is boolean for sort order */
-    const sortFiles = (key, byAscending) => {
+    const [currentSort, setCurrentSort] = useState({ key: '', direction: 'ascending' });
+
+    const sortFiles = (key) => {
+        const byAscending = currentSort.key === key ? currentSort.direction === 'descending' : true;
+
+        setCurrentSort({ key, direction: byAscending ? 'ascending' : 'descending' });
+
         if (!files || files.length === 0 || !Object.keys(files[0]).includes(key)) {
             return;
         }
@@ -65,20 +70,15 @@ function FilesTable() {
             let newFiles = [...oldFiles];
             newFiles.sort((fileA, fileB) => {
                 if (typeof fileA[key] === "string") {
-                    return byAscending ?
-                        fileA[key].localeCompare(fileB[key])
-                        :
-                        fileB[key].localeCompare(fileA[key]);
+                    return byAscending ? fileA[key].localeCompare(fileB[key]) : fileB[key].localeCompare(fileA[key]);
                 } else {
-                    return byAscending ?
-                        fileA[key] - fileB[key]
-                        :
-                        fileB[key] - fileA[key];
+                    return byAscending ? fileA[key] - fileB[key] : fileB[key] - fileA[key];
                 }
-            })
+            });
             return newFiles;
-        })
+        });
     }
+
 
 
     return (
@@ -88,13 +88,12 @@ function FilesTable() {
                     Results...
                 </div>
                 <div className="space-x-2">
-                    <button className="bg-iso-blue-grey text-white px-4 py-2 rounded">Sort By</button>
                     <button className="bg-iso-blue-grey text-white px-4 py-2 rounded">View</button>
                     <button className="bg-iso-blue-grey text-white px-4 py-2 rounded">Download</button>
                 </div>
             </div>
 
-            <TableHeaders />
+            <TableHeaders sortFiles={sortFiles} currentSort={currentSort} />
 
             <div className='flex justify-center'>
                 <div className='w-11/12 border border-gray-400'>
