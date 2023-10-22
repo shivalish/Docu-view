@@ -83,9 +83,7 @@ public class DataBaseTree {
     private Map <String, String> paramFormatStrings;
     private Map <String, Filter> filterMap;
 
-    public DataBaseTree(){}
-
-    public void setRoot(String rootName, JdbcTemplate jdbcTemplate){
+    public DataBaseTree(String rootName, JdbcTemplate jdbcTemplate){
         root = new DataBaseNode(rootName, jdbcTemplate, rootName.toLowerCase(), this);
         nodes = new HashMap<>();
         nodes.put(rootName, root);
@@ -131,7 +129,7 @@ public class DataBaseTree {
         filterMap = new HashMap<>();
         for (Filter f : filterArray){
             filterMap.put(f.getName(), f);
-            out.put(f.getName(), nodes.get(f.getTargetTable()).getPath()  + "_" + f.getTargetId() + "_" + f.filteringQueryFormat());
+            out.put(f.getName(), f.getTargetTable().getPath()  + "_" + f.getTargetId() + "_" + f.filteringQueryFormat());
         }
         this.paramFormatStrings = out;
     }
