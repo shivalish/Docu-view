@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import Header from "./atoms/Header.jsx";
 import Button from "./atoms/Button.jsx";
 import { Tab } from "@headlessui/react";
@@ -19,12 +19,34 @@ function HomePageButton({ text, OnClick }){
 }
 
 // Moved it for clarity (used 4 times in the single part)
-function HomePageInput( { label } ){
+function HomePageInput( { label, userInput="", setUserInput = null, isPassword = false} ){
+  let input_type;
+  if (isPassword) {  
+    input_type = "password";
+  }
+  else {
+    input_type = "text";
+  }
+  if (setUserInput === null) {
+    return (
+      <><label> {label} </label>
+      <input className="h-10 w-full px-5 bg-iso-grey rounded-md" 
+      type = {input_type}/></>
+    )
+  }
+  const handleInputChange = (event) => {
+    setUserInput(event.target.value);
+  };
+
   return (
-    <><label> {label} </label><input className="h-10 w-full px-5 bg-iso-grey rounded-md" /></>
+    <><label> {label} </label>
+    <input className="h-10 w-full px-5 bg-iso-grey rounded-md"
+    type = {input_type}
+    value = {userInput}
+    onChange={handleInputChange} />
+    </>
   )
 }
-
 //////////////////////
 
 
@@ -34,6 +56,8 @@ function HomePageInput( { label } ){
 
 function HomePageTabs(){
   const navigate = useNavigate();
+  const [username, setUserName] = useState("");
+  const [password, setPassword] = useState("");
 
   return (
     <div className="flex h-full w-1/3 justify-center items-center">
@@ -48,32 +72,52 @@ function HomePageTabs(){
             <Tab className= {"rounded-t-md ui-selected:bg-iso-white ui-not-selected:bg-iso-grey h-10 w-32"}>
               Sign Up
             </Tab>
-          </Tab.List> 
+          </Tab.List>
           <Tab.Panels>
             <Tab.Panel className="w-96 h-1/3 bg-iso-white p-10 rounded-b-md rounded-tr-md">
-              <HomePageInput label="Username" />
+
+              <HomePageInput label="Username" 
+              userInput={username} 
+              setUserInput={setUserName}/>
+
               <div className="flex w-full h-10 justify-end">
                 {" "}
                 <span> Forgot Username </span>{" "}
               </div>
-              <HomePageInput label="Password" />
+
+              <HomePageInput label="Password" 
+              userInput={password} 
+              setUserInput = {setPassword}
+              isPassword = {true}
+              />
+
               <div className="flex w-full h-10 justify-end">
                 {" "}
                 <span> Forgot Password </span>{" "}
               </div>
-              <HomePageButton text="Login" OnClick={() => navigate('/main')}/>
+
+              {/*I guess the authentication is this step*/}
+              <HomePageButton text="Login" OnClick={() => navigate('/main')}/> 
+
             </Tab.Panel>
+
             <Tab.Panel className="w-96 h-1/3 bg-iso-white p-10 rounded-b-md rounded-tr-md">
               <HomePageInput label="Username" />
-              <div className="flex w-full h-10 justify-end">
-                {" "}
-                {" "}
-              </div>
-              <HomePageInput label="Password" />
-              <div className="flex w-full h-10 justify-end">
-                {" "}
+
+              <div className="flex w-full h-5 justify-end">
                 {" "}
               </div>
+
+              <HomePageInput label="Password" isPassword={true}/>
+              <div className="flex w-full h-5 justify-end">
+                {" "}
+              </div>
+
+              <HomePageInput label="Re-enter Password" isPassword={true}/>
+              <div className="flex w-full h-5 justify-end">
+                {" "}
+              </div>
+
               <HomePageButton text="Sign Up" OnClick={() => navigate('/main')}/>
             </Tab.Panel>
           </Tab.Panels>
