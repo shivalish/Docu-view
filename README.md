@@ -1,13 +1,22 @@
-# Docu-view
+# docu-view
 
 Document management app
 
+## Node Install
+
+### Mac / Windows
+
+Download [installer](https://nodejs.org/en/download) and follow the instructions to install.
+
+### Linux (ubuntu distros)
+
+``sudo apt-get update; sudo apt install nodejs``
+
 ## Java Install
 
-### Windows / Mac
+### Mac / Windows
 
-Download [installer](https://www.java.com/en/download/)
-Follow the instructions to install
+Download [installer](https://www.java.com/en/download/) and follow the instructions to install.
 
 ### Linux (ubuntu distros)
 
@@ -15,31 +24,23 @@ Follow the instructions to install
 
 ## Maven Install
 
-### Windows
-
-If java has been downloaded, maven should be installed as well. If not follow the next instructions:
-[https://maven.apache.org/guides/getting-started/windows-prerequisites.html](https://maven.apache.org/guides/getting-started/windows-prerequisites.html)
-[https://maven.apache.org/install.html](https://maven.apache.org/install.html)
-
-
 ### Mac
 
 ``brew install maven``
+
+### Windows
+
+If java has been downloaded, maven should be installed as well. If not follow the [instructions](https://maven.apache.org/install.html)
+
+Then [setup](https://maven.apache.org/guides/getting-started/windows-prerequisites.html)
 
 ### Linux (ubuntu distros)
 
 ``sudo apt-get update; sudo apt-get -y install maven``
 
-## Node Install
+## MySql Workbench Install
 
-### Windows / Mac
-
-Download [installer
-](https://nodejs.org/en/download)Follow the instructions to install
-
-### Linux (ubuntu distros)
-
-`sudo apt update; sudo apt -y install nodejs`
+Download [installer](https://dev.mysql.com/downloads/workbench/) and follow the instructions to install.
 
 ## Frontend (React)
 
@@ -49,9 +50,10 @@ Download [installer
 
 ### Commands (Windows/Linux/Mac):
 
-``npm install --prefix frontend/docuview-react-app ; npm start --prefix frontend/docuview-react-app``
+start application from parent directory
+``cd .\frontend\docuview-react-app ; npm install; cd ..\.. ; npm start --prefix frontend/docuview-react-app``
 
-## Server (Springboot, Tomcat)
+## Server (Springboot)
 
 ### Requirements:
 
@@ -61,14 +63,21 @@ Download [installer
 
 ### Commands (Windows):
 
-``set JAVA_HOME=C:\Program Files\Java\jdk-21 ; server\mvnw.cmd -f server\pom.xml spring-boot:run``
+Note: setup a env variable JAVA_HOME to the main dirrectory where java is installed
+start server from inside `.server`  dir
+
+``mvn package -f pom.xml; .\mvnw.cmd -f pom.xml spring-boot:run``
 
 ### Commands (Linux):
 
-``export JAVA_HOME=/usr ; server/mvnw -f server/pom.xml spring-boot:run``
+Note: before executing, exectute ``chmod +x server/mvnw`` to allow file to executed
+start server from parent dir
+``export JAVA_HOME=/usr ; mvn package -f server/pom.xml ; ./mvnw -f server/pom.xml spring-boot:run``
 
 ### Commands (Mac)
 
+Note: before executing, exectute ``chmod +x server/mvnw`` to allow file to executed
+start server from parent dir
 ``export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home ; server/mvnw -f server/pom.xml spring-boot:run``
 
 ## Database (MySQL)
