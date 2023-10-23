@@ -267,8 +267,8 @@ function FilesTable() {
                     Results...
                 </div>
                 <div className="space-x-2">
-                    <button className="bg-iso-blue-grey text-white px-4 py-2 rounded">View</button>
-                    <button className="bg-iso-blue-grey text-white px-4 py-2 rounded">Download</button>
+                    <button className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded">View</button>
+                    <button className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded">Download</button>
                 </div>
             </div>
 
