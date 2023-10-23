@@ -141,6 +141,6 @@ public class Hardcoded{
 		   outerArray.add(currentJson);
 	   }
    }
-
+	
 	
 }		

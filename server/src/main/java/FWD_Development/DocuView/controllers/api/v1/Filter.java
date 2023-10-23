@@ -89,17 +89,17 @@ public class Filter {
 			public String filteringQueryCondition(String param){
 				String filteringQuerySQL;
 				switch(compType){
-					case ')':
-						filteringQuerySQL = this.originId + " < " + "\'" + param + "\'";
-						break;
 					case '(':
 						filteringQuerySQL = this.originId + " > " + "\'" + param + "\'";
 						break;
-					case ']':
-						filteringQuerySQL = this.originId + ">=" + "\'" + param + "\'";
+					case ')':
+						filteringQuerySQL = this.originId + " < " + "\'" + param + "\'";
 						break;
 					case '[':
-						filteringQuerySQL = this.originId + "<=" + "\'" + param + "\'";
+						filteringQuerySQL = this.originId + " >= " + "\'" + param + "\'";
+						break;
+					case ']':
+						filteringQuerySQL = this.originId + " <= " + "\'" + param + "\'";
 						break;
 					case '!':
 						filteringQuerySQL = this.originId + " <> " + "\'" + param + "\'";
@@ -124,17 +124,17 @@ public class Filter {
 			private String generatefilteringQueryFormat(){
 				String filteringQuerySQL;
 				switch(compType){
-					case ')':
-						filteringQuerySQL = this.originId + " < " + "\'%s\'";
-						break;
 					case '(':
 						filteringQuerySQL = this.originId + " > " + "\'%s\'";
 						break;
-					case ']':
-						filteringQuerySQL = this.originId + ">=" + "\'%s\'";
+					case ')':
+						filteringQuerySQL = this.originId + " < " + "\'%s\'";
 						break;
 					case '[':
-						filteringQuerySQL = this.originId + "<=" + "\'%s\'";
+						filteringQuerySQL = this.originId + " >= " + "\'%s\'";
+						break;
+					case ']':
+						filteringQuerySQL = this.originId + " <= " + "\'%s\'";
 						break;
 					case '!':
 						filteringQuerySQL = this.originId + " <> " + "\'%s\'";
