@@ -14,7 +14,7 @@ function formatDate(milliseconds) {
 }
 
 function formatFileSize(mbSize) {
-    if(mbSize < 1000) {
+    if (mbSize < 1000) {
         return `${mbSize} MB`;
     } else {
         const gbSize = mbSize / 1000;
@@ -23,10 +23,15 @@ function formatFileSize(mbSize) {
 }
 
 
-const FileRow = ({ fileName, customer, uploadDate, fileSizeMb }) => {
+const FileRow = ({ fileName, customer, uploadDate, fileSizeMb, attachmentID, isSelected, onFileSelection }) => {
     return (
         <div className="flex w-full border-b py-2 items-center">
-            <input type="checkbox" className="form-checkbox h-5 w-5 mr-4 ml-4" />
+            <input
+                type="checkbox"
+                className="form-checkbox h-5 w-5 mr-4 ml-4"
+                checked={isSelected}
+                onChange={() => onFileSelection(attachmentID)}
+            />
             <div className="w-1/4 truncate text-sm px-2">{fileName}</div>
             <div className="w-1/4 truncate text-sm px-2">{customer}</div>
             <div className="w-1/4 truncate text-sm px-2">{formatDate(uploadDate)}</div>
