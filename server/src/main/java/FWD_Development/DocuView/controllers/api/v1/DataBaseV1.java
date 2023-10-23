@@ -1,4 +1,4 @@
-package FWD_Development.DocuView.controllers;
+package FWD_Development.DocuView.controllers.api.v1;
 
 
 /* CUSTOM ADDED LIBS */
@@ -6,7 +6,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
+import java.util.Iterator;
 import java.util.HashMap;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 /* CUSTOM ADDED LIBS */
 
@@ -27,6 +31,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import FWD_Development.DocuView.controllers.api.v1.DataBaseTree.DataBaseNode;
+
+import java.sql.ResultSetMetaData;
+
 import org.springframework.dao.EmptyResultDataAccessException;
 
 // FILTERS
@@ -44,22 +52,24 @@ import org.springframework.dao.EmptyResultDataAccessException;
 //      proposal_date_start
 //      proposals_date_end
 
+// All this stuff, evil.
+// better impletion form, make tree that maps out all TABLES and has data of every table, THEN use that to navigate the database
 
 // @CrossOrigin(origins = "http://localhost:3000") // Default React port
 @RestController
 @RequestMapping("/api/v1/database")
-public class DataBaseV1 implements Hardcoded{
-	private static final ObjectMapper objMapper = new ObjectMapper();
-	
+public class DataBaseV1 {
+
+	@Autowired
+    	private JdbcTemplate jdbcTemplate;
+
 	@GetMapping("")
-	public JsonNode getDocs(@RequestParam Map<String,String> allRequestParams){
-		// ObjectNode rootNode = objMapper.valueToTree(allRequestParams);
-		ObjectNode rootNode = objMapper.createObjectNode();
-		for (Map.Entry<String,String> set : allRequestParams.entrySet()){
-			if (!filterMap.containsKey(set.getKey())) { continue; }
-			rootNode.put(set.getKey(), set.getValue());
-		}
-		return rootNode;
+	public List<Map<String, Object>> getDocs(@RequestParam Map<String,String> allRequestParams){
+		String filters =   Hardcoded.dataBaseTree.generateFilterQuery(allRequestParams);
+		if (filters.equals("")) {filters = "TRUE";}
+		String query = Hardcoded.dataBaseTree.getTreeInnerJoin() + " WHERE " + filters;
+		//List<Map<String,Object>> holder = 
+		return jdbcTemplate.queryForList(query);
 	}
 	
 };

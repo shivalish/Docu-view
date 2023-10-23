@@ -1,6 +1,9 @@
-package FWD_Development.DocuView.controllers;
+package FWD_Development.DocuView.controllers.api.v1;
 
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -8,14 +11,22 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import FWD_Development.DocuView.controllers.api.v1.DataBaseTree.DataBaseNode;
+import jakarta.annotation.PostConstruct;
+
 import org.springframework.dao.EmptyResultDataAccessException;
 import java.util.HashMap;
 
@@ -41,95 +52,95 @@ import java.util.HashMap;
 // Hardcoded is a antipattern interface to allow vars to share the same immutable variables,
 // allowing the uses to use the same vars.
 
-public interface Hardcoded{
+@Component
+public class Hardcoded{
+
+	@Autowired
+    	private JdbcTemplate jdbcTemplate;
+
+	private static final ObjectMapper objMapper = new ObjectMapper();
+
+	static DataBaseTree dataBaseTree;
+	static ArrayNode outerArray;
+
 	
-	public class Filter {
+
+	@PostConstruct
+	public void hardcodedSetUp() {
+		initializeDataBaseTree(jdbcTemplate);
+		initializeOuterArray();
+	}
+
+	public static void initializeDataBaseTree(JdbcTemplate jdbcTemplate){
+		dataBaseTree = new DataBaseTree("ATTACH_PROPOSAL", jdbcTemplate);
+		DataBaseNode root = Hardcoded.dataBaseTree.getRoot();
+		
+		// future automatize updates
+		root.add("attachment_id", "ATTACHMENT_FILE");
+		root.add("proposal_id", "PROPOSAL_INFO");
+		root.add("attachment_type", "ATTACH_TYPE");
+
+		DataBaseNode holder = root.getConnectedId("proposal_id");
+		holder.add("project_id", "PROJ_INFO");
+		holder.add("project_type", "PROJ_TYPE");
+		holder.add("resource_id", "RES_INFO");
+		holder.add("customer_id", "CUST_INFO");
+		holder.add("auction_id", "AUC_INFO");
+		holder.add("period_id", "PERIOD_INFO");
+		
+		DataBaseNode holder1 = holder.getConnectedId("auction_id");
+		holder1.add("commitment_period_id", "PERIOD_INFO");
+		holder1.add("auction_period_id", "PERIOD_INFO");
+		holder1.add("auction_type", "AUC_TYPE");
+		
+		DataBaseNode holder2 = holder.getConnectedId("resource_id");
+		holder2.add("resource_type", "RES_TYPE");
+
+		Filter[] filterArray = new Filter[] {
+			new Filter("file_creation", "ISO 8601","create_date", root, "attachment_id", false),
+			new Filter("file_extension", "string","file_name", root, "attachment_id", new String[]{".bmp", ".doc", ".docx", ".htm", ".html", ".jpg", ".msg", ".pdf", ".txt", ".xlsm", ".xlsx", ".zip", ".zipx"}, '^'),
+			new Filter("filename", "string","file_name", root, "attachment_id", false),
+			new Filter("attachment_type", "string", "attachment_type", root, "attachment_type", true),
+
+			new Filter("customer_name", "string", "customer_name", holder,"customer_id", false),
+
 			
+			new Filter("commitment_date_start", "ISO 8601", "begin_date", holder1, "commitment_period_id",false, '['),
+			new Filter("commitment_date_end", "ISO 8601", "end_date", holder1, "commitment_period_id",false, ']'),
+			new Filter("auction_type", "string", "auction_type", holder1, "auction_type", true),
 
-	    	private String name;		// name of filter
-	    	private String type;		// filter datatype
-	    	private boolean hasFiniteStates;	// has finite states?
-	    	private boolean preDefinedStates;
-	    	private String[] finiteStatesList;
-	    	private String finiteStatesQuery;
-	    	
-	    	// Use this if there is no finite state (i.e Search bar)
-	    	Filter(String _name, String _type){
-	    		this.name = _name;
-	    		this.type = _type;
-	    		this.hasFiniteStates = false;
-	    		this.preDefinedStates = false;
-	    	}
-	    	
-	    	
-	    	// Use this if finite states are defined by developer instead of DB
-	    	Filter(String _name, String _type, String[] _finiteStates){
-	    		this.name = _name;
-	    		this.type = _type;
-	    		this.hasFiniteStates = true;
-	    		this.preDefinedStates = true;
-	    		this.finiteStatesList = _finiteStates;
-	    	}
-	    	
-	    	// Use this if finite stated are defined by DB
-	    	Filter(String _name, String _type, String _finiteStatesQuery){
-	    		this.name = _name;
-	    		this.type = _type;
-	    		this.hasFiniteStates = true;
-	    		this.preDefinedStates = false;
-	    		this.finiteStatesQuery = _finiteStatesQuery;
-	    	}
-	    	
-	    	// only getters (READONLY FUNC)
-	    	public String getName(){
-	    		return this.name;
-	    	}
-	    	public String getType(){
-	    		return this.type;
-	    	}
-	    	public boolean getPreDefinedStates(){
-	    		return this.preDefinedStates;
-	    	}
-	    	public boolean getHasFiniteStates(){
-	    		return this.hasFiniteStates;
-	    	}
-	    	//////////////////////////////
-	    	
-	    	private List<String> queryExecutor(JdbcTemplate jdbcTemplate){
-	    		// temp
-				List<String> temp = jdbcTemplate.queryForList(finiteStatesQuery,String.class);
-	    		return temp;
-	    	};
-	    	
-	    	//temp for skeleton
-	    	public List<String> getFiniteStatesQuery(JdbcTemplate jdbcTemplate){
-	    		if (!this.hasFiniteStates) { 
-	    			return Arrays.asList(new String[]{});
-	    		}
-	    		if (this.preDefinedStates) {
-	    			return Arrays.asList(finiteStatesList);
-	    		}
-	    		return queryExecutor(jdbcTemplate);
-	    	}
-	    }
+			new Filter("resource_type", "string", "resource_type", holder2, "resource_type", true),
+	
+			
+			
+			new Filter("auction_date_start", "ISO 8601", "auction_begin_date", holder1, "auction_period_id",false, '['),
+			new Filter("auction_date_end", "ISO 8601", "auction_end_date", holder1, "auction_period_id",false, ']'),
+	
+			new Filter("proposal_date_start", "ISO 8601", "begin_date", holder, "period_id",false, '['),
+			new Filter("proposals_date_end", "ISO 8601", "end_date", holder, "period_id",false, ']'),
+		};
 
-	static final Filter[] filterArrray = new Filter[] {
-		new Filter("file_creation", "ISO 8601"),
-		new Filter("document_type", "string", new String[]{".pdf",".csv",".xlsx",".docs"}),
-		new Filter("filename", "string"),
-		new Filter("customer_name", "string"),
-		new Filter("auction_type", "string", "SELECT DISTINCT auction_type FROM AUC_TYPE"),
-		new Filter("attachment_type", "string", "SELECT DISTINCT attachment_type FROM ATTACH_TYPE"),
-		new Filter("commitment_date_start", "ISO 8601"),
-		new Filter("commitment_date_end", "ISO 8601"),
-		new Filter("auction_date_start", "ISO 8601"),
-		new Filter("auction_date_end", "ISO 8601"),
-		new Filter("proposal_date_start", "ISO 8601"),
-		new Filter("proposals_date_end", "ISO 8601"),
-	};
-	static final Map<String, Filter> filterMap = new HashMap<String, Filter>(){{
-		for (Filter elem : filterArrray){
-			put(elem.getName(), elem);
-        	}
-	}};
+		Hardcoded.dataBaseTree.addFilters(filterArray);
+	}
+  
+	private void initializeOuterArray(){
+		outerArray = objMapper.createArrayNode();
+	   for (Map.Entry<String, Filter> entry : Hardcoded.dataBaseTree.getFilterMap().entrySet()) {
+		   String name = entry.getKey();
+		   Filter filter = entry.getValue();
+		   ObjectNode currentJson = objMapper.createObjectNode();
+		   currentJson.put("name", name);
+		   currentJson.put("type", filter.getType());
+		   currentJson.put("has_finite_states", filter.getFiniteStates());
+
+		   ArrayNode finiteStatesArray = currentJson.putArray("finite_states");
+		   List<String> finiteStates = filter.getFiniteStatesQuery(jdbcTemplate);
+		   for (String elem : finiteStates) {
+			   finiteStatesArray.add(elem);
+		   }
+		   outerArray.add(currentJson);
+	   }
+   }
+	
+	
 }		

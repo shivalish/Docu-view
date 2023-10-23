@@ -1,4 +1,4 @@
-package FWD_Development.DocuView.controllers;
+package FWD_Development.DocuView.controllers.api.v1;
 
 
 /* CUSTOM ADDED LIBS */
@@ -45,7 +45,4 @@ import org.springframework.dao.EmptyResultDataAccessException;
 // @CrossOrigin(origins = "http://localhost:3000") // Default React port
 @RestController
 @RequestMapping("/api/v1/fileshare")
-public class FileShareV1 implements Hardcoded{
-
-
-};
+public class FileShareV1 {};
