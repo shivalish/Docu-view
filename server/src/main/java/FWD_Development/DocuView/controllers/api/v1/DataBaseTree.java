@@ -118,8 +118,9 @@ public class DataBaseTree {
         if (paramFormatStrings == null) { return ""; }
         List<String> query = new ArrayList<>();
         for (Map.Entry<String, String> set : paramFormatStrings.entrySet()){
-            if ( !allRequestParams.containsKey(set.getKey()) ){ continue; }
-            query.add(String.format(set.getValue(), allRequestParams.get(set.getKey())));
+        	String key = set.getKey();
+            	if ( !allRequestParams.containsKey(key) ){ continue; }
+            	query.add(set.getValue().replace("{" + key + "}", allRequestParams.get(key)));
         }
         return String.join(" AND ", query);
     }
@@ -129,7 +130,7 @@ public class DataBaseTree {
         filterMap = new HashMap<>();
         for (Filter f : filterArray){
             filterMap.put(f.getName(), f);
-            out.put(f.getName(), f.getTargetTable().getPath()  + "_" + f.getTargetId() + "_" + f.filteringQueryFormat());
+            out.put(f.getName(), f.getTargetTable().getPath()  + "_" + f.getTargetId() + "_" + String.format(f.filteringQueryFormat(), "{" + f.getName() + "}"));
         }
         this.paramFormatStrings = out;
     }
