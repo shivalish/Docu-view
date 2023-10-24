@@ -19,6 +19,10 @@ function HomePageButton({ text, OnClick }){
 }
 
 // Moved it for clarity (used 4 times in the single part)
+// You can now put in a state variable to userInput and a function that modifies the state variable to setUserInput. 
+// If a user types anything in this box, it will be reflected on the userInput variable
+// If isPassword is true, it masks the password box
+// If you don't pass any arguments, it does the same thing it did in the previous version and nothing bad happens
 function HomePageInput( { label, userInput="", setUserInput = null, isPassword = false} ){
   let input_type;
   if (isPassword) {  
@@ -54,6 +58,7 @@ function HomePageInput( { label, userInput="", setUserInput = null, isPassword =
 
 // Do what you will with this, idk what exactly you want to do
 
+// I modified the sign up page a little to the way I like
 function HomePageTabs(){
   const navigate = useNavigate();
   const [username, setUserName] = useState("");

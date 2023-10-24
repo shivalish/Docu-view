@@ -2,6 +2,7 @@ import React from 'react';
 import logo from '../imgs/logo.jpg';
 import { useNavigate } from "react-router-dom";
 
+// I modified this a litttle so that clicking the icon helps return to the home page
 export default function Header(){
     const navigate = useNavigate();
     //TODO 6: add window size break thresholds (see tailwind docs) and make sure components are sized correctly
