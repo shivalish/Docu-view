@@ -2,7 +2,6 @@ import React from "react";
 import classNames from "classnames";
 
 export default function Button({ children, width, height, OnClick }) {
-  //TODO 5: create a hover effect and animate the size of the button using only tailwind css
   return (
     <button
       type="button"
