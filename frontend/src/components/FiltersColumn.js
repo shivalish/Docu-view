@@ -1,100 +1,141 @@
 import { React, useContext, useEffect, useState } from "react";
-import { Switch } from "@headlessui/react";
 import { ChevronDoubleRightIcon } from "@heroicons/react/24/solid";
 import { fetchContext } from "./TableContext";
 import classNames from "classnames";
-
-//enables the filter
-function ModifiedSwitch({ label, changer, cmd }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <Switch
-      enabled={open}
-      onChange={()=>{setOpen(!open); changer(cmd);}}
-      className="flex flex-row items-center gap-6"
-    >
-      <span className="text-iso-white font-bold">{label}</span>
-      <div className="flex h-5 w-10 bg-iso-blue-grey-200 rounded-full items-center">
-        <span
-          className={`${
-            open ? "translate-x-6" : "translate-x-0"
-          } inline-block h-4 w-4 transform rounded-full bg-white transition`}
-        />
-      </div>
-    </Switch>
-  );
-}
+import ToggleSwitch from "../atoms/ToggleSwitch";
+import { Disclosure } from "@headlessui/react";
+import { Popover } from "@headlessui/react";
+import FilterTypes from "../atoms/FilterTypes";
+import {CalendarIcon} from "@heroicons/react/24/solid"; //this may be used later to clean up the calendar
+import Calendar from 'react-calendar';
 
 //this is each row of the dropdown menu
-//cmd is /api/v1/...
-function FilterRow({ name, textboxes = false, setQuery }) {
+//textboxes = 1 or 2 dictactes how many textboxes there will be
+//setQuery is the function called (might have args)
+function FilterRow({ name, textboxes = 0, checkbox = [], calendar, setQuery }) {
+  //TODO: simplify this into 1 state that uses an object instead of string => {text1: "example", text2: "something"};
+  const [text, setText] = useState("");
+  const [text2, setText2] = useState("");
+
+  //TODO: implement the calendar functionality
+
+  //TODO: code cleanup + visual alignment fixes
+
+  //TODO: create a separate custom dropdown component
+
+  //TODO: createa custom textbox component
+
+  useEffect(() => {
+    setQuery(text, text2);
+  }, [text, text2]); //auto change query on textbox change
+
   return (
-    <div className="flex flex-col w-full py-2 items-center border-b-2 border-iso-white">
-      <ModifiedSwitch label={name} changer={setQuery}/>
-      {textboxes && (
-        <div className="flex flex-row gap-4 w-full text-black">
-          <input className="w-10 bg-iso-grey border-iso-blue-grey-100 border-2" />
-          <input className="w-10 bg-iso-grey border-iso-blue-grey-100 border-2" />
-        </div>
+    <Disclosure>
+      {({ open }) => (
+        <>
+          <Disclosure.Button className="flex flex-col w-full py-2 items-center gap-4">
+            <span className="flex flex-row w-full h-10 items-center text-lg">
+              {name}
+              <ChevronDoubleRightIcon
+                className={classNames("w-6 h-6", open && "rotate-90")}
+              />
+            </span>
+          </Disclosure.Button>
+
+          <Disclosure.Panel>
+            <ToggleSwitch changer={setQuery} />
+            {textboxes === 2 && (
+              <div className="flex flex-row gap-4 w-full">
+                <input
+                  className="w-16 bg-iso-blue-grey-300 border-iso-blue-grey-100 border-2"
+                  onChange={(e) => {
+                    setText(e.target.value);
+                  }}
+                />
+                <input
+                  className="w-16 bg-iso-blue-grey-300 border-iso-blue-grey-100 border-2"
+                  onChange={(e) => {
+                    setText2(e.target.value);
+                  }}
+                />
+              </div>
+            )}
+
+            {textboxes === 1 && (
+              <div>
+                <input
+                  className="w-10 bg-iso-blue-grey-300 border-iso-blue-grey-100 border-2"
+                  onChange={(e) => {
+                    setText(e.target.value);
+                  }}
+                />
+              </div>
+            )}
+
+            {checkbox.length > 0 && (
+              <div className="flex flex-col gap-2 w-full">
+                {checkbox.map((docType) => (
+                  <div>
+                    <label>{docType}</label>
+                    <input type="checkbox" className="form-checkbox" />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {calendar && (
+              <div>
+                <Calendar />
+              </div>
+            )}
+          </Disclosure.Panel>
+        </>
       )}
-    </div>
+    </Disclosure>
   );
 }
 
-function Tester(){ //testing if useContext works
-  
+//TODO: remove tester component when implementing table
+function Tester() {
+  //testing if useContext works
 
-  const x = useContext(fetchContext)
+  const x = useContext(fetchContext);
 
-
-  useEffect(()=>{
-    console.log("query is changing!", x)
-  }, [])
-  return(
-    <div>
-      {x}
-    </div>
-  );
+  useEffect(() => {
+    console.log("query is changing!", x);
+  }, [x]);
+  return <div>{x}</div>;
 }
 
 //dropdown menu
 function FiltersColumn() {
-  const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("/api/v1/");
-
 
   return (
     <fetchContext.Provider value={query}>
-      <Tester/>
-      <div className="flex flex-col bg-iso-blue h-full w-full text-iso-white p-4">
-        <div
-          onClick={() => {
-            setOpen(!open);
-          }}
-          className="flex flex-col"
-        >
+      <Popover className="flex flex-col bg-iso-blue h-full w-full text-iso-white p-4">
+        <Popover.Button>
           <span className="flex flex-row w-full h-10 items-center text-lg">
             FILTERS
             <ChevronDoubleRightIcon
-              className={classNames("w-6 h-6", open && "rotate-90")}
+              className={classNames("w-6 h-6 ui-open:rotate-90")}
             />
           </span>
-        </div>
-        {open && (
+        </Popover.Button>
+
+        <Popover.Panel>
           <div className="flex flex-col">
-            {[
-              {name: "Project Type", textboxes: false, setQuery: ()=>{setQuery("bruh")}},
-              {name: "Attachment Type", textboxes: false, setQuery: ()=>{setQuery("bruh2")}},
-              {name: "Auction Type", textboxes: true, setQuery: (date1, date2)=>{setQuery(`${date1, date2} bruh3`)}},
-              {name: "Resource Type", textboxes: true, setQuery: ()=>{setQuery("bruh4")}}
-            ].map((row) => (
-              <FilterRow 
-              {...row}
+            {FilterTypes.map((row) => (
+              <FilterRow
+                {...row}
+                setQuery={(date1 = null, date2 = null) => {
+                  setQuery(`${date1} ${date2} ${row.api}`);
+                }}
               />
             ))}
           </div>
-        )}
-      </div>
+        </Popover.Panel>
+      </Popover>
     </fetchContext.Provider>
   );
 }
