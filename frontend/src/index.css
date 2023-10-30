@@ -16,4 +16,24 @@
   .tab {
     @apply rounded-t-md ui-selected:bg-iso-white ui-not-selected:bg-iso-grey h-10 w-32;
   }
+
+  .ffc {
+    @apply flex flex-col;
+  }
+
+  .ffr {
+    @apply flex flex-row;
+  }
+
+  .isob {
+    @apply bg-iso-blue;
+  }
+
+  .center {
+    @apply items-center;
+  }
+
+  .itemcenter {
+    @apply w-1/4 text-sm px-2 font-semibold flex items-center;
+  }
 }
