@@ -113,17 +113,18 @@ function FiltersColumn() {
 
   return (
     <fetchContext.Provider value={query}>
-      <Popover className="flex flex-col bg-iso-blue h-full w-full text-iso-white p-4">
-        <Popover.Button>
+      <Disclosure>
+        <div className="flex flex-col bg-iso-blue h-full w-full text-iso-white p-4">
+        <Disclosure.Button>
           <span className="flex flex-row w-full h-10 items-center text-lg">
             FILTERS
             <ChevronDoubleRightIcon
               className={classNames("w-6 h-6 ui-open:rotate-90")}
             />
           </span>
-        </Popover.Button>
+        </Disclosure.Button>
 
-        <Popover.Panel>
+        <Disclosure.Panel>
           <div className="flex flex-col">
             {FilterTypes.map((row) => (
               <FilterRow
@@ -134,8 +135,9 @@ function FiltersColumn() {
               />
             ))}
           </div>
-        </Popover.Panel>
-      </Popover>
+        </Disclosure.Panel>
+        </div>
+      </Disclosure>
     </fetchContext.Provider>
   );
 }
