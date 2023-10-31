@@ -116,7 +116,7 @@ public class DataBaseTree {
 
     
 
-    public String generateFilterQuery(@RequestParam MultiValueMap<String,String> allRequestParams){
+    public String generateFilterQuery(MultiValueMap<String,String> allRequestParams){
         if (paramFormatStrings == null) { return ""; }
         List<String> query = new ArrayList<>();
         for (Map.Entry<String, String> set : paramFormatStrings.entrySet()){
