@@ -2,7 +2,6 @@ package FWD_Development.DocuView.controllers.api.v1;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -85,7 +84,7 @@ public class Filter {
 
 			// 
 			// SELECT (SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_NAME="ATTACHMENT_FILE") ATTACHMENT_FILE WHERE file_name LIKE .bmp
-			// todo. pregenrated then format
+			// todo. pre-generated then format
 			public String filteringQueryCondition(String param){
 				String filteringQuerySQL;
 				switch(compType){

@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.RequestParam;
 
 public class DataBaseTree {
     public class DataBaseNode {
@@ -114,13 +116,16 @@ public class DataBaseTree {
 
     
 
-    public String generateFilterQuery(Map<String,String> allRequestParams){
+    public String generateFilterQuery(@RequestParam MultiValueMap<String,String> allRequestParams){
         if (paramFormatStrings == null) { return ""; }
         List<String> query = new ArrayList<>();
         for (Map.Entry<String, String> set : paramFormatStrings.entrySet()){
-        	String key = set.getKey();
-            	if ( !allRequestParams.containsKey(key) ){ continue; }
-            	query.add(set.getValue().replace("{" + key + "}", allRequestParams.get(key)));
+            if ( !allRequestParams.containsKey( set.getKey() ) ){ continue; }
+            String key = set.getKey();
+            List<String> holder = new ArrayList<>();
+            for (String elem : allRequestParams.get(key))
+                holder.add(set.getValue().replace("{" + key + "}", elem));
+            query.add("( " + String.join(" OR ", holder) + " )");
         }
         return String.join(" AND ", query);
     }

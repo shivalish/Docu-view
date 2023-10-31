@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -64,11 +64,10 @@ public class DataBaseV1 {
     	private JdbcTemplate jdbcTemplate;
 
 	@GetMapping("")
-	public List<Map<String, Object>> getDocs(@RequestParam Map<String,String> allRequestParams){
+	public List<Map<String,Object>> getDocs(@RequestParam MultiValueMap<String,String> allRequestParams){
 		String filters =   Hardcoded.dataBaseTree.generateFilterQuery(allRequestParams);
 		if (filters.equals("")) {filters = "TRUE";}
 		String query = Hardcoded.dataBaseTree.getTreeInnerJoin() + " WHERE " + filters;
-		//List<Map<String,Object>> holder = 
 		return jdbcTemplate.queryForList(query);
 	}
 	
