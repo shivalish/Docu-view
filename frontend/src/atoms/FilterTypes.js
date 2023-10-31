@@ -15,7 +15,7 @@ export default [
   },
   {
     name: "Auction Period",
-    dropdown: true, //may have to change to array later
+    dropdown: Array.from({length: 151}, (_, i) => i + 1900),
     api: "/api/v1/bruh",
   },
   {
@@ -39,12 +39,12 @@ export default [
   },
   {
     name: "Customer Name",
-    textboxes: 1,
+    textbox: true,
     api: "/api/v1/bruh3",
   },
   {
     name: "File Name",
-    textboxes: 1,
+    textbox: true,
     api: "/api/v1/bruh5",
   }
 ];
