@@ -113,9 +113,7 @@ public class DataBaseTree {
         if (!this.nodes.containsKey(tableName)) {return null;}
         return this.nodes.get(tableName);
     }
-
-    
-
+  
     public String generateFilterQuery(MultiValueMap<String,String> allRequestParams){
         if (paramFormatStrings == null) { return ""; }
         List<String> query = new ArrayList<>();
