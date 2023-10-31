@@ -48,10 +48,11 @@ Download [installer](https://dev.mysql.com/downloads/workbench/) and follow the 
 
 * Node 18
 
-### Commands (Windows/Linux/Mac):
+### Commands (Windows)
+``cd .\frontend ; npm install; cd .. ; npm start --prefix .\frontend``
 
-start application from parent directory
-``cd .\frontend\docuview-react-app ; npm install; cd ..\.. ; npm start --prefix frontend/docuview-react-app``
+### Commands (Linux/Mac):
+``cd ./frontend ; npm install; cd .. ; npm start --prefix ./frontend``
 
 ## Server (Springboot)
 
