@@ -112,9 +112,9 @@ public class DataBaseTree {
         if (!this.nodes.containsKey(tableName)) {return null;}
         return this.nodes.get(tableName);
     }
-  
-    public String generateFilterQuery(MultiValueMap<String,String> allRequestParams){
-        if (paramFormatStrings == null) { return ""; }
+
+    public String generateFilterQuery(Map<String,String> allRequestParams){
+        if (paramFormatStrings == null || paramFormatStrings.isEmpty()) { return "TRUE"; }
         List<String> query = new ArrayList<>();
         for (Map.Entry<String, String> set : paramFormatStrings.entrySet()){
             if ( !allRequestParams.containsKey( set.getKey() ) ){ continue; }
@@ -124,6 +124,7 @@ public class DataBaseTree {
                 holder.add(set.getValue().replace("{" + key + "}", elem));
             query.add("( " + String.join(" OR ", holder) + " )");
         }
+        if (query.isEmpty()) { return "TRUE"; }
         return String.join(" AND ", query);
     }
 
