@@ -50,24 +50,6 @@ import java.sql.ResultSetMetaData;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
 
-// FILTERS
-//      file_creation
-//      document_type
-//      file_name
-//      customer_name
-//      auction_type
-//      proposal_type
-//      project_type
-//      commitment_date_start
-//      commitment_date_end
-//      auction_date_start
-//      auction_date_end
-//      proposal_date_start
-//      proposals_date_end
-
-// All this stuff, evil.
-// better impletion form, make tree that maps out all TABLES and has data of every table, THEN use that to navigate the database
-
 @CrossOrigin(origins = "http://localhost:3000") // Default React port
 @RestController
 @RequestMapping("/api/v1/database")
