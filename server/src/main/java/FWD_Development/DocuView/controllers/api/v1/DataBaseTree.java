@@ -123,6 +123,14 @@ public class DataBaseTree {
     public Map<String, Filter> getFilterMap(){
         return new HashMap<>(filterMap);
     }
+    
+    public String documentation(){
+    	List<String> uri = new ArrayList<>();
+    	for (Map.Entry<String, Filter> set : filterMap.entrySet()){
+        	uri.add(set.getKey() + "=[" + set.getValue().getType() + "]" );
+        }
+        return "?" + String.join("&", uri);
+    }
 
     public void addNode(DataBaseNode node){
         if (node == null) {return ;}
@@ -200,4 +208,7 @@ public class DataBaseTree {
         return String.join("", strLst);
         
     }
+    
+    
+    
 }
