@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Header from "./atoms/Header.jsx";
 import Button from "./atoms/Button.jsx";
 import { Tab } from "@headlessui/react";
@@ -15,13 +15,27 @@ function HomePageButton({ text, OnClick }) {
 }
 
 // Moved it for clarity (used 4 times in the single part)
-function HomePageInput({ label, hidden = false, forgot = false, forgotText }) {
+function HomePageInput({ label, hidden = false, forgot = false, userInput = "", setUserInput = null, forgotText }) {
+  if (setUserInput === null) {
+    return (
+      <div className="flex flex-col w-full">
+      <label> {label} </label>
+      <input
+        type={hidden && "password"}
+        className="h-10 w-full px-5 bg-iso-grey rounded-md"
+      />
+      {forgot && <span className="h-5 text-right">{forgotText}</span>}
+    </div>
+    )
+  }
   return (
     <div className="flex flex-col w-full">
       <label> {label} </label>
       <input
         type={hidden && "password"}
         className="h-10 w-full px-5 bg-iso-grey rounded-md"
+        onChange={(e) => {setUserInput(e.target.value)}}
+        value={userInput}
       />
       {forgot && <span className="h-5 text-right">{forgotText}</span>}
     </div>
@@ -31,6 +45,11 @@ function HomePageInput({ label, hidden = false, forgot = false, forgotText }) {
 function HomePageTabs() {
   const navigate = useNavigate();
   const movePage = () => navigate("/main");
+  const [logInID, setLogInID] = useState("");
+  const [logInPasswd, setLogInPasswd] = useState("");
+  const [signUpID, setSignUpID] = useState("");
+  const [signUpPasswd, setSignUpPasswd] = useState("");
+  const [signUpPasswdReEnter, setSignUpPasswdReEnter] = useState("");
   return (
     <div className="flex h-full w-1/3 justify-center items-center">
       <div>
@@ -46,18 +65,32 @@ function HomePageTabs() {
                 label="Username"
                 forgot={true}
                 forgotText={"Forgot Username"}
+                userInput={logInID}
+                setUserInput={setLogInID}
               />
               <HomePageInput
                 label="Password"
                 hidden={true}
                 forgot={true}
                 forgotText={"Forgot Password"}
+                userInput={logInPasswd}
+                setUserInput={setLogInPasswd}
               />
               <HomePageButton text="Login" OnClick={movePage} />
             </Tab.Panel>
             <Tab.Panel className="flex flex-col tab-body gap-5">
-              <HomePageInput label="Username" />
-              <HomePageInput label="Password" hidden={true} />
+              <HomePageInput label="Username" 
+              userInput={signUpID}
+              setUserInput={setSignUpID}/>
+
+              <HomePageInput label="Password" hidden={true} 
+              userInput={signUpPasswd}
+              setUserInput={setSignUpPasswd}/>
+
+              <HomePageInput label="Re-enter Password" hidden={true}
+              userInput={signUpPasswdReEnter}
+              setUserInput={setSignUpPasswdReEnter}/>
+
               <HomePageButton text="Sign Up" OnClick={movePage} />
             </Tab.Panel>
           </Tab.Panels>
