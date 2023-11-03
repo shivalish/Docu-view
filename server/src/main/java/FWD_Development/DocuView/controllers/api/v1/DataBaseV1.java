@@ -69,41 +69,41 @@ public class DataBaseV1 {
 		private Long attachmentId;
 		@JsonView(Views.Public.class)
 		private String attachmentType;
-		@JsonView(Views.Public.class)
+		@JsonView(Views.Private.class)
 		private Long proposalId;
-		@JsonView(Views.Public.class)
+		@JsonView(Views.Private.class)
 		private Long customerId;
-		@JsonView(Views.Public.class)
+		@JsonView(Views.Private.class)
 		private Long periodId;
-		@JsonView(Views.Public.class)
+		@JsonView(Views.Private.class)
 		private Long projectId;
 		@JsonView(Views.Public.class)
 		private String projectType;
-		@JsonView(Views.Public.class)
+		@JsonView(Views.Private.class)
 		private Long resourceId;
 		@JsonView(Views.Public.class)
 		private String projectTypeDescription;
-		 @JsonView(Views.Public.class)
+		 @JsonView(Views.Private.class)
 		private String projectIdProjectName;
-		 @JsonView(Views.Public.class)
+		 @JsonView(Views.Private.class)
 		private Long resourceIdResourceId;
-		 @JsonView(Views.Public.class)
+		 @JsonView(Views.Private.class)
 		private String resourceIdResourceName;
-		 @JsonView(Views.Public.class)
+		 @JsonView(Views.Private.class)
 		private String resourceIdResourceType;
-		 @JsonView(Views.Public.class)
+		 @JsonView(Views.Private.class)
 		private String resourceIdResourceTypeDescription;
 		 @JsonView(Views.Public.class)
 		private Date auctionBeginDate;
 		 @JsonView(Views.Public.class)
 		private Date auctionEndDate;
-		 @JsonView(Views.Public.class)
+		 @JsonView(Views.Private.class)
 		private Long auctionId;
-		 @JsonView(Views.Public.class)
+		 @JsonView(Views.Private.class)
 		private Long auctionPeriodId;
 		 @JsonView(Views.Public.class)
 		private String auctionType;
-		 @JsonView(Views.Public.class)
+		 @JsonView(Views.Private.class)
 		private Long commitmentPeriodId;
 		 @JsonView(Views.Public.class)
 		private String auctionTypeDescription;
@@ -113,9 +113,9 @@ public class DataBaseV1 {
 		private String commitmentPeriodDescription;
 		 @JsonView(Views.Public.class)
 		private Date commitmentPeriodEndDate;
-		 @JsonView(Views.Public.class)
+		 @JsonView(Views.Private.class)
 		private Long commitmentPeriodParentPeriodId;
-		 @JsonView(Views.Public.class)
+		 @JsonView(Views.Private.class)
 		private Long commitmentPeriodPeriodId;
 		 @JsonView(Views.Public.class)
 		private String commitmentPeriodPeriodType;
@@ -127,7 +127,7 @@ public class DataBaseV1 {
 		private Date periodEndDate;
 		 @JsonView(Views.Public.class)
 		private Long periodParentPeriodId;
-		 @JsonView(Views.Public.class)
+		 @JsonView(Views.Private.class)
 		private Long periodPeriodId;
 		 @JsonView(Views.Public.class)
 		private String periodPeriodType;
@@ -506,6 +506,45 @@ public class DataBaseV1 {
 			this.attachmentIdFilePath = attachmentIdFilePath;
 		    }
 	}
+	
+	public class Content {
+		private int count;
+		private int page;
+		private int page_total;
+		private int per_page;
+		
+		public void setCount(int count){
+			this.count = count;
+		}
+		
+		public int getCount(){
+			return count;
+		}
+		
+		public void setPage(int page){
+			this.page = page;
+		}
+		
+		public int getPage(){
+			return this.page;
+		}
+		
+		public void setPerPage(int perPage){
+			this.per_page = perPage;
+		}
+		
+		public int getPer_page(){
+			return this.per_page;
+		}
+		
+		public void setPageTotal(){
+			this.page_total = (int)(count / per_page) + 1;
+		}
+		
+		public int getPage_total(){
+			return this.page_total;
+		}
+	}
 
 	@Autowired
     	private JdbcTemplate jdbcTemplate;
@@ -600,8 +639,8 @@ public class DataBaseV1 {
 	}
 	
 	@GetMapping("/help")
-	public ResponseEntity<String> getHelp(@RequestParam Map<String,String> allRequestParams) throws JsonProcessingException{
-		return new ResponseEntity<>(Hardcoded.dataBaseTree.documentation(), HttpStatus.OK);
+	public ResponseEntity<String> getHelp(@RequestParam Map<String,String> allRequestParams){
+		return new ResponseEntity<>(Hardcoded.dataBaseTree.getURIquery("/api/v1/database"), HttpStatus.OK);
 	}
 	
 };
