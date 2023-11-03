@@ -63,41 +63,41 @@ public class DataBaseV1 {
 		private Long attachmentId;
 		@JsonView(Views.Public.class)
 		private String attachmentType;
-		@JsonView(Views.Public.class)
+		@JsonView(Views.Private.class)
 		private Long proposalId;
-		@JsonView(Views.Public.class)
+		@JsonView(Views.Private.class)
 		private Long customerId;
-		@JsonView(Views.Public.class)
+		@JsonView(Views.Private.class)
 		private Long periodId;
-		@JsonView(Views.Public.class)
+		@JsonView(Views.Private.class)
 		private Long projectId;
 		@JsonView(Views.Public.class)
 		private String projectType;
-		@JsonView(Views.Public.class)
+		@JsonView(Views.Private.class)
 		private Long resourceId;
 		@JsonView(Views.Public.class)
 		private String projectTypeDescription;
-		 @JsonView(Views.Public.class)
+		 @JsonView(Views.Private.class)
 		private String projectIdProjectName;
-		 @JsonView(Views.Public.class)
+		 @JsonView(Views.Private.class)
 		private Long resourceIdResourceId;
-		 @JsonView(Views.Public.class)
+		 @JsonView(Views.Private.class)
 		private String resourceIdResourceName;
-		 @JsonView(Views.Public.class)
+		 @JsonView(Views.Private.class)
 		private String resourceIdResourceType;
-		 @JsonView(Views.Public.class)
+		 @JsonView(Views.Private.class)
 		private String resourceIdResourceTypeDescription;
 		 @JsonView(Views.Public.class)
 		private Date auctionBeginDate;
 		 @JsonView(Views.Public.class)
 		private Date auctionEndDate;
-		 @JsonView(Views.Public.class)
+		 @JsonView(Views.Private.class)
 		private Long auctionId;
-		 @JsonView(Views.Public.class)
+		 @JsonView(Views.Private.class)
 		private Long auctionPeriodId;
 		 @JsonView(Views.Public.class)
 		private String auctionType;
-		 @JsonView(Views.Public.class)
+		 @JsonView(Views.Private.class)
 		private Long commitmentPeriodId;
 		 @JsonView(Views.Public.class)
 		private String auctionTypeDescription;
@@ -107,9 +107,9 @@ public class DataBaseV1 {
 		private String commitmentPeriodDescription;
 		 @JsonView(Views.Public.class)
 		private Date commitmentPeriodEndDate;
-		 @JsonView(Views.Public.class)
+		 @JsonView(Views.Private.class)
 		private Long commitmentPeriodParentPeriodId;
-		 @JsonView(Views.Public.class)
+		 @JsonView(Views.Private.class)
 		private Long commitmentPeriodPeriodId;
 		 @JsonView(Views.Public.class)
 		private String commitmentPeriodPeriodType;
@@ -121,7 +121,7 @@ public class DataBaseV1 {
 		private Date periodEndDate;
 		 @JsonView(Views.Public.class)
 		private Long periodParentPeriodId;
-		 @JsonView(Views.Public.class)
+		 @JsonView(Views.Private.class)
 		private Long periodPeriodId;
 		 @JsonView(Views.Public.class)
 		private String periodPeriodType;
@@ -500,6 +500,45 @@ public class DataBaseV1 {
 			this.attachmentIdFilePath = attachmentIdFilePath;
 		    }
 	}
+	
+	public class Content {
+		private int count;
+		private int page;
+		private int page_total;
+		private int per_page;
+		
+		public void setCount(int count){
+			this.count = count;
+		}
+		
+		public int getCount(){
+			return count;
+		}
+		
+		public void setPage(int page){
+			this.page = page;
+		}
+		
+		public int getPage(){
+			return this.page;
+		}
+		
+		public void setPerPage(int perPage){
+			this.per_page = perPage;
+		}
+		
+		public int getPer_page(){
+			return this.per_page;
+		}
+		
+		public void setPageTotal(){
+			this.page_total = (int)(count / per_page) + 1;
+		}
+		
+		public int getPage_total(){
+			return this.page_total;
+		}
+	}
 
 	@Autowired
     	private JdbcTemplate jdbcTemplate;
@@ -509,74 +548,55 @@ public class DataBaseV1 {
     	private String sqlQuery = "SELECT x.attach_proposal_attachment_id AS AttachmentId, x.attach_proposal_attachment_type AS AttachmentType, x.attach_proposal_proposal_id AS ProposalId, x.attach_proposal_proposal_id_customer_id AS CustomerId, x.attach_proposal_proposal_id_period_id AS PeriodId, x.attach_proposal_proposal_id_project_id AS ProjectId, x.attach_proposal_proposal_id_project_type AS ProjectType, x.attach_proposal_proposal_id_resource_id AS ResourceId, x.attach_proposal_proposal_id_project_type_project_type_desc AS ProjectTypeDescription, x.attach_proposal_proposal_id_project_id_project_name AS ProjectIdProjectName, x.attach_proposal_proposal_id_resource_id_resource_id AS ResourceIdResourceId, x.attach_proposal_proposal_id_resource_id_resource_name AS ResourceIdResourceName, x.attach_proposal_proposal_id_resource_id_resource_type AS ResourceIdResourceType, x.attach_proposal_proposal_id_resource_id_resource_type_resource_type_desc AS ResourceIdResourceTypeDescription, x.attach_proposal_proposal_id_auction_id_auction_begin_date AS AuctionBeginDate, x.attach_proposal_proposal_id_auction_id_auction_end_date AS AuctionEndDate, x.attach_proposal_proposal_id_auction_id_auction_id AS AuctionId, x.attach_proposal_proposal_id_auction_id_auction_period_id AS AuctionPeriodId, x.attach_proposal_proposal_id_auction_id_auction_type AS AuctionType, x.attach_proposal_proposal_id_auction_id_commitment_period_id AS CommitmentPeriodId, x.attach_proposal_proposal_id_auction_id_auction_type_auction_type AS AuctionTypeDescription, x.attach_proposal_proposal_id_auction_id_commitment_period_id_begin_date AS CommitmentPeriodBeginDate, x.attach_proposal_proposal_id_auction_id_commitment_period_id_description AS CommitmentPeriodDescription, x.attach_proposal_proposal_id_auction_id_commitment_period_id_end_date AS CommitmentPeriodEndDate, x.attach_proposal_proposal_id_auction_id_commitment_period_id_parent_period_id AS CommitmentPeriodParentPeriodId, x.attach_proposal_proposal_id_auction_id_commitment_period_id_period_id AS CommitmentPeriodPeriodId, x.attach_proposal_proposal_id_auction_id_commitment_period_id_period_type AS CommitmentPeriodPeriodType, x.attach_proposal_proposal_id_period_id_begin_date AS PeriodBeginDate, x.attach_proposal_proposal_id_period_id_description AS PeriodDescription, x.attach_proposal_proposal_id_period_id_end_date AS PeriodEndDate, x.attach_proposal_proposal_id_period_id_parent_period_id AS PeriodParentPeriodId, x.attach_proposal_proposal_id_period_id_period_id AS PeriodPeriodId, x.attach_proposal_proposal_id_period_id_period_type AS PeriodPeriodType, x.attach_proposal_proposal_id_customer_id_customer_id AS CustomerIdCustomerId, x.attach_proposal_proposal_id_customer_id_customer_name AS CustomerIdCustomerName, x.attach_proposal_attachment_type_application_category_type AS AttachmentTypeApplicationCategoryType, x.attach_proposal_attachment_type_attachment_type AS AttachmentTypeAttachmentType, x.attach_proposal_attachment_type_description AS AttachmentTypeDescription, x.attach_proposal_attachment_id_attachment_id AS AttachmentIdAttachmentId, x.attach_proposal_attachment_id_create_date AS AttachmentIdCreateDate, x.attach_proposal_attachment_id_description AS AttachmentIdDescription, x.attach_proposal_attachment_id_file_name AS AttachmentIdFileName, x.attach_proposal_attachment_id_file_path AS AttachmentIdFilePath";
 
 	@GetMapping("")
-	public ResponseEntity<List<ResultDTO>> getDocs(@RequestParam Map<String,String> allRequestParams) throws JsonProcessingException{
+	public ResponseEntity<List<ResultDTO>> getDocs(@RequestParam Map<String,String> allRequestParams){
+		if (!allRequestParams.containsKey("per_page")) {allRequestParams.put("per_page", "50");}
+		if (!allRequestParams.containsKey("page")) {allRequestParams.put("page", "1");}
+		int per_page = Math.min(Math.max(1, Integer.valueOf(allRequestParams.get("per_page"))), 100);
+		int page = Integer.valueOf(allRequestParams.get("page"));
 		String innerJoin = Hardcoded.dataBaseTree.getTreeInnerJoin();
 		String filters = Hardcoded.dataBaseTree.generateFilterQuery(allRequestParams);
-		String query = sqlQuery + " FROM (" + innerJoin + " WHERE " + filters + ") AS x;";
-		try{
-			List<ResultDTO> data = jdbcTemplate.query(query, new RowMapper<ResultDTO>() {
-				
-				@Override
-				public ResultDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
-				    ResultDTO out = new ResultDTO();
-					out.setAttachmentId(rs.getLong("AttachmentId"));
-					out.setAttachmentType(rs.getString("AttachmentType"));
-					out.setProposalId(rs.getLong("ProposalId"));
-					out.setCustomerId(rs.getLong("CustomerId"));
-					out.setPeriodId(rs.getLong("PeriodId"));
-					out.setProjectId(rs.getLong("ProjectId"));
-					out.setProjectType(rs.getString("ProjectType"));
-					out.setResourceId(rs.getLong("ResourceId"));
-					out.setProjectTypeDescription(rs.getString("ProjectTypeDescription"));
-					out.setProjectIdProjectName(rs.getString("ProjectIdProjectName"));
-					out.setResourceIdResourceId(rs.getLong("ResourceIdResourceId"));
-					out.setResourceIdResourceName(rs.getString("ResourceIdResourceName"));
-					out.setResourceIdResourceType(rs.getString("ResourceIdResourceType"));
-					out.setResourceIdResourceTypeDescription(rs.getString("ResourceIdResourceTypeDescription"));
-					out.setAuctionBeginDate(rs.getDate("AuctionBeginDate"));
-					out.setAuctionEndDate(rs.getDate("AuctionEndDate"));
-					out.setAuctionId(rs.getLong("AuctionId"));
-					out.setAuctionPeriodId(rs.getLong("AuctionPeriodId"));
-					out.setAuctionType(rs.getString("AuctionType"));
-					out.setCommitmentPeriodId(rs.getLong("CommitmentPeriodId"));
-					out.setAuctionTypeDescription(rs.getString("AuctionTypeDescription"));
-					out.setCommitmentPeriodBeginDate(rs.getDate("CommitmentPeriodBeginDate"));
-					out.setCommitmentPeriodDescription(rs.getString("CommitmentPeriodDescription"));
-					out.setCommitmentPeriodEndDate(rs.getDate("CommitmentPeriodEndDate"));
-					out.setCommitmentPeriodParentPeriodId(rs.getLong("CommitmentPeriodParentPeriodId"));
-					out.setCommitmentPeriodPeriodId(rs.getLong("CommitmentPeriodPeriodId"));
-					out.setCommitmentPeriodPeriodType(rs.getString("CommitmentPeriodPeriodType"));
-					out.setPeriodBeginDate(rs.getDate("PeriodBeginDate"));
-					out.setPeriodDescription(rs.getString("PeriodDescription"));
-					out.setPeriodEndDate(rs.getDate("PeriodEndDate"));
-					out.setPeriodParentPeriodId(rs.getLong("PeriodParentPeriodId"));
-					out.setPeriodPeriodId(rs.getLong("PeriodPeriodId"));
-					out.setPeriodPeriodType(rs.getString("PeriodPeriodType"));
-					out.setCustomerIdCustomerId(rs.getLong("CustomerIdCustomerId"));
-					out.setCustomerIdCustomerName(rs.getString("CustomerIdCustomerName"));
-					out.setAttachmentTypeApplicationCategoryType(rs.getString("AttachmentTypeApplicationCategoryType"));
-					out.setAttachmentTypeAttachmentType(rs.getString("AttachmentTypeAttachmentType"));
-					out.setAttachmentTypeDescription(rs.getString("AttachmentTypeDescription"));
-					out.setAttachmentAttachmentId(rs.getLong("AttachmentAttachmentId"));
-					out.setAttachmentCreateDate(rs.getDate("AttachmentCreateDate"));
-					out.setAttachmentDescription(rs.getString("AttachmentDescription"));
-					out.setAttachmentFileName(rs.getString("AttachmentFileName"));
-					out.setAttachmentExtension(rs.getString("AttachmentExtension"));
-					out.setAttachmentIdFilePath(rs.getString("AttachmentIdFilePath"));
-					return out;
-				}
-			    }); //.queryForList(query);
-			return new ResponseEntity<>(data, HttpStatus.OK);
-		}
-		catch (Exception e){
-			System.out.println(e);
-			return new ResponseEntity<>(new ArrayList<>(), HttpStatus.NO_CONTENT);
-		}
+		String query = sqlQuery + " FROM (" + innerJoin + " WHERE " + filters + ") AS x LIMIT " + allRequestParams.get("per_page") + " OFFSET " + String.valueOf(per_page * (page-1)) + " ;";
+		List<ResultDTO> data = jdbcTemplate.query(query, getDocsMapper); //.queryForList(query);
+		
+		if (data.isEmpty()) {
+            		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        	}
+        	return new ResponseEntity<>(data, HttpStatus.OK);
+	}
+	
+	public RowMapper<Content> getContentMapper = new RowMapper<>() {
+		        @Override
+		        public Content mapRow(ResultSet rs, int rowNum) throws SQLException {
+		            Content response = new Content();
+		            response.setCount(rs.getInt("COUNT(*)"));
+		            return response;
+		        }
+		    };
+	
+	@GetMapping("/content")
+	public ResponseEntity<Content> getContent(@RequestParam Map<String,String> allRequestParams){
+		
+		if (!allRequestParams.containsKey("per_page")) {allRequestParams.put("per_page", "50");}
+		if (!allRequestParams.containsKey("page")) {allRequestParams.put("page", "1");}
+		int per_page = Integer.valueOf(allRequestParams.get("per_page"));
+		int page = Integer.valueOf(allRequestParams.get("page"));
+		String innerJoin = Hardcoded.dataBaseTree.getTreeInnerJoin();
+		String filters = Hardcoded.dataBaseTree.generateFilterQuery(allRequestParams);
+		String query = "SELECT COUNT(*) FROM (" + innerJoin + " WHERE " + filters + ") AS x;";
+		Content data = jdbcTemplate.queryForObject(query, getContentMapper); //.queryForList(query);
+		
+		if (data == null) {
+            		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        	}
+        	data.setPage(page);
+        	data.setPerPage(per_page);
+        	data.setPageTotal();
+        	return new ResponseEntity<>(data, HttpStatus.OK);
 	}
 	
 	@GetMapping("/help")
-	public ResponseEntity<String> getHelp(@RequestParam Map<String,String> allRequestParams) throws JsonProcessingException{
-		return new ResponseEntity<>(Hardcoded.dataBaseTree.documentation(), HttpStatus.OK);
+	public ResponseEntity<String> getHelp(@RequestParam Map<String,String> allRequestParams){
+		return new ResponseEntity<>(Hardcoded.dataBaseTree.getURIquery("/api/v1/database"), HttpStatus.OK);
 	}
 	
 };
