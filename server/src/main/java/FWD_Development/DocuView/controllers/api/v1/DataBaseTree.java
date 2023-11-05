@@ -129,7 +129,7 @@ public class DataBaseTree {
         return this.nodes.get(tableName);
     }
 
-    public String generateFilterQuery(Map<String,String> allRequestParams){
+    public String generateFilterQuery(MultiValueMap<String,String> allRequestParams){
         if (paramFormatStrings == null || paramFormatStrings.isEmpty()) { return "TRUE"; }
         List<String> query = new ArrayList<>();
         for (Map.Entry<String, String> set : paramFormatStrings.entrySet()){
