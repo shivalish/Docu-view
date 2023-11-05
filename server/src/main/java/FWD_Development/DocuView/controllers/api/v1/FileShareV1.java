@@ -24,6 +24,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.api.services.drive.Drive;
+
 import org.springframework.dao.EmptyResultDataAccessException;
 
 // FILTERS
@@ -42,7 +44,16 @@ import org.springframework.dao.EmptyResultDataAccessException;
 //      proposals_date_end
 
 
-// @CrossOrigin(origins = "http://localhost:3000") // Default React port
+@CrossOrigin(origins = "http://localhost:3000") // Default React port
 @RestController
 @RequestMapping("/api/v1/fileshare")
-public class FileShareV1 {};
+public class FileShareV1 {
+
+    //private final GoogleDriveService googleDriveService;
+//
+    //@Autowired
+    //public FileShareV1(GoogleDriveService googleDriveService) {
+    //    this.googleDriveService = googleDriveService;
+    //}
+
+};

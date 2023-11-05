@@ -16,6 +16,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -52,7 +53,7 @@ import java.util.HashMap;
 // Hardcoded is a antipattern interface to allow vars to share the same immutable variables,
 // allowing the uses to use the same vars.
 
-@Component
+@Service
 public class Hardcoded{
 
 	@Autowired

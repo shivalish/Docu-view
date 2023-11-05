@@ -94,6 +94,22 @@ public class DataBaseTree {
         return root;
     }
 
+    public String getURIquery(String endpoint){
+    	List<String> uri = new ArrayList<>();
+    	for (Map.Entry<String, Filter> set : filterMap.entrySet()){
+        	uri.add(set.getKey() + "=[" + set.getValue().getType() + "]" );
+        }
+        return endpoint + "?" + String.join("&", uri);
+    }
+    
+    public String apiDocumentation(){
+    	List<String> filters = new ArrayList<>();
+    	for (Map.Entry<String, Filter> set : filterMap.entrySet()){
+        	filters.add(set.getKey() + " is a value of type " + set.getValue().getType() );
+        }
+        return String.join("\n", filters);
+    }
+
     public Map<String, Filter> getFilterMap(){
         // do not send original to be modified
         return new HashMap<>(filterMap);
