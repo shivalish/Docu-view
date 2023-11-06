@@ -11,12 +11,12 @@ export default [
       "Monthly Reconfiguration Auction",
       "RCA2",
     ],
-    api: "/api/v1/bruh11",
+    api: {auction_type: []}, //default value unselected
   },
   {
     name: "Auction Period",
     dropdown: Array.from({length: 151}, (_, i) => i + 1900),
-    api: "/api/v1/bruh",
+    api: {auction_period: 1900}, //default value starts at 1900
   },
   {
     name: "Attachment Type",
@@ -35,16 +35,16 @@ export default [
       "QP.IMPORT.OWNERSHIP",
       "QP.IMPORT.SYS_LOAD_PROJECTIONS"
     ],
-    api: "/api/v1/bruh2",
+    api: {attachment_type: ""}, //default value is unselected
   },
   {
     name: "Customer Name",
     textbox: true,
-    api: "/api/v1/bruh3",
+    api: {customer_name: ""},
   },
   {
     name: "File Name",
     textbox: true,
-    api: "/api/v1/bruh5",
+    api: {file_name: ""},
   }
 ];
