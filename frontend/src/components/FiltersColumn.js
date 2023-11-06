@@ -137,7 +137,9 @@ function FilterRow({
             onChange={(e) => {
               setText(e.target.value);
             }}
+            value={text}
           />
+          {text && <SelectionTag value={text} onDelete={() => { setText(""); }} />}
         </div>
       )}
     </div>
