@@ -60,7 +60,7 @@ function FilterRow({
                     />
                   </span>
                 </Menu.Button>
-                <Menu.Items className="h-32 overflow-scroll">
+                <Menu.Items className="h-32 overflow-auto">
                   {dropdown.map((year) => (
                     <Menu.Item onClick={()=>setQuery()}>
                       <div className="w-full justify-center items-center hover:text-blue-400">
