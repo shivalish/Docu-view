@@ -20,6 +20,7 @@ function FilterRow({
   combo = [],
   dropdown = [],
   setQuery,
+  api,
 }) {
   //textbox states
   const [text, setText] = useState("");
@@ -30,6 +31,11 @@ function FilterRow({
 
   //dropdown states
   const [currYear, setYear] = useState(null);
+
+  //checkbox states
+  const [selectedCheck, setCheck] = useState([]);
+
+  const [vals, setVals] = useState(api);
 
   //TODO: code cleanup + visual alignment fixes
 
@@ -42,9 +48,9 @@ function FilterRow({
         val.toLowerCase().includes(comboText.toLowerCase())
       );
 
-  useEffect(() => {
-    setQuery(text);
-  }, [text]); //auto change query on textbox change
+
+  //adds a key/value pair to the global query variable
+  const click = (selectedValue) => {setVals({[Object.keys(vals)[0]] : selectedValue}); setQuery(vals)}
 
   return (
     <div className='w-full'>
@@ -64,7 +70,7 @@ function FilterRow({
                 <div className="flex flex-col gap-2 w-full">
                   {checkbox.map((docType, index) => (
                     <div className={`w-full ${index % 2 === 0 ? "bg-iso-blue-grey-200" : "bg-iso-blue-grey-100"}`}>
-                      <input type="checkbox" className="form-checkbox mx-1" onClick={() => setQuery()} />
+                      <input type="checkbox" className="form-checkbox mx-1" onClick={()=>{selectedCheck.push(docType); click(selectedCheck)}} />
                       <label >{docType}</label>
                     </div>
                   ))}
@@ -89,7 +95,7 @@ function FilterRow({
                 </Menu.Button>
                 <Menu.Items className="h-32 overflow-auto">
                   {dropdown.map((year) => (
-                    <Menu.Item onClick={() => { setYear(year); setQuery() }}>
+                    <Menu.Item onClick={() => { setYear(year); click(year) }}>
                       <div className="w-full justify-center items-center hover:text-blue-400">
                         {year}
                       </div>
@@ -117,14 +123,14 @@ function FilterRow({
                   key={index}
                   value={val}
                   className="ui-active:bg-blue-500 ui-active:text-white ui-not-active:bg-white ui-not-active:text-black"
-                  onClick={() => setQuery()}
+                  onClick={() => click(val)}
                 >
                   {val}
                 </Combobox.Option>
               ))}
             </Combobox.Options>
           </Combobox>
-          {selectedCombo && <SelectionTag value={selectedCombo} onDelete={() => { setComboText(""); setCombo(null) }} />}
+          {selectedCombo && <SelectionTag value={selectedCombo} onDelete={() => { setComboText(""); setCombo(null); click("") }} />}
         </div>
       )}
 
@@ -136,10 +142,11 @@ function FilterRow({
             className="w-full bg-iso-blue-grey-300 border-iso-blue-grey-100 border-2"
             onChange={(e) => {
               setText(e.target.value);
+              click(text);
             }}
             value={text}
           />
-          {text && <SelectionTag value={text} onDelete={() => { setText(""); }} />}
+          {text && <SelectionTag value={text} onDelete={() => { setText(""); click("")}} />}
         </div>
       )}
     </div>
@@ -155,12 +162,12 @@ function Tester() {
   useEffect(() => {
     console.log("query is changing!", x);
   }, [x]);
-  return <div>{x}</div>;
+  return <div>{JSON.stringify(x)}</div>;
 }
 
 //dropdown menu
 function FiltersColumn() {
-  const [query, setQuery] = useState("/api/v1/");
+  const [query, setQuery] = useState({});
 
   return (
     <fetchContext.Provider value={query}>
@@ -180,9 +187,7 @@ function FiltersColumn() {
               {FilterTypes.map((row) => (
                 <FilterRow
                   {...row}
-                  setQuery={() => {
-                    setQuery(query + row.api);
-                  }}
+                  setQuery={(values) => setQuery({...query, ...values})}
                 />
               ))}
             </div>
