@@ -50,16 +50,16 @@ function FilterRow({
 
 
   //adds a key/value pair to the global query variable
-  const click = (selectedValue) => {setVals({[Object.keys(vals)[0]] : selectedValue}); setQuery(vals)}
+  const click = (selectedValue) => { setVals({ [Object.keys(vals)[0]]: selectedValue }); setQuery(vals) }
 
   return (
     <div className='w-full'>
       {checkbox.length > 0 && (
-        <Disclosure className="bg-iso-blue-grey-100 w-full">
+        <Disclosure className="w-full">
           {({ open }) => (
             <div>
               <Disclosure.Button>
-                <span className="flex flex-row w-full h-10 items-center text-lg">
+                <span className="flex flex-row w-full h-10 items-center text-lg pl-2">
                   {name}
                   <ChevronDoubleRightIcon
                     className={classNames("w-6 h-6", open && "rotate-90")}
@@ -69,8 +69,8 @@ function FilterRow({
               <Disclosure.Panel>
                 <div className="flex flex-col gap-2 w-full">
                   {checkbox.map((docType, index) => (
-                    <div className={`w-full ${index % 2 === 0 ? "bg-iso-blue-grey-200" : "bg-iso-blue-grey-100"}`}>
-                      <input type="checkbox" className="form-checkbox mx-1" onClick={()=>{selectedCheck.push(docType); click(selectedCheck)}} />
+                    <div>
+                      <input type="checkbox" className="form-checkbox mx-1" onClick={() => { selectedCheck.push(docType); click(selectedCheck) }} />
                       <label >{docType}</label>
                     </div>
                   ))}
@@ -86,7 +86,7 @@ function FilterRow({
             {({ open }) => (
               <div>
                 <Menu.Button className="w-full h-10">
-                  <span className="flex flex-row w-full h-10 items-center text-lg">
+                  <span className="flex flex-row w-full h-10 items-center text-lg pl-2">
                     {name}
                     <ChevronDoubleRightIcon
                       className={classNames("w-6 h-6", open && "rotate-90")}
@@ -97,7 +97,7 @@ function FilterRow({
                   {dropdown.map((year) => (
                     <Menu.Item onClick={() => { setYear(year); click(year) }}>
                       <div className="w-full justify-center items-center hover:text-blue-400">
-                        {year}
+                        <span className='cursor-pointer'>{year}</span>
                       </div>
                     </Menu.Item> //TODO: overall style rework
                   ))}
@@ -109,7 +109,7 @@ function FilterRow({
         </div>
       )}
       {combo.length > 0 && (
-        <div className="bg-iso-blue-grey-100 w-full p-2">
+        <div className="w-full p-2">
           <span> {name} </span>
 
           <Combobox value={selectedCombo} onChange={setCombo}>
@@ -136,8 +136,8 @@ function FilterRow({
 
 
       {textbox && (
-        <div className="bg-iso-blue w-full">
-          <label> {name} </label>
+        <div className="w-full pl-2">
+          <label> {name}</label>
           <input
             className="w-full bg-iso-blue-grey-300 border-iso-blue-grey-100 border-2"
             onChange={(e) => {
@@ -146,7 +146,7 @@ function FilterRow({
             }}
             value={text}
           />
-          {text && <SelectionTag value={text} onDelete={() => { setText(""); click("")}} />}
+          {text && <SelectionTag value={text} onDelete={() => { setText(""); click("") }} />}
         </div>
       )}
     </div>
@@ -172,8 +172,8 @@ function FiltersColumn() {
   return (
     <fetchContext.Provider value={query}>
       <Disclosure>
-        <div className="flex flex-col bg-iso-blue h-full w-full text-iso-white p-4 gap-2">
-          <Disclosure.Button>
+        <div className="flex flex-col bg-iso-blue h-full w-full text-iso-white p-4 gap-2 overflow-auto">
+          <Disclosure.Button >
             <span className="flex flex-row w-full h-10 items-center text-lg">
               FILTERS
               <ChevronDoubleRightIcon
@@ -183,12 +183,15 @@ function FiltersColumn() {
           </Disclosure.Button>
 
           <Disclosure.Panel>
-            <div className="flex flex-col">
-              {FilterTypes.map((row) => (
-                <FilterRow
-                  {...row}
-                  setQuery={(values) => setQuery({...query, ...values})}
-                />
+            <div className="flex flex-col border-t">
+              {FilterTypes.map((row, index) => (
+                <div className={`py-2 border-b`}>
+                  <FilterRow
+                    {...row}
+                    setQuery={(values) => setQuery({ ...query, ...values })}
+                  />
+                </div>
+
               ))}
             </div>
           </Disclosure.Panel>
