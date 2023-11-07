@@ -59,4 +59,11 @@ public class FileShareV1 {
         this.googleDriveService = googleDriveService;
     }
 
+    // for testing
+    @GetMapping("/list")
+    public List<File> listFiles() throws IOException {
+        // googleDriveService.drive is of type Drive, docu here
+        FileList fileList = googleDriveService.drive.files().list().execute();
+        return fileList.getFiles();
+    }
 };
