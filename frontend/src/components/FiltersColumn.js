@@ -29,7 +29,7 @@ function FilterRow({
   const [comboText, setComboText] = useState("");
 
   //dropdown states
-  const [currYear, setYear] = useState(1900);
+  const [currYear, setYear] = useState(null);
 
   //TODO: code cleanup + visual alignment fixes
 
