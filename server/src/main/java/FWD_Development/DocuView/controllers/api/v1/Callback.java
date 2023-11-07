@@ -2,10 +2,6 @@ package FWD_Development.DocuView.controllers.api.v1;
 
 
 /* CUSTOM ADDED LIBS */
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.HashMap;
 /* CUSTOM ADDED LIBS */
