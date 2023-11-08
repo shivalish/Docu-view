@@ -25,10 +25,12 @@ function FilterRow({
 }) {
   //textbox states
   const [text, setText] = useState("");
+  const [textlog, setTextLog] = useState(new Set());
 
   //combobox states
   const [selectedCombo, setCombo] = useState(null);
   const [comboText, setComboText] = useState("");
+  const [combolog, setComboLog] = useState(new Set());
 
   //dropdown states
   const [currYear, setYear] = useState(null);
@@ -170,6 +172,12 @@ function FilterRow({
             <Combobox.Input
               onChange={(e) => setComboText(e.target.value)}
               className="textbox bg-iso-blue-grey-300 w-full max-w-full"
+              onKeyUp={e => {
+                if(e.key==='Enter'){
+                  combolog.add(selectedCombo);
+                  setComboText("");
+                  setCombo(null);
+                }}}
               placeholder={placeholder}
             />
             <Combobox.Options className="flex flex-col pt-1 gap-1">
@@ -180,22 +188,24 @@ function FilterRow({
                   className="rounded-md ui-active:bg-iso-blue-grey-200
                   ui-active:text-white bg-iso-blue-grey-300
                   text-iso-white overflow-hidden text-sm p-1"
-                  onClick={() => click(val)}
+                  onClick={() => combolog.add(val)}
                 >
                   {val}
                 </Combobox.Option>
               ))}
             </Combobox.Options>
           </Combobox>
-          {selectedCombo && (
-            <SelectionTag
-              value={selectedCombo}
-              onDelete={() => {
-                setComboText("");
-                setCombo(null);
-                click("");
-              }}
-            />
+          {combolog.size > 0 && (
+            [...combolog].map((e,i) => (
+              <SelectionTag
+                key={i}
+                value={e}
+                onDelete={() => {
+                  combolog.delete(e);
+                  click(combolog);
+                }}
+              />
+            ))
           )}
         </div>
       )}
@@ -205,21 +215,26 @@ function FilterRow({
           <label className="text-lg">{name}</label>
           <input
             className="textbox bg-iso-blue-grey-300"
-            onChange={(e) => {
-              setText(e.target.value);
-              click(text);
-            }}
+            onChange={e => setText(e.target.value)}
+            onKeyUp={e => {
+              if(e.key==='Enter'){
+                textlog.add(text)
+                setText("");
+              }}}
             value={text}
             placeholder={placeholder}
           />
-          {text && (
-            <SelectionTag
-              value={text}
-              onDelete={() => {
-                setText("");
-                click("");
-              }}
-            />
+          {textlog.size > 0 && (
+            [...textlog].map((e, i) => (
+              <SelectionTag
+                key={i}
+                value={e}
+                onDelete={() => {
+                  textlog.delete(e);
+                  click(textlog);
+                }}
+              />
+            ))
           )}
         </div>
       )}
