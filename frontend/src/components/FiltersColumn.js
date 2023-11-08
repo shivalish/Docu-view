@@ -173,7 +173,7 @@ function FilterRow({
               onChange={(e) => setComboText(e.target.value)}
               className="textbox bg-iso-blue-grey-300 w-full max-w-full"
               onKeyUp={e => {
-                if(e.key==='Enter'){
+                if(e.key==='Enter' && selectedCombo !== null){
                   combolog.add(selectedCombo);
                   setComboText("");
                   setCombo(null);
