@@ -19,6 +19,7 @@ function FilterRow({
   checkbox = [],
   combo = [],
   dropdown = [],
+  placeholder = "",
   setQuery,
   api,
 }) {
@@ -164,12 +165,12 @@ function FilterRow({
       )}
       {combo.length > 0 && (
         <div className="w-full p-2">
-          <span> {name} </span>
-
+          <span className="text-lg"> {name} </span>
           <Combobox value={selectedCombo} onChange={setCombo}>
             <Combobox.Input
               onChange={(e) => setComboText(e.target.value)}
               className="textbox bg-iso-blue-grey-300 w-full max-w-full"
+              placeholder={placeholder}
             />
             <Combobox.Options className="flex flex-col pt-1 gap-1">
               {filtered.map((val, index) => (
@@ -201,7 +202,7 @@ function FilterRow({
 
       {textbox && (
         <div className="w-full p-2">
-          <label> {name}</label>
+          <label className="text-lg">{name}</label>
           <input
             className="textbox bg-iso-blue-grey-300"
             onChange={(e) => {
@@ -209,6 +210,7 @@ function FilterRow({
               click(text);
             }}
             value={text}
+            placeholder={placeholder}
           />
           {text && (
             <SelectionTag
@@ -243,27 +245,27 @@ function FiltersColumn() {
 
   return (
     <fetchContext.Provider value={query}>
-      <div className="flex flex-col bg-iso-blue h-full w-full text-iso-white p-4 gap-2 overflow-auto">
-        <div className="flex flex-col border-t">
-          {FilterTypes.map((row) => (
-            <div className={`py-2 border-b`}>
-              <FilterRow
-                {...row}
-                setQuery={(values) => setQuery({ ...query, ...values })}
-              />
-            </div>
-          ))}
-        </div>
+      <div className="flex flex-col bg-iso-blue h-[50rem] w-full text-iso-white p-4 gap-2 overflow-y-scroll">
+          <div className="flex flex-col border-t">
+            {FilterTypes.map((row) => (
+              <div className={`py-2 border-b`}>
+                <FilterRow
+                  {...row}
+                  setQuery={(values) => setQuery({ ...query, ...values })}
+                />
+              </div>
+            ))}
+          </div>
 
-        <div className="flex justify-center">
-          <Button
-            onClick={() => console.log("do something")}
-            height="h-full"
-            width="w-1/2"
-          >
-            Submit
-          </Button>
-        </div>
+          <div className="flex justify-center">
+            <Button
+              onClick={() => console.log("do something")}
+              height="h-full"
+              width="w-1/2"
+            >
+              Submit
+            </Button>
+            </div>
       </div>
     </fetchContext.Provider>
   );

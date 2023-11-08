@@ -44,11 +44,13 @@ export default [
       "QP.IMPORT.OWNERSHIP",
       "QP.IMPORT.SYS_LOAD_PROJECTIONS"
     ],
+    placeholder: "attachment",
     api: { attachment_type: "" }, //default value is unselected
   },
   {
     name: "Customer Name",
     textbox: true,
+    placeholder: "customer name",
     api: { customer_name: "" },
   },
   {
@@ -60,6 +62,7 @@ export default [
       "New Contract Year",
       "Additional LR"
     ],
+    placeholder: "project",
     api: { project_name: "" }
   },
   {
@@ -77,11 +80,13 @@ export default [
       "Repowering",
       "Significant Increase",
     ],
+    placeholder: "project type",
     api: { project_type: [] }
   },
   {
     name: "File Name",
     textbox: true,
+    placeholder: "file name",
     api: { file_name: "" },
   },
 ];
