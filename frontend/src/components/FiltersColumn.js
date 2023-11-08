@@ -33,7 +33,7 @@ function FilterRow({
   const [combolog, setComboLog] = useState(new Set());
 
   //dropdown states
-  const [currYear, setYear] = useState(null);
+  const [currYear, setYear] = useState(new Set());
 
   //checkbox states
   const [selectedCheck, setCheck] = useState([]);
@@ -142,8 +142,8 @@ function FilterRow({
                   {dropdown.map((year) => (
                     <Menu.Item
                       onClick={() => {
-                        setYear(year);
-                        click(year);
+                        currYear.add(year);
+                        click(currYear);
                       }}
                     >
                       <div className="w-full justify-center items-center hover:text-blue-400">
@@ -155,13 +155,17 @@ function FilterRow({
               </div>
             )}
           </Menu>
-          {currYear && (
-            <SelectionTag
-              value={currYear}
+          {currYear.size > 0 && (
+            [...currYear].map((e, i)=> (
+              <SelectionTag
+              value={e}
+              key={i}
               onDelete={() => {
-                setYear(null);
+                currYear.delete(e);
+                click(currYear);
               }}
             />
+            ))
           )}
         </div>
       )}
