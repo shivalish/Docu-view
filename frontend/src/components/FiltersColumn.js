@@ -7,6 +7,7 @@ import FilterTypes from "../atoms/FilterTypes";
 import { Combobox } from "@headlessui/react";
 import { Menu } from "@headlessui/react";
 import Button from "../atoms/Button.jsx";
+import SelectionTag from "../atoms/SelectionTag.jsx";
 // import Calendar from 'react-calendar';
 
 //this is each row of the dropdown menu
@@ -19,6 +20,7 @@ function FilterRow({
   combo = [],
   dropdown = [],
   setQuery,
+  api,
 }) {
   //textbox states
   const [text, setText] = useState("");
@@ -28,7 +30,12 @@ function FilterRow({
   const [comboText, setComboText] = useState("");
 
   //dropdown states
-  const [currYear, setYear] = useState(1900);
+  const [currYear, setYear] = useState(null);
+
+  //checkbox states
+  const [selectedCheck, setCheck] = useState([]);
+
+  const [vals, setVals] = useState(api);
 
   //TODO: code cleanup + visual alignment fixes
 
@@ -41,19 +48,87 @@ function FilterRow({
           val.toLowerCase().includes(comboText.toLowerCase())
         );
 
-  useEffect(() => {
-    setQuery(text);
-  }, [text]); //auto change query on textbox change
+  //adds a key/value pair to the global query variable
+  const click = (selectedValue) => {
+    setVals({ [Object.keys(vals)[0]]: selectedValue });
+    setQuery(vals);
+  };
 
   return (
-    <div>
-      {dropdown.length > 0 && (
+    <div className="w-full">
+      {checkbox.length > 0 && (
         <div>
+          <Disclosure className="w-full">
+            {({ open }) => (
+              <div>
+                <Disclosure.Button>
+                  <span className="flex flex-row w-full h-10 items-center text-lg pl-2">
+                    {name}
+                    <ChevronDoubleRightIcon
+                      className={classNames("w-6 h-6", open && "rotate-90")}
+                    />
+                  </span>
+                </Disclosure.Button>
+                <Disclosure.Panel>
+                  <div className="flex flex-col gap-2 w-full">
+                    {checkbox.map((docType, index) => (
+                      <div>
+                        <input
+                          type="checkbox"
+                          id={index}
+                          checked={
+                            selectedCheck.find((v) => v === docType) !==
+                            undefined
+                          }
+                          className="form-checkbox mx-1"
+                          onChange={(e) => {
+                            e.target.checked
+                              ? selectedCheck.push(docType)
+                              : selectedCheck.splice(
+                                  selectedCheck.indexOf(docType),
+                                  1
+                                );
+                            click(selectedCheck);
+                          }}
+                        />
+                        <label>{docType}</label>
+                      </div>
+                    ))}
+                  </div>
+                </Disclosure.Panel>
+              </div>
+            )}
+          </Disclosure>
+          {selectedCheck.length > 0 && (
+            <div>
+              {selectedCheck.map((e, index) => (
+                <SelectionTag
+                  key={index}
+                  value={e}
+                  onDelete={() => {
+                    selectedCheck.splice(selectedCheck.indexOf(e), 1);
+                    click(selectedCheck);
+
+                    checkbox.forEach((box, i) => {
+                      if (document.getElementById(i)) {
+                        document.getElementById(i).checked =
+                          selectedCheck.find((v) => v === box) !== undefined;
+                      }
+                    });
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      {dropdown.length > 0 && (
+        <div className="bg-iso-blue w-full">
           <Menu>
             {({ open }) => (
               <div>
                 <Menu.Button className="w-full h-10">
-                  <span className="flex flex-row w-full h-10 items-center text-lg">
+                  <span className="flex flex-row w-full h-10 items-center text-lg pl-2">
                     {name}
                     <ChevronDoubleRightIcon
                       className={classNames("w-6 h-6", open && "rotate-90")}
@@ -62,9 +137,14 @@ function FilterRow({
                 </Menu.Button>
                 <Menu.Items className="h-32 overflow-auto">
                   {dropdown.map((year) => (
-                    <Menu.Item onClick={()=>setQuery()}>
+                    <Menu.Item
+                      onClick={() => {
+                        setYear(year);
+                        click(year);
+                      }}
+                    >
                       <div className="w-full justify-center items-center hover:text-blue-400">
-                        {year}
+                        <span className="cursor-pointer">{year}</span>
                       </div>
                     </Menu.Item> //TODO: overall style rework
                   ))}
@@ -72,67 +152,74 @@ function FilterRow({
               </div>
             )}
           </Menu>
+          {currYear && (
+            <SelectionTag
+              value={currYear}
+              onDelete={() => {
+                setYear(null);
+              }}
+            />
+          )}
         </div>
       )}
       {combo.length > 0 && (
-        <div>
+        <div className="w-full p-2">
           <span> {name} </span>
 
           <Combobox value={selectedCombo} onChange={setCombo}>
-            <Combobox.Input onChange={(e) => setComboText(e.target.value)} />
-            <Combobox.Options>
+            <Combobox.Input
+              onChange={(e) => setComboText(e.target.value)}
+              className="textbox bg-iso-blue-grey-300 w-full max-w-full"
+            />
+            <Combobox.Options className="flex flex-col pt-1 gap-1">
               {filtered.map((val, index) => (
                 <Combobox.Option
                   key={index}
                   value={val}
-                  className="ui-active:bg-blue-500 ui-active:text-white ui-not-active:bg-white ui-not-active:text-black"
-                  onClick={()=>setQuery()}
+                  className="rounded-md ui-active:bg-iso-blue-grey-200
+                  ui-active:text-white bg-iso-blue-grey-300
+                  text-iso-white overflow-hidden text-sm p-1"
+                  onClick={() => click(val)}
                 >
                   {val}
                 </Combobox.Option>
               ))}
             </Combobox.Options>
           </Combobox>
+          {selectedCombo && (
+            <SelectionTag
+              value={selectedCombo}
+              onDelete={() => {
+                setComboText("");
+                setCombo(null);
+                click("");
+              }}
+            />
+          )}
         </div>
       )}
 
       {textbox && (
-        <div>
-          <label> {name} </label>
+        <div className="w-full p-2">
+          <label> {name}</label>
           <input
-            className="w-full bg-iso-blue-grey-300 border-iso-blue-grey-100 border-2"
+            className="textbox bg-iso-blue-grey-300"
             onChange={(e) => {
               setText(e.target.value);
+              click(text);
             }}
+            value={text}
           />
-        </div>
-      )}
-
-      {checkbox.length > 0 && (
-        <Disclosure>
-          {({ open }) => (
-            <div>
-              <Disclosure.Button>
-                <span className="flex flex-row w-full h-10 items-center text-lg">
-                  {name}
-                  <ChevronDoubleRightIcon
-                    className={classNames("w-6 h-6", open && "rotate-90")}
-                  />
-                </span>
-              </Disclosure.Button>
-              <Disclosure.Panel>
-                <div className="flex flex-col gap-2 w-full">
-                  {checkbox.map((docType) => (
-                    <div>
-                      <label>{docType}</label>
-                      <input type="checkbox" className="form-checkbox" onClick={()=>setQuery()}/>
-                    </div>
-                  ))}
-                </div>
-              </Disclosure.Panel>
-            </div>
+          {text && (
+            <SelectionTag
+              value={text}
+              onDelete={() => {
+                setText("");
+                click("");
+              }}
+            />
           )}
-        </Disclosure>
+        </div>
       )}
     </div>
   );
@@ -147,48 +234,37 @@ function Tester() {
   useEffect(() => {
     console.log("query is changing!", x);
   }, [x]);
-  return <div>{x}</div>;
+  return <div>{JSON.stringify(x)}</div>;
 }
 
 //dropdown menu
 function FiltersColumn() {
-  const [query, setQuery] = useState("/api/v1/");
+  const [query, setQuery] = useState({});
 
   return (
     <fetchContext.Provider value={query}>
-      <Disclosure>
-        <div className="flex flex-col bg-iso-blue h-full w-full text-iso-white p-4 gap-2">
-          <Disclosure.Button>
-            <span className="flex flex-row w-full h-10 items-center text-lg">
-              FILTERS
-              <ChevronDoubleRightIcon
-                className={classNames("w-6 h-6 ui-open:rotate-90")}
+      <div className="flex flex-col bg-iso-blue h-full w-full text-iso-white p-4 gap-2 overflow-auto">
+        <div className="flex flex-col border-t">
+          {FilterTypes.map((row) => (
+            <div className={`py-2 border-b`}>
+              <FilterRow
+                {...row}
+                setQuery={(values) => setQuery({ ...query, ...values })}
               />
-            </span>
-          </Disclosure.Button>
-
-          <Disclosure.Panel>
-            <div className="flex flex-col">
-              {FilterTypes.map((row) => (
-                <FilterRow
-                  {...row}
-                  setQuery={() => {
-                    setQuery(query + row.api);
-                  }}
-                />
-              ))}
             </div>
-          </Disclosure.Panel>
+          ))}
+        </div>
 
+        <div className="flex justify-center">
           <Button
             onClick={() => console.log("do something")}
-            width={"w-full"}
-            height={"h-10"}
+            height="h-full"
+            width="w-1/2"
           >
-            GO
+            Submit
           </Button>
         </div>
-      </Disclosure>
+      </div>
     </fetchContext.Provider>
   );
 }

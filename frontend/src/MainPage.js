@@ -6,7 +6,7 @@ import FilesTable from './components/FilesTable';
 
 function MainPage() {
     return (
-        <div className="h-full w-full flex flex-col">
+        <div className="h-full w-full flex flex-col overflow-hidden">
             <div className="flex-shrink-0 ">
                 <Header />
             </div>

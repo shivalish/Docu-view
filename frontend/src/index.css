@@ -17,6 +17,10 @@
     @apply rounded-t-md ui-selected:bg-iso-white ui-not-selected:bg-iso-grey h-10 w-32;
   }
 
+  .textbox {
+    @apply h-8 w-full px-2 rounded-md focus:outline-none;
+  }
+
   .ffc {
     @apply flex flex-col;
   }
