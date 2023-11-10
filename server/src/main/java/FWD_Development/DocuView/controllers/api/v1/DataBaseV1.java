@@ -69,10 +69,7 @@ public class DataBaseV1 {
 	@Autowired
     	private JdbcTemplate jdbcTemplate;
 
-	@GetMapping({"", "/infinite"})
-	public ResponseEntity<List<Map<String, Object>>> getDocs(@RequestParam MultiValueMap<String,String> allRequestParams){
-		var query =  Hardcoded.dataBaseTree.generateQuery(allRequestParams);
-		String rename = "x.attach_proposal_attachment_type AS attachmentType, "
+	private static String rename = "x.attach_proposal_attachment_type AS attachmentType, "
 		+ "x.attach_proposal_proposal_id_project_type AS projectType, "
 		+ "x.attach_proposal_proposal_id_proposal_label AS proposalLabel, "
 		+ "x.attach_proposal_proposal_id_project_type_project_type AS projectType, "
@@ -101,6 +98,11 @@ public class DataBaseV1 {
 		+ "SUBSTRING_INDEX(x.attach_proposal_attachment_id_file_name, '.', -1) AS fileExtension, "
 		+ "x.attach_proposal_attachment_id_create_date AS createDate, "
 		+ "x.attach_proposal_attachment_id_description AS description";
+
+	@GetMapping({"", "/infinite"})
+	public ResponseEntity<List<Map<String, Object>>> getDocs(@RequestParam MultiValueMap<String,String> allRequestParams){
+		var query =  Hardcoded.dataBaseTree.generateQuery(allRequestParams);
+		
 		return new ResponseEntity<>(
 			jdbcTemplate.queryForList("SELECT " + rename +" FROM (" + query.parametrized + ") AS x;", query.params), 
 			HttpStatus.OK
@@ -116,37 +118,7 @@ public class DataBaseV1 {
 		perPage = Math.min(Math.max(1, perPage), 100);
 		page = Math.max(1, page);
 		var query = Hardcoded.dataBaseTree.generateQuery(allRequestParams);
-		String rename = "SELECT "
-		+ "x.attach_proposal_attachment_type AS attachment_type, "
-		+ "x.attach_proposal_proposal_id_project_type AS project_type, "
-		+ "x.attach_proposal_proposal_id_proposal_label AS proposal_label, "
-		+ "x.attach_proposal_proposal_id_project_type_project_type AS project_type, "
-		+ "x.attach_proposal_proposal_id_project_id_project_name AS project_name, "
-		+ "x.attach_proposal_proposal_id_resource_id_resource_name AS resource_name, "
-		+ "x.attach_proposal_proposal_id_resource_id_resource_type AS resource_type, "
-		+ "x.attach_proposal_proposal_id_auction_id_auction_begin_date AS auction_begin_date, "
-		+ "x.attach_proposal_proposal_id_auction_id_auction_end_date AS auction_end_date, "
-		+ "x.attach_proposal_proposal_id_auction_id_auction_type AS auction_type, "
-		+ "x.attach_proposal_proposal_id_auction_id_commitment_period_id_begin_date AS commitment_period_begin_date, "
-		+ "x.attach_proposal_proposal_id_auction_id_commitment_period_id_end_date AS commitment_period_end_date, "
-		+ "x.attach_proposal_proposal_id_auction_id_commitment_period_id_description AS commitment_period, "
-		+ "x.attach_proposal_proposal_id_auction_id_auction_period_id_begin_date AS auction_period_id_begin_date, "	
-		+ "x.attach_proposal_proposal_id_auction_id_auction_period_id_begin_date AS auction_period_begin_date, "
-		+ "x.attach_proposal_proposal_id_auction_id_auction_period_id_description AS auction_period, "
-		+ "x.attach_proposal_proposal_id_auction_id_auction_period_id_end_date AS auction_period_end_date, "
-		+ "x.attach_proposal_proposal_id_customer_id_customer_id AS customer_id, "	
-		+ "x.attach_proposal_proposal_id_customer_id_customer_name AS customer_name, "
-		+ "x.attach_proposal_proposal_id_period_id_begin_date AS proposal_period_begin_date, "
-		+ "x.attach_proposal_proposal_id_period_id_description AS proposal_proposal, "
-		+ "x.attach_proposal_proposal_id_period_id_end_date AS proposal_period, "
-		+ "x.attach_proposal_attachment_type_application_category_type AS application_category_type, " 
-		+ "x.attach_proposal_attachment_type_attachment_type AS attachment_type, "
-		+ "x.attach_proposal_attachment_type_description AS type_description, "
-		+ "x.attach_proposal_attachment_id_attachment_id AS attachment_id, "
-		+ "x.attach_proposal_attachment_id_file_name AS attachment_file_name, "
-		+ "SUBSTRING_INDEX(x.attach_proposal_attachment_id_file_name, '.', -1) AS attachment_file_name_extension, "
-		+ "x.attach_proposal_attachment_id_create_date AS attachment_create_date, "
-		+ "x.attach_proposal_attachment_id_description AS attachment_description";
+
 		String sql = "SELECT " + rename +" FROM (" 
 			+ query.parametrized + ") AS x LIMIT " 
 			+ perPage + " OFFSET " 

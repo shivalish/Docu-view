@@ -2,11 +2,6 @@ package FWD_Development.DocuView.controllers.api.v1;
 
 
 /* CUSTOM ADDED LIBS */
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.HashMap;
 /* CUSTOM ADDED LIBS */
@@ -14,10 +9,12 @@ import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -26,10 +23,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.api.services.drive.Drive;
-import com.google.api.services.drive.model.File;
-import com.google.api.services.drive.model.FileList;
 
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 // FILTERS
 //      file_creation
@@ -49,21 +46,20 @@ import org.springframework.dao.EmptyResultDataAccessException;
 
 @CrossOrigin(origins = "http://localhost:3000") // Default React port
 @RestController
-@RequestMapping("/api/v1/fileshare")
-public class FileShareV1 {
+@RequestMapping("/Callback")
+public class Callback {
 
-    private final GoogleDriveService googleDriveService;
+    @GetMapping("")
+	public ResponseEntity<Map<String,Object>> getDocs(@RequestParam MultiValueMap<String,String> allRequestParams){
+        Map<String,Object> data = new HashMap<String,Object>();
+		return new ResponseEntity<Map<String,Object>>(data, HttpStatus.OK);
+	}
+
+    //private final GoogleDriveService googleDriveService;
 //
-    @Autowired
-    public FileShareV1(GoogleDriveService googleDriveService) {
-        this.googleDriveService = googleDriveService;
-    }
+    //@Autowired
+    //public FileShareV1(GoogleDriveService googleDriveService) {
+    //    this.googleDriveService = googleDriveService;
+    //}
 
-    // for testing
-    @GetMapping("/list")
-    public List<File> listFiles() throws IOException {
-        // googleDriveService.drive is of type Drive, docu: https://developers.google.com/resources/api-libraries/documentation/drive/v3/java/latest/com/google/api/services/drive/Drive.html 
-        FileList fileList = googleDriveService.drive.files().list().execute();
-        return fileList.getFiles();
-    }
 };
