@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.util.MultiValueMap;
 
 public class DataBaseTree {
     public class DataBaseNode {
@@ -77,10 +78,20 @@ public class DataBaseTree {
         }
     }
 
+    public class Query {
+        String parametrized;
+        Object[] params;
+
+        public Query(String parametrized, List<String> params){
+            this.parametrized = parametrized;
+            this.params = params.toArray();
+        }
+    }
+
     private DataBaseNode root;
     private String TreeInnerJoin;
     private Map <String, DataBaseNode> nodes;
-    private Map <String, String> paramFormatStrings;
+    private Map <String, String[]> paramFormatStrings;
     private Map <String, Filter> filterMap;
 
     public DataBaseTree(String rootName, JdbcTemplate jdbcTemplate){
@@ -93,8 +104,23 @@ public class DataBaseTree {
         return root;
     }
 
+    public String getURIquery(String endpoint){
+    	List<String> uri = new ArrayList<>();
+    	for (Map.Entry<String, Filter> set : filterMap.entrySet()){
+        	uri.add(set.getKey() + "=[" + set.getValue().getType() + "]" );
+        }
+        return endpoint + "?" + String.join("&", uri);
+    }
+    
+    public String apiDocumentation(){
+    	List<String> filters = new ArrayList<>();
+    	for (Map.Entry<String, Filter> set : filterMap.entrySet()){
+        	filters.add(set.getKey() + " is a value of type " + set.getValue().getType() );
+        }
+        return String.join("\n", filters);
+    }
+
     public Map<String, Filter> getFilterMap(){
-        // do not send original to be modified
         return new HashMap<>(filterMap);
     }
 
@@ -111,26 +137,35 @@ public class DataBaseTree {
         if (!this.nodes.containsKey(tableName)) {return null;}
         return this.nodes.get(tableName);
     }
-
-    
-
-    public String generateFilterQuery(Map<String,String> allRequestParams){
-        if (paramFormatStrings == null) { return ""; }
+  
+    public Query generateQuery(MultiValueMap<String,String> allRequestParams){
+        List<String> params = new ArrayList<>();
+        if (paramFormatStrings == null || paramFormatStrings.isEmpty()) { return new Query(this.getTreeInnerJoin() + " WHERE TRUE", params); }
+        int counter = 0; 
         List<String> query = new ArrayList<>();
-        for (Map.Entry<String, String> set : paramFormatStrings.entrySet()){
-        	String key = set.getKey();
-            	if ( !allRequestParams.containsKey(key) ){ continue; }
-            	query.add(set.getValue().replace("{" + key + "}", allRequestParams.get(key)));
+        for (Map.Entry<String, String[]> set : paramFormatStrings.entrySet()){
+            if ( !allRequestParams.containsKey( set.getKey() ) ){ continue; }
+            String key = set.getKey();
+            List<String> holder = new ArrayList<>();
+            for (String elem : allRequestParams.get(key)){
+                holder.add(set.getValue()[0]);
+                params.add(String.format(set.getValue()[1], elem));
+            }  
+            query.add("( " + String.join(" OR ", holder) + " )");
         }
-        return String.join(" AND ", query);
+        String where = String.join(" AND ", query);
+        if (where.equals("")) {where = "TRUE";}
+        Query out = new Query(this.getTreeInnerJoin() + " WHERE " + where, params);
+        return out;
+        
     }
 
     public void addFilters(Filter[] filterArray){
-        Map <String, String> out = new HashMap<>();
+        Map <String, String[]> out = new HashMap<>();
         filterMap = new HashMap<>();
         for (Filter f : filterArray){
             filterMap.put(f.getName(), f);
-            out.put(f.getName(), f.getTargetTable().getPath()  + "_" + f.getTargetId() + "_" + String.format(f.filteringQueryFormat(), "{" + f.getName() + "}"));
+            out.put(f.getName(), new String[] {f.getTargetTable().getPath()  + "_" + f.getTargetId() + "_" + String.format(f.filteringQueryFormat(), "?"), f.paramFormat("%s")});
         }
         this.paramFormatStrings = out;
     }

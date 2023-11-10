@@ -2,7 +2,6 @@ package FWD_Development.DocuView.controllers.api.v1;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -85,7 +84,7 @@ public class Filter {
 
 			// 
 			// SELECT (SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_NAME="ATTACHMENT_FILE") ATTACHMENT_FILE WHERE file_name LIKE .bmp
-			// todo. pregenrated then format
+			// todo. pre-generated then format
 			public String filteringQueryCondition(String param){
 				String filteringQuerySQL;
 				switch(compType){
@@ -125,35 +124,54 @@ public class Filter {
 				String filteringQuerySQL;
 				switch(compType){
 					case '(':
-						filteringQuerySQL = this.originId + " > " + "\'%s\'";
+						filteringQuerySQL = this.originId + " > %s";
 						break;
 					case ')':
-						filteringQuerySQL = this.originId + " < " + "\'%s\'";
+						filteringQuerySQL = this.originId + " < %s";
 						break;
 					case '[':
-						filteringQuerySQL = this.originId + " >= " + "\'%s\'";
+						filteringQuerySQL = this.originId + " >= %s";
 						break;
 					case ']':
-						filteringQuerySQL = this.originId + " <= " + "\'%s\'";
+						filteringQuerySQL = this.originId + " <= %s";
 						break;
 					case '!':
-						filteringQuerySQL = this.originId + " <> " + "\'%s\'";
+						filteringQuerySQL = this.originId + " <> %s";
 						break;
 					case '=':
-						filteringQuerySQL = this.originId + " = " + "\'%s\'";
+						filteringQuerySQL = this.originId + " = %s";
 						break;
 
 					case '^':
-						filteringQuerySQL = this.originId + " LIKE \'%%%s\'";
+						filteringQuerySQL = this.originId + " LIKE %s";
 						break;
 					case '.':
-						filteringQuerySQL = this.originId + " LIKE \'%s%%\'";
+						filteringQuerySQL = this.originId + " LIKE %s";
 						break;
 					case '*':
 					default:
-						filteringQuerySQL = this.originId + " LIKE \'%%%s%%\'";
+						filteringQuerySQL = this.originId + " LIKE %s";
 				}
 				return filteringQuerySQL;
+			}
+
+			public String paramFormat(String param){
+				switch(compType){
+					case '(':
+					case ')':
+					case '!':
+					case '[':
+					case ']':
+					case '=':
+						return param;
+					case '^':
+						return "%%" + param +"";
+					case '.':
+						return "" + param +"%%";
+					case '*':
+					default:
+						return "%%" + param +"%%";
+				}
 			}
 
 			public String filteringQueryFormat(){
