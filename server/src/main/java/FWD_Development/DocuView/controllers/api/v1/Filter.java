@@ -65,56 +65,115 @@ public class Filter {
 
 			this.finiteStatesArray = _finiteStatesArray;
 	    	}
+			public Filter(String _name, String _type, String _originId, DataBaseNode _targetTable, String _targetId, String[] _finiteStatesArray, char _compType){
+	    		this.name = _name;
+	    		this.type = _type;
+				this.originTable = _targetTable.getConnectedId(_targetId);
+				this.originId = _originId;
+				this.targetTable = _targetTable;
+				this.targetId = _targetId;
+				this.finiteStates = true;
+				this.compType = _compType;
+        
+				this.filteringQuerySQLFormat =  generatefilteringQueryFormat();
 
-		public Filter(String _name, String _type, String _originId, DataBaseNode _targetTable, String _targetId, String[] _finiteStatesArray, char _compType){
-    			this.name = _name;
-    			this.type = _type;
-			this.originTable = _targetTable.getConnectedId(_targetId);
-			this.originId = _originId;
-			this.targetTable = _targetTable;
-			this.targetId = _targetId;
-			this.finiteStates = true;
-			this.compType = _compType;
+				this.finiteStatesArray = _finiteStatesArray;
+	    	}
 
-			this.filteringQuerySQLFormat =  generatefilteringQueryFormat();
+			// 
+			// SELECT (SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_NAME="ATTACHMENT_FILE") ATTACHMENT_FILE WHERE file_name LIKE .bmp
+			// todo. pre-generated then format
+			public String filteringQueryCondition(String param){
+				String filteringQuerySQL;
+				switch(compType){
+					case '(':
+						filteringQuerySQL = this.originId + " > " + "\'" + param + "\'";
+						break;
+					case ')':
+						filteringQuerySQL = this.originId + " < " + "\'" + param + "\'";
+						break;
+					case '[':
+						filteringQuerySQL = this.originId + " >= " + "\'" + param + "\'";
+						break;
+					case ']':
+						filteringQuerySQL = this.originId + " <= " + "\'" + param + "\'";
+						break;
+					case '!':
+						filteringQuerySQL = this.originId + " <> " + "\'" + param + "\'";
+						break;
+					case '=':
+						filteringQuerySQL = this.originId + " = " + "\'" + param + "\'";
+						break;
 
-			this.finiteStatesArray = _finiteStatesArray;
-    		}
+					case '^':
+						filteringQuerySQL = this.originId + " LIKE \'%" + param + "\'";
+						break;
+					case '.':
+						filteringQuerySQL = this.originId + " LIKE \'" + param + "%\'";
+						break;
+					case '*':
+					default:
+						filteringQuerySQL = this.originId + " LIKE \'%" + param + "%\'";
+				}
+				return filteringQuerySQL;
+			}
 
-		// 
-		// SELECT (SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_NAME="ATTACHMENT_FILE") ATTACHMENT_FILE WHERE file_name LIKE .bmp
-		// todo. pregenrated then format
-		public String filteringQueryCondition(String param){
-			String filteringQuerySQL;
-			switch(compType){
-				case '(':
-					filteringQuerySQL = this.originId + " > " + "\'" + param + "\'";
-					break;
-				case ')':
-					filteringQuerySQL = this.originId + " < " + "\'" + param + "\'";
-					break;
-				case '[':
-					filteringQuerySQL = this.originId + " >= " + "\'" + param + "\'";
-					break;
-				case ']':
-					filteringQuerySQL = this.originId + " <= " + "\'" + param + "\'";
-					break;
-				case '!':
-					filteringQuerySQL = this.originId + " <> " + "\'" + param + "\'";
-					break;
-				case '=':
-					filteringQuerySQL = this.originId + " = " + "\'" + param + "\'";
-					break;
+			private String generatefilteringQueryFormat(){
+				String filteringQuerySQL;
+				switch(compType){
+					case '(':
+						filteringQuerySQL = this.originId + " > %s";
+						break;
+					case ')':
+						filteringQuerySQL = this.originId + " < %s";
+						break;
+					case '[':
+						filteringQuerySQL = this.originId + " >= %s";
+						break;
+					case ']':
+						filteringQuerySQL = this.originId + " <= %s";
+						break;
+					case '!':
+						filteringQuerySQL = this.originId + " <> %s";
+						break;
+					case '=':
+						filteringQuerySQL = this.originId + " = %s";
+						break;
 
-				case '^':
-					filteringQuerySQL = this.originId + " LIKE \'%" + param + "\'";
-					break;
-				case '.':
-					filteringQuerySQL = this.originId + " LIKE \'" + param + "%\'";
-					break;
-				case '*':
-				default:
-					filteringQuerySQL = this.originId + " LIKE \'%" + param + "%\'";
+					case '^':
+						filteringQuerySQL = this.originId + " LIKE %s";
+						break;
+					case '.':
+						filteringQuerySQL = this.originId + " LIKE %s";
+						break;
+					case '*':
+					default:
+						filteringQuerySQL = this.originId + " LIKE %s";
+				}
+				return filteringQuerySQL;
+			}
+
+			public String paramFormat(String param){
+				switch(compType){
+					case '(':
+					case ')':
+					case '!':
+					case '[':
+					case ']':
+					case '=':
+						return param;
+					case '^':
+						return "%%" + param +"";
+					case '.':
+						return "" + param +"%%";
+					case '*':
+					default:
+						return "%%" + param +"%%";
+				}
+			}
+
+			public String filteringQueryFormat(){
+				return filteringQuerySQLFormat;
 			}
 			return filteringQuerySQL;
 		}
