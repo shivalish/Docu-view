@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.http.MediaType;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -94,10 +95,9 @@ public class DataBaseV1 {
 	public ResponseEntity<List<Map<String, Object>>> getDocs(@RequestParam MultiValueMap<String,String> allRequestParams){
 		var query =  Hardcoded.dataBaseTree.generateQuery(allRequestParams);
 		
-		return new ResponseEntity<>(
-			jdbcTemplate.queryForList("SELECT " + rename +" FROM (" + query.parametrized + ") AS x;", query.params), 
-			HttpStatus.OK
-		);
+		return ResponseEntity.ok()
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(jdbcTemplate.queryForList("SELECT " + rename +" FROM (" + query.parametrized + ") AS x;", query.params));
 	}
 
 	@GetMapping("/pages")
@@ -114,10 +114,9 @@ public class DataBaseV1 {
 			+ query.parametrized + ") AS x LIMIT " 
 			+ perPage + " OFFSET " 
 			+ ((page-1) * perPage) + ";";
-        return new ResponseEntity<>(
-			jdbcTemplate.queryForList(sql, query.params), 
-			HttpStatus.OK
-		);
+        return ResponseEntity.ok()
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(jdbcTemplate.queryForList(sql, query.params));
 	}
 
 	@GetMapping("/pages/content")
@@ -137,12 +136,16 @@ public class DataBaseV1 {
         data.put("page", page);
         data.put("per_page", perPage);
         data.put("total_pages", (((Long) data.get("count"))/perPage) + 1);
-        return new ResponseEntity<>(data, HttpStatus.OK);
+        return ResponseEntity.ok()
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(data);
 	}
 	
 	@GetMapping("/help")
 	public ResponseEntity<String> getHelp(@RequestParam Map<String,String> allRequestParams){
-		return new ResponseEntity<>(Hardcoded.dataBaseTree.getURIquery("/api/v1/database"), HttpStatus.OK);
+		return ResponseEntity.ok()
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(Hardcoded.dataBaseTree.getURIquery("/api/v1/database"));
 	}
 
 	

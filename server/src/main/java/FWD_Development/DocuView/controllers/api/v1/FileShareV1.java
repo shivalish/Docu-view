@@ -2,26 +2,14 @@ package FWD_Development.DocuView.controllers.api.v1;
 
 
 /* CUSTOM ADDED LIBS */
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.Stack;
-import java.util.Iterator;
-import java.util.HashMap;
 import java.util.zip.ZipOutputStream;
 import java.util.zip.ZipEntry;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.util.Date;
 /* CUSTOM ADDED LIBS */
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,37 +33,9 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
-import com.fasterxml.jackson.core.JsonProcessingException;
-
-import FWD_Development.DocuView.controllers.api.v1.DataBaseTree.DataBaseNode;
-
-import java.sql.ResultSetMetaData;
-
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.http.ResponseEntity;
-
-// FILTERS
-//      file_creation
-//      document_type
-//      file_name
-//      customer_name
-//      auction_type
-//      proposal_type
-//      project_type
-//      commitment_date_start
-//      commitment_date_end
-//      auction_date_start
-//      auction_date_end
-//      proposal_date_start
-//      proposals_date_end
-
+//update so database --> google drive
 
 @CrossOrigin(origins = "http://localhost:3000") // Default React port
 @RestController
@@ -83,7 +43,8 @@ import org.springframework.http.ResponseEntity;
 public class FileShareV1 {
 
     private final GoogleDriveService googleDriveService;
-//
+    @Autowired
+    	private JdbcTemplate jdbcTemplate;
     @Autowired
     public FileShareV1(GoogleDriveService googleDriveService) {
         this.googleDriveService = googleDriveService;
@@ -99,6 +60,7 @@ public class FileShareV1 {
 
     @GetMapping("/download/{fileId}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileId) throws IOException {
+        
         // Use Google Drive API to get the file
         OutputStream outputStream = new ByteArrayOutputStream();
         googleDriveService.drive.files().get(fileId).executeMediaAndDownloadTo(outputStream);
@@ -121,7 +83,7 @@ public class FileShareV1 {
     }
 
     //zip files
-    @GetMapping("/zipFiles")
+    @GetMapping("/download/zipFiles")
     public ResponseEntity<Resource> zipFiles(@RequestParam List<String> fileIds) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ZipOutputStream zipOut = new ZipOutputStream(outputStream);
