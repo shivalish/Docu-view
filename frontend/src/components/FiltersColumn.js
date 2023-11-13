@@ -1,6 +1,6 @@
 import { React, useContext, useEffect, useState } from "react";
 import { ChevronDoubleRightIcon } from "@heroicons/react/24/solid";
-import { fetchContext } from "./TableContext";
+import { FetchContext } from "./TableContext";
 import classNames from "classnames";
 import { Disclosure } from "@headlessui/react";
 import FilterTypes from "../atoms/FilterTypes";
@@ -25,20 +25,18 @@ function FilterRow({
 }) {
   //textbox states
   const [text, setText] = useState("");
-  const [textlog, setTextLog] = useState(new Set());
+  const [textlog] = useState(new Set());
 
   //combobox states
   const [selectedCombo, setCombo] = useState(null);
   const [comboText, setComboText] = useState("");
-  const [combolog, setComboLog] = useState(new Set());
+  const [combolog] = useState(new Set());
 
   //dropdown states
-  const [currYear, setYear] = useState(new Set());
+  const [currYear] = useState(new Set());
 
   //checkbox states
-  const [selectedCheck, setCheck] = useState([]);
-
-  const [vals, setVals] = useState(api);
+  const [selectedCheck] = useState([]);
 
   //TODO: code cleanup + visual alignment fixes
 
@@ -53,8 +51,7 @@ function FilterRow({
 
   //adds a key/value pair to the global query variable
   const click = (selectedValue) => {
-    setVals({ [Object.keys(vals)[0]]: selectedValue });
-    setQuery(vals);
+    setQuery(selectedValue instanceof Set ? {[Object.keys(api)[0]]: [...selectedValue]} : { [Object.keys(api)[0]]: selectedValue });
   };
 
   return (
@@ -192,7 +189,7 @@ function FilterRow({
                   className="rounded-md ui-active:bg-iso-blue-grey-200
                   ui-active:text-white bg-iso-blue-grey-300
                   text-iso-white overflow-hidden text-sm p-1"
-                  onClick={() => combolog.add(val)}
+                  onClick={() => {combolog.add(val); click(combolog);}}
                 >
                   {val}
                 </Combobox.Option>
@@ -222,7 +219,8 @@ function FilterRow({
             onChange={e => setText(e.target.value)}
             onKeyUp={e => {
               if(e.key==='Enter'){
-                textlog.add(text)
+                textlog.add(text);
+                click(textlog);
                 setText("");
               }}}
             value={text}
@@ -247,30 +245,29 @@ function FilterRow({
 }
 
 //TODO: remove tester component when implementing table
-function Tester() {
-  //testing if useContext works
+// function Tester() {
+//   //testing if useContext works
 
-  const x = useContext(fetchContext);
+//   const x = useContext(fetchContext);
 
-  useEffect(() => {
-    console.log("query is changing!", x);
-  }, [x]);
-  return <div>{JSON.stringify(x)}</div>;
-}
+//   useEffect(() => {
+//     console.log("query is changing!", x);
+//   }, [x]);
+//   return <div>{JSON.stringify(x)}</div>;
+// }
 
 //dropdown menu
 function FiltersColumn() {
-  const [query, setQuery] = useState({});
+  const {val, superSetVal}= useContext(FetchContext);
 
   return (
-    <fetchContext.Provider value={query}>
       <div className="flex flex-col bg-iso-blue h-[50rem] w-full text-iso-white p-4 gap-2 overflow-y-scroll">
           <div className="flex flex-col border-t">
             {FilterTypes.map((row) => (
               <div className={`py-2 border-b`}>
                 <FilterRow
                   {...row}
-                  setQuery={(values) => setQuery({ ...query, ...values })}
+                  setQuery={(values) => (superSetVal({ ...val, ...values }))}
                 />
               </div>
             ))}
@@ -286,7 +283,6 @@ function FiltersColumn() {
             </Button>
             </div>
       </div>
-    </fetchContext.Provider>
   );
 }
 

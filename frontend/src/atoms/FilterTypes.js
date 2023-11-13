@@ -51,7 +51,7 @@ export default [
     name: "Customer Name",
     textbox: true,
     placeholder: "customer name",
-    api: { customer_name: "" },
+    api: { customer_name: [] },
   },
   {
     name: "Project Name",
@@ -63,7 +63,7 @@ export default [
       "Additional LR"
     ],
     placeholder: "project",
-    api: { project_name: "" }
+    api: { project_name: [] }
   },
   {
     name: "Project Type",
@@ -87,6 +87,6 @@ export default [
     name: "File Name",
     textbox: true,
     placeholder: "file name",
-    api: { file_name: "" },
+    api: { file_name: [] },
   },
 ];

@@ -1,10 +1,29 @@
-import React, { useState } from 'react'
+import React, { useState, useContext, useEffect } from 'react'
 import FileRow from './FileRow'
 import TableHeaders from './TableHeaders'
 import Button from '../atoms/Button'
+import { FetchContext } from "./TableContext.jsx";
+import DummyData from '../atoms/DummyData.js';
 
 function FilesTable() {
 
+    const {val} = useContext(FetchContext);
+
+    //this function executes on every element of the DummyData array
+    const filterFunc = (e) => {
+        //temporary filter function
+        let fitsCriteria = true;
+        for (const key in val){
+            if(key === "file_name" || key === "customer_name"){
+                if(val[key].length === 0) continue;
+                fitsCriteria = fitsCriteria && val[key].filter(name => (e[key].includes(name))).length > 0;
+            }
+        }
+        return fitsCriteria;
+    }
+    useEffect(()=>{
+        setFiles(DummyData.filter(filterFunc));
+    },[val])
     /*
     When we receive files from the server we put them in this array
     We can 'sort' the file table by sorting this array, since the table maps row 
@@ -14,165 +33,7 @@ function FilesTable() {
     dates, can change once backend team tells us how they will be sending us them
     */
 
-    const [files, setFiles] = useState([
-        {
-            fileName: "testFile1",
-            customer: "Jake",
-            uploadDate: 1697768214692,
-            fileSizeMB: 50,
-            attachmentID: 50,
-        }, {
-            fileName: "testFile2",
-            customer: "Adam",
-            uploadDate: 1697724214692,
-            fileSizeMB: 95,
-            attachmentID: 20,
-        }, {
-            fileName: "testFile3",
-            customer: "Shiyu",
-            uploadDate: 1697718214692,
-            fileSizeMB: 4000,
-            attachmentID: 35,
-        }, {
-            fileName: "testFile4",
-            customer: "Wenhan",
-            uploadDate: 1697768252692,
-            fileSizeMB: 500,
-            attachmentID: 69430,
-        }, {
-            fileName: "eepyFile",
-            customer: "EvilJake",
-            uploadDate: 1697268112692,
-            fileSizeMB: 100,
-            attachmentID: 90101,
-        }, {
-            fileName: "stinkyFile",
-            customer: "EvilAdam",
-            uploadDate: 1197268253332,
-            fileSizeMB: 1560,
-            attachmentID: 8000,
-        }, {
-            fileName: "bestFile",
-            customer: "EvilShiyu",
-            uploadDate: 1297268253332,
-            fileSizeMB: 150,
-            attachmentID: 1,
-        }, {
-            fileName: "largeFile",
-            customer: "EvilWenhan",
-            uploadDate: 1697168252692,
-            fileSizeMB: 2142,
-            attachmentID: 603,
-        }, {
-            fileName: "testFile1",
-            customer: "Jake",
-            uploadDate: 1697768214692,
-            fileSizeMB: 650,
-            attachmentID: 5015,
-        }, {
-            fileName: "testFile2",
-            customer: "Jake",
-            uploadDate: 1697768214692,
-            fileSizeMB: 780,
-            attachmentID: 5014,
-        }, {
-            fileName: "testFile3",
-            customer: "Jake",
-            uploadDate: 1697768214692,
-            fileSizeMB: 100,
-            attachmentID: 5013,
-        }, {
-            fileName: "testFile4",
-            customer: "Jake",
-            uploadDate: 1697768214692,
-            fileSizeMB: 56,
-            attachmentID: 5012,
-        }, {
-            fileName: "testFile5",
-            customer: "Jake",
-            uploadDate: 1697768214692,
-            fileSizeMB: 75,
-            attachmentID: 5011,
-        }, {
-            fileName: "testFile6",
-            customer: "Jake",
-            uploadDate: 1697768214692,
-            fileSizeMB: 90,
-            attachmentID: 5010,
-        }, {
-            fileName: "testFile7",
-            customer: "Jake",
-            uploadDate: 1697768214692,
-            fileSizeMB: 60,
-            attachmentID: 5009,
-        }, {
-            fileName: "testFile8",
-            customer: "Jake",
-            uploadDate: 1697768214692,
-            fileSizeMB: 5,
-            attachmentID: 5008,
-        }, {
-            fileName: "testFile9",
-            customer: "Jake",
-            uploadDate: 1697768214692,
-            fileSizeMB: 2,
-            attachmentID: 5007,
-        }, {
-            fileName: "testFile10",
-            customer: "Jake",
-            uploadDate: 1697768214692,
-            fileSizeMB: 90,
-            attachmentID: 5006,
-        }, {
-            fileName: "testFile11",
-            customer: "Jake",
-            uploadDate: 1697768214692,
-            fileSizeMB: 5040,
-            attachmentID: 5005,
-        }, {
-            fileName: "testFile12",
-            customer: "Jake",
-            uploadDate: 1697768214692,
-            fileSizeMB: 5220,
-            attachmentID: 5004,
-        }, {
-            fileName: "testFile13",
-            customer: "Jake",
-            uploadDate: 1697768214692,
-            fileSizeMB: 550,
-            attachmentID: 5003,
-        }, {
-            fileName: "testFile14",
-            customer: "Jake",
-            uploadDate: 1697768214692,
-            fileSizeMB: 70,
-            attachmentID: 5002,
-        }, {
-            fileName: "testFile15",
-            customer: "Jake",
-            uploadDate: 1697768214692,
-            fileSizeMB: 60,
-            attachmentID: 83,
-        }, {
-            fileName: "testFile25",
-            customer: "Jake",
-            uploadDate: 1697768214692,
-            fileSizeMB: 9000,
-            attachmentID: 801,
-        }, {
-            fileName: "testFile45",
-            customer: "Jake2",
-            uploadDate: 1697768214692,
-            fileSizeMB: 60,
-            attachmentID: 87,
-        }, {
-            fileName: "testFile1006",
-            customer: "Jake3",
-            uploadDate: 1697768214692,
-            fileSizeMB: 600,
-            attachmentID: 89,
-        }]
-    )
+    const [files, setFiles] = useState(DummyData);
 
     const [selectedFiles, setSelectedFiles] = useState([]);
 
@@ -281,8 +142,8 @@ function FilesTable() {
                         .map((fileData, index) => (
                             <div key={fileData.attachmentID} className={index % 2 ? '' : 'bg-iso-white'}>
                                 <FileRow
-                                    fileName={fileData.fileName}
-                                    customer={fileData.customer}
+                                    fileName={fileData.file_name}
+                                    customer={fileData.customer_name}
                                     uploadDate={fileData.uploadDate}
                                     fileSizeMb={fileData.fileSizeMB}
                                     attachmentID={fileData.attachmentID}
