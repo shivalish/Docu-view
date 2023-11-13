@@ -60,7 +60,6 @@ public class FileShareV1 {
 
     @GetMapping("/download/{fileId}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileId) throws IOException {
-        
         // Use Google Drive API to get the file
         OutputStream outputStream = new ByteArrayOutputStream();
         googleDriveService.drive.files().get(fileId).executeMediaAndDownloadTo(outputStream);

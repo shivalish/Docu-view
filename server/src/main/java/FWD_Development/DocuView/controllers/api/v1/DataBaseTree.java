@@ -123,7 +123,6 @@ public class DataBaseTree {
         }
         return String.join("\n", filters);
     }
-
     public void addNode(DataBaseNode node){
         if (node == null) {return ;}
         nodes.put(node.getName(), node);

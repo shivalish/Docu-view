@@ -60,7 +60,6 @@ public class DataBaseV1 {
 	@Autowired
     	private JdbcTemplate jdbcTemplate;
     	
-    	
 	private static String rename = "x.attach_proposal_attachment_type AS attachmentType, "
 		+ "x.attach_proposal_proposal_id_project_type AS projectType, "
 		+ "x.attach_proposal_proposal_id_proposal_label AS proposalLabel, "
@@ -148,5 +147,10 @@ public class DataBaseV1 {
 			.body(Hardcoded.dataBaseTree.getURIquery("/api/v1/database"));
 	}
 
+	
+	@GetMapping("/help")
+	public ResponseEntity<String> getHelp(@RequestParam Map<String,String> allRequestParams){
+		return new ResponseEntity<>(Hardcoded.dataBaseTree.getURIquery("/api/v1/database"), HttpStatus.OK);
+	}
 	
 };
