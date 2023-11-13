@@ -119,68 +119,67 @@ public class Filter {
 			return filteringQuerySQL;
 		}
 
-			private String generatefilteringQueryFormat(){
-				String filteringQuerySQL;
-				switch(compType){
-					case '(':
-						filteringQuerySQL = this.originId + " > %s";
-						break;
-					case ')':
-						filteringQuerySQL = this.originId + " < %s";
-						break;
-					case '[':
-						filteringQuerySQL = this.originId + " >= %s";
-						break;
-					case ']':
-						filteringQuerySQL = this.originId + " <= %s";
-						break;
-					case '!':
-						filteringQuerySQL = this.originId + " <> %s";
-						break;
-					case '=':
-						filteringQuerySQL = this.originId + " = %s";
-						break;
+		private String generatefilteringQueryFormat(){
+			String filteringQuerySQL;
+			switch(compType){
+				case '(':
+					filteringQuerySQL = this.originId + " > %s";
+					break;
+				case ')':
+					filteringQuerySQL = this.originId + " < %s";
+					break;
+				case '[':
+					filteringQuerySQL = this.originId + " >= %s";
+					break;
+				case ']':
+					filteringQuerySQL = this.originId + " <= %s";
+					break;
+				case '!':
+					filteringQuerySQL = this.originId + " <> %s";
+					break;
+				case '=':
+					filteringQuerySQL = this.originId + " = %s";
+					break;
 
-					case '^':
-						filteringQuerySQL = this.originId + " LIKE %s";
-						break;
-					case '.':
-						filteringQuerySQL = this.originId + " LIKE %s";
-						break;
-					case '*':
-					default:
-						filteringQuerySQL = this.originId + " LIKE %s";
-				}
-				return filteringQuerySQL;
+				case '^':
+					filteringQuerySQL = this.originId + " LIKE %s";
+					break;
+				case '.':
+					filteringQuerySQL = this.originId + " LIKE %s";
+					break;
+				case '*':
+				default:
+					filteringQuerySQL = this.originId + " LIKE %s";
 			}
 			return filteringQuerySQL;
 		}
 
-			public String paramFormat(String param){
-				switch(compType){
-					case '(':
-					case ')':
-					case '!':
-					case '[':
-					case ']':
-					case '=':
-						return param;
-					case '^':
-						return "%%" + param +"";
-					case '.':
-						return "" + param +"%%";
-					case '*':
-					default:
-						return "%%" + param +"%%";
-				}
+		public String paramFormat(String param){
+			switch(compType){
+				case '(':
+				case ')':
+				case '!':
+				case '[':
+				case ']':
+				case '=':
+					return param;
+				case '^':
+					return "%%" + param +"";
+				case '.':
+					return "" + param +"%%";
+				case '*':
+				default:
+					return "%%" + param +"%%";
 			}
+		}
 
-			public String filteringQueryFormat(){
-				return filteringQuerySQLFormat;
-			}
-			public String getName(){
-				return this.name;
-			}
+		public String filteringQueryFormat(){
+			return filteringQuerySQLFormat;
+		}
+		
+		public String getName(){
+			return this.name;
+		}
 
 		public String getType(){
 			return this.type;

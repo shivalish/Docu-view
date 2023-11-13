@@ -104,22 +104,6 @@ public class DataBaseTree {
         return root;
     }
 
-    public String getURIquery(String endpoint){
-    	List<String> uri = new ArrayList<>();
-    	for (Map.Entry<String, Filter> set : filterMap.entrySet()){
-        	uri.add(set.getKey() + "=[" + set.getValue().getType() + "]" );
-        }
-        return endpoint + "?" + String.join("&", uri);
-    }
-    
-    public String apiDocumentation(){
-    	List<String> filters = new ArrayList<>();
-    	for (Map.Entry<String, Filter> set : filterMap.entrySet()){
-        	filters.add(set.getKey() + " is a value of type " + set.getValue().getType() );
-        }
-        return String.join("\n", filters);
-    }
-
     public Map<String, Filter> getFilterMap(){
         return new HashMap<>(filterMap);
     }
@@ -139,7 +123,6 @@ public class DataBaseTree {
         }
         return String.join("\n", filters);
     }
-
     public void addNode(DataBaseNode node){
         if (node == null) {return ;}
         nodes.put(node.getName(), node);
@@ -157,7 +140,6 @@ public class DataBaseTree {
     public Query generateQuery(MultiValueMap<String,String> allRequestParams){
         List<String> params = new ArrayList<>();
         if (paramFormatStrings == null || paramFormatStrings.isEmpty()) { return new Query(this.getTreeInnerJoin() + " WHERE TRUE", params); }
-        int counter = 0; 
         List<String> query = new ArrayList<>();
         for (Map.Entry<String, String[]> set : paramFormatStrings.entrySet()){
             if ( !allRequestParams.containsKey( set.getKey() ) ){ continue; }
