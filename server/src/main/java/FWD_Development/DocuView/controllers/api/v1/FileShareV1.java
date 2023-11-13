@@ -12,21 +12,28 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Stack;
+import java.util.Iterator;
 import java.util.HashMap;
 import java.util.zip.ZipOutputStream;
 import java.util.zip.ZipEntry;
-
 /* CUSTOM ADDED LIBS */
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.DataClassRowMapper;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.core.io.Resource;
@@ -44,27 +51,10 @@ import com.google.api.services.drive.model.FileList;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
 
-// FILTERS
-//      file_creation
-//      document_type
-//      file_name
-//      customer_name
-//      auction_type
-//      proposal_type
-//      project_type
-//      commitment_date_start
-//      commitment_date_end
-//      auction_date_start
-//      auction_date_end
-//      proposal_date_start
-//      proposals_date_end
-
-
 @CrossOrigin(origins = "http://localhost:3000") // Default React port
 @RestController
 @RequestMapping("/api/v1/fileshare")
 public class FileShareV1 {
-
     private final GoogleDriveService googleDriveService;
 //
     @Autowired

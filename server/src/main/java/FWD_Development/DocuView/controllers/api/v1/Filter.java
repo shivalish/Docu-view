@@ -11,8 +11,8 @@ import FWD_Development.DocuView.controllers.api.v1.DataBaseTree.DataBaseNode;
 	//"SELECT DISTINCT auction_type FROM AUC_TYPE"  "SELECT DISTINCT attachment_type FROM ATTACH_TYPE" , new String[]{".pdf",".csv",".xlsx",".docs"}
 public class Filter {
 
-	    private String name;		// name of filter
-	    private String type;		// filter datatype
+	    	private String name;			// name of filter
+	    	private String type;			// filter datatype
 		private DataBaseNode originTable;
 		private String originId;	
 		private DataBaseNode targetTable;
@@ -28,45 +28,43 @@ public class Filter {
 	    	public Filter(String _name, String _type, String _originId, DataBaseNode _targetTable, String _targetId, boolean _finiteStates){
 	    		this.name = _name;
 	    		this.type = _type;
-				this.originTable = _targetTable.getConnectedId(_targetId);
-				this.originId = _originId;
-				this.targetTable = _targetTable;
-				this.targetId = _targetId;
-				this.finiteStates = _finiteStates;
-				this.filteringQuerySQLFormat =  generatefilteringQueryFormat();
+			this.originTable = _targetTable.getConnectedId(_targetId);
+			this.originId = _originId;
+			this.targetTable = _targetTable;
+			this.targetId = _targetId;
+			this.finiteStates = _finiteStates;
+			this.filteringQuerySQLFormat =  generatefilteringQueryFormat();
 
-				this.finiteStatesQuery =  String.format("SELECT DISTINCT %s FROM %s", originId, originTable.getName());
+			this.finiteStatesQuery =  String.format("SELECT DISTINCT %s FROM %s", originId, originTable.getName());
 	    	}
 
-			public Filter(String _name, String _type, String _originId, DataBaseNode _targetTable, String _targetId, boolean _finiteStates, char _compType){
+		public Filter(String _name, String _type, String _originId, DataBaseNode _targetTable, String _targetId, boolean _finiteStates, char _compType){
 	    		this.name = _name;
 	    		this.type = _type;
-				this.originTable = _targetTable.getConnectedId(_targetId);
-				this.originId = _originId;
-				this.targetTable = _targetTable;
-				this.targetId = _targetId;
-				this.finiteStates = _finiteStates;
-				this.compType = _compType;
+			this.originTable = _targetTable.getConnectedId(_targetId);
+			this.originId = _originId;
+			this.targetTable = _targetTable;
+			this.targetId = _targetId;
+			this.finiteStates = _finiteStates;
+			this.compType = _compType;
         
-				this.filteringQuerySQLFormat =  generatefilteringQueryFormat();
-
-				this.finiteStatesQuery =  String.format("SELECT DISTINCT %s FROM %s", originId, originTable.getName());
+			this.filteringQuerySQLFormat =  generatefilteringQueryFormat();
+			this.finiteStatesQuery =  String.format("SELECT DISTINCT %s FROM %s", originId, originTable.getName());
 	    	}
 
-			public Filter(String _name, String _type,  String _originId, DataBaseNode _targetTable, String _targetId, String[] _finiteStatesArray){
+		public Filter(String _name, String _type,  String _originId, DataBaseNode _targetTable, String _targetId, String[] _finiteStatesArray){
 	    		this.name = _name;
 	    		this.type = _type;
-				this.originTable = _targetTable.getConnectedId(_targetId);
-				this.originId = _originId;
-				this.targetTable = _targetTable;
-				this.targetId = _targetId;
-				this.finiteStates = true;
+			this.originTable = _targetTable.getConnectedId(_targetId);
+			this.originId = _originId;
+			this.targetTable = _targetTable;
+			this.targetId = _targetId;
+			this.finiteStates = true;
 
-				this.filteringQuerySQLFormat =  generatefilteringQueryFormat();
+			this.filteringQuerySQLFormat =  generatefilteringQueryFormat();
 
-				this.finiteStatesArray = _finiteStatesArray;
+			this.finiteStatesArray = _finiteStatesArray;
 	    	}
-
 			public Filter(String _name, String _type, String _originId, DataBaseNode _targetTable, String _targetId, String[] _finiteStatesArray, char _compType){
 	    		this.name = _name;
 	    		this.type = _type;
@@ -177,37 +175,78 @@ public class Filter {
 			public String filteringQueryFormat(){
 				return filteringQuerySQLFormat;
 			}
-			public String getName(){
-				return this.name;
-			}
+			return filteringQuerySQL;
+		}
 
-			public String getType(){
-				return this.type;
-			}
+		private String generatefilteringQueryFormat(){
+			String filteringQuerySQL;
+			switch(compType){
+				case '(':
+					filteringQuerySQL = this.originId + " > " + "\'%s\'";
+					break;
+				case ')':
+					filteringQuerySQL = this.originId + " < " + "\'%s\'";
+					break;
+				case '[':
+					filteringQuerySQL = this.originId + " >= " + "\'%s\'";
+					break;
+				case ']':
+					filteringQuerySQL = this.originId + " <= " + "\'%s\'";
+					break;
+				case '!':
+					filteringQuerySQL = this.originId + " <> " + "\'%s\'";
+					break;
+				case '=':
+					filteringQuerySQL = this.originId + " = " + "\'%s\'";
+					break;
 
-			public DataBaseNode getOriginTable(){
-				return this.originTable;
+				case '^':
+					filteringQuerySQL = this.originId + " LIKE \'%%%s\'";
+					break;
+				case '.':
+					filteringQuerySQL = this.originId + " LIKE \'%s%%\'";
+					break;
+				case '*':
+				default:
+					filteringQuerySQL = this.originId + " LIKE \'%%%s%%\'";
 			}
+			return filteringQuerySQL;
+		}
 
-			public String getOriginId(){
-				return this.originId;
-			}
+		public String filteringQueryFormat(){
+			return filteringQuerySQLFormat;
+		}
+		public String getName(){
+			return this.name;
+		}
 
-			public DataBaseNode getTargetTable(){
-				return this.targetTable;
-			}
+		public String getType(){
+			return this.type;
+		}
 
-			public String getTargetId(){
-				return this.targetId;
-			}
+		public DataBaseNode getOriginTable(){
+			return this.originTable;
+		}
 
-			public boolean getFiniteStates(){
-				return this.finiteStates;
-			}	    	
+		public String getOriginId(){
+			return this.originId;
+		}
+
+		public DataBaseNode getTargetTable(){
+			return this.targetTable;
+		}
+
+		public String getTargetId(){
+			return this.targetId;
+		}
+
+		public boolean getFiniteStates(){
+			return this.finiteStates;
+		}	    	
 	    	//////////////////////////////
 	    	
 	    	private List<String> queryExecutor(JdbcTemplate jdbcTemplate){
-				List<String> temp = jdbcTemplate.queryForList(finiteStatesQuery,String.class);
+			List<String> temp = jdbcTemplate.queryForList(finiteStatesQuery,String.class);
 	    		return temp;
 	    	};
 	    	
