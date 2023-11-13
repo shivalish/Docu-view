@@ -123,6 +123,22 @@ public class DataBaseTree {
     public Map<String, Filter> getFilterMap(){
         return new HashMap<>(filterMap);
     }
+    
+    public String getURIquery(String endpoint){
+    	List<String> uri = new ArrayList<>();
+    	for (Map.Entry<String, Filter> set : filterMap.entrySet()){
+        	uri.add(set.getKey() + "=[" + set.getValue().getType() + "]" );
+        }
+        return endpoint + "?" + String.join("&", uri);
+    }
+    
+    public String apiDocumentation(){
+    	List<String> filters = new ArrayList<>();
+    	for (Map.Entry<String, Filter> set : filterMap.entrySet()){
+        	filters.add(set.getKey() + " is a value of type " + set.getValue().getType() );
+        }
+        return String.join("\n", filters);
+    }
 
     public void addNode(DataBaseNode node){
         if (node == null) {return ;}
@@ -192,7 +208,7 @@ public class DataBaseTree {
             for(String column : set.getValue().getColumns()){
                 columns_alias.add(set.getValue().getName() + "." + column + " AS " +  alias + "_" + column.toLowerCase());
             }
-            String query = "INNER JOIN " + "( SELECT " + String.join(", ", columns_alias) + " FROM " + set.getValue().getName() +")" + " AS " + alias + "_Table"
+            String query = "LEFT JOIN " + "( SELECT " + String.join(", ", columns_alias) + " FROM " + set.getValue().getName() +")" + " AS " + alias + "_Table"
                 + " ON " + node.getPath() + "_" + set.getKey() + " = " + alias + "_" + set.getValue().getPrimaryKey()
                 + "\n" + treeInnerJoinGenerate(set.getValue());
             strLst.add(query);
@@ -200,4 +216,7 @@ public class DataBaseTree {
         return String.join("", strLst);
         
     }
+    
+    
+    
 }
