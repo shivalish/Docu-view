@@ -13,6 +13,9 @@ import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.zip.ZipOutputStream;
+import java.util.zip.ZipEntry;
+
 /* CUSTOM ADDED LIBS */
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +28,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -96,6 +100,37 @@ public class FileShareV1 {
         return ResponseEntity.ok()
                 .headers(headers)
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
+    }
+
+    //zip files
+    @GetMapping("/zipFiles")
+    public ResponseEntity<Resource> zipFiles(@RequestParam List<String> fileIds) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ZipOutputStream zipOut = new ZipOutputStream(outputStream);
+
+        for (String fileId : fileIds) {
+            File fileData = googleDriveService.drive.files().get(fileId).execute();
+
+            InputStream inputStream = googleDriveService.drive.files().get(fileId).executeMediaAsInputStream();
+
+            ZipEntry zipEntry = new ZipEntry(fileData.getName());
+            zipOut.putNextEntry(zipEntry);
+
+            byte[] bytes = new byte[1024];
+            int length;
+            while ((length = inputStream.read(bytes)) >= 0) {
+                zipOut.write(bytes, 0, length);
+            }
+            inputStream.close();
+            zipOut.closeEntry();
+        }
+        zipOut.close();
+
+        InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(outputStream.toByteArray()));
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"files.zip\"")
                 .body(resource);
     }
 
