@@ -57,6 +57,12 @@ public class FileShareV1 {
         FileList fileList = googleDriveService.drive.files().list().execute();
         return fileList.getFiles();
     }
+    
+     @GetMapping("/preview/{fileId}")
+    public ResponseEntity<Resource> previewFile(@PathVariable String fileId) throws IOException {
+        return null;
+    }
+    
 
     @GetMapping("/download/{fileId}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileId) throws IOException {

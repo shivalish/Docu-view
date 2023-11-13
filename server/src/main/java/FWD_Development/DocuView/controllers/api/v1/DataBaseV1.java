@@ -93,7 +93,6 @@ public class DataBaseV1 {
 	@GetMapping({"", "/infinite"})
 	public ResponseEntity<List<Map<String, Object>>> getDocs(@RequestParam MultiValueMap<String,String> allRequestParams){
 		var query =  Hardcoded.dataBaseTree.generateQuery(allRequestParams);
-		
 		return ResponseEntity.ok()
 			.contentType(MediaType.APPLICATION_JSON)
 			.body(jdbcTemplate.queryForList("SELECT " + rename +" FROM (" + query.parametrized + ") AS x;", query.params));
