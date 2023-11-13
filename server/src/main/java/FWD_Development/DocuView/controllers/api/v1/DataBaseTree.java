@@ -104,10 +104,6 @@ public class DataBaseTree {
         return root;
     }
 
-    public Map<String, Filter> getFilterMap(){
-        return new HashMap<>(filterMap);
-    }
-    
     public String getURIquery(String endpoint){
     	List<String> uri = new ArrayList<>();
     	for (Map.Entry<String, Filter> set : filterMap.entrySet()){
@@ -123,6 +119,11 @@ public class DataBaseTree {
         }
         return String.join("\n", filters);
     }
+
+    public Map<String, Filter> getFilterMap(){
+        return new HashMap<>(filterMap);
+    }
+    
     public void addNode(DataBaseNode node){
         if (node == null) {return ;}
         nodes.put(node.getName(), node);

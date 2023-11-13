@@ -146,11 +146,5 @@ public class DataBaseV1 {
 			.contentType(MediaType.APPLICATION_JSON)
 			.body(Hardcoded.dataBaseTree.getURIquery("/api/v1/database"));
 	}
-
-	
-	@GetMapping("/help")
-	public ResponseEntity<String> getHelp(@RequestParam Map<String,String> allRequestParams){
-		return new ResponseEntity<>(Hardcoded.dataBaseTree.getURIquery("/api/v1/database"), HttpStatus.OK);
-	}
 	
 };

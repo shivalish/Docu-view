@@ -104,7 +104,7 @@ function HomePage() {
   //TODO 3: implement text rememberance when switching tabs
 
   return (
-    <div className="flex flex-col w-screen h-screen bg-iso-blue">
+    <div className="ffc w-screen h-screen bg-iso-blue">
       <Header />
       <div className="flex flex-grow items-center justify-center">
         <div className="w-1/3"></div>

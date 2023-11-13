@@ -17,16 +17,16 @@ function TableHeaders({ sortFiles, currentSort }) {
         <div className="flex justify-center mb-2">
             <div className='w-11/12 flex border-b border-gray-400'>
                 <div className="h-5 w-5 mr-4 ml-4"></div>
-                <div className="w-1/4 text-sm px-2 font-semibold flex items-center">
+                <div className="itemcenter">
                     Filename {sortButton('fileName')}
                 </div>
-                <div className="w-1/4 text-sm px-2 font-semibold flex items-center">
+                <div className="itemcenter">
                     Customer {sortButton('customer')}
                 </div>
-                <div className="w-1/4 text-sm px-2 font-semibold flex items-center">
+                <div className="itemcenter">
                     Upload Date {sortButton('uploadDate')}
                 </div>
-                <div className="w-1/4 text-sm px-2 font-semibold flex items-center">
+                <div className="itemcenter">
                     File Size {sortButton('fileSizeMB')}
                 </div>
             </div>
