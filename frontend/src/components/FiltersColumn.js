@@ -1,5 +1,5 @@
 import { React, useContext, useEffect, useState } from "react";
-import { ChevronDoubleRightIcon } from "@heroicons/react/24/solid";
+import { CalendarIcon, ChevronDoubleRightIcon } from "@heroicons/react/24/solid";
 import { FetchContext } from "./TableContext";
 import classNames from "classnames";
 import { Disclosure } from "@headlessui/react";
@@ -8,7 +8,7 @@ import { Combobox } from "@headlessui/react";
 import { Menu } from "@headlessui/react";
 import Button from "../atoms/Button.jsx";
 import SelectionTag from "../atoms/SelectionTag.jsx";
-// import Calendar from 'react-calendar';
+import Calendar from 'react-calendar';
 
 //this is each row of the dropdown menu
 //textboxes = 1 or 2 dictactes how many textboxes there will be
@@ -34,6 +34,8 @@ function FilterRow({
 
   //dropdown states
   const [currYear] = useState(new Set());
+
+  const [date, setDate] = useState(new Date());
 
   //checkbox states
   const [selectedCheck] = useState([]);
@@ -136,7 +138,7 @@ function FilterRow({
                   </span>
                 </Menu.Button>
                 <Menu.Items className="h-32 overflow-auto">
-                  {dropdown.map((year) => (
+                  {/* {dropdown.map((year) => (
                     <Menu.Item
                       onClick={() => {
                         currYear.add(year);
@@ -147,7 +149,8 @@ function FilterRow({
                         <span className="cursor-pointer">{year}</span>
                       </div>
                     </Menu.Item> //TODO: overall style rework
-                  ))}
+                  ))} */}
+                  
                 </Menu.Items>
               </div>
             )}
