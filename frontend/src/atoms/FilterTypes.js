@@ -18,7 +18,7 @@ export default [
   },
   {
     name: "Auction Period",
-    dropdown: new Date(2023, 9, 11),
+    dropdown: 1,
     // dropdown: Array.from({ length: 151 }, (_, i) => i + 1900),
     api: { auction_period: new Date() }, //default value starts at 1900
   },

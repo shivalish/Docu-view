@@ -8,8 +8,9 @@ import { Combobox } from "@headlessui/react";
 import { Menu } from "@headlessui/react";
 import Button from "../atoms/Button.jsx";
 import SelectionTag from "../atoms/SelectionTag.jsx";
-import Calendar from "react-calendar";
 // import Calendar from 'react-calendar';
+import 'react-datepicker/dist/react-datepicker.css';
+import DatePicker from 'react-datepicker';
 
 //this is each row of the dropdown menu
 //textboxes = 1 or 2 dictactes how many textboxes there will be
@@ -33,31 +34,26 @@ function FilterRow({
   const [comboText, setComboText] = useState("");
   const [combolog] = useState(new Set());
 
-  //dropdown states
-  // const [currYear] = useState(new Set());
-  const [selectedDates, setSelectedDates] = useState([]);
-
-  const handleDateChange = (date) => {
-    let updatedSelectedDates = [...selectedDates];
-
-    if (updatedSelectedDates.length === 2) {
-      updatedSelectedDates = [date];
-    } else if (updatedSelectedDates.length === 1) {
-      updatedSelectedDates.push(date);
-      if (updatedSelectedDates[0] > updatedSelectedDates[1]) {
-        updatedSelectedDates.reverse();
-      }
-    } else {
-      updatedSelectedDates.push(date);
-    }
-
-    setSelectedDates(updatedSelectedDates);
-    console.log(selectedDates);
-  };
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
 
   //checkbox states
   const [selectedCheck] = useState([]);
 
+  const CustomInput = ({ value, onClick }) => {
+    const displayValue = startDate && endDate
+      ? `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`
+      : 'Select dates...';
+
+    return (
+      <button 
+      className="date-picker-input" 
+      onClick={onClick}
+      >
+        {displayValue}
+      </button>
+    );
+  };
   //TODO: code cleanup + visual alignment fixes
 
   //TODO: create a custom textbox component
@@ -155,40 +151,22 @@ function FilterRow({
                     />
                   </span>
                 </Menu.Button>
-                <Menu.Items className="h-32 overflow-auto">
-                  {/* {dropdown.map((year) => (
-                    <Menu.Item
-                      onClick={() => {
-                        currYear.add(year);
-                        click(currYear);
-                      }}
-                    >
-                      <div className="w-full justify-center items-center hover:text-blue-400">
-                        <span className="cursor-pointer">{year}</span>
-                      </div>
-                    </Menu.Item> //TODO: overall style rework
-                  ))} */}
-                  <Calendar 
-                  onChange={handleDateChange}
-                  value={selectedDates}
-                  selectRange={true}
-                  />
+                <Menu.Items>
+                <DatePicker
+                  selectsRange
+                  startDate={startDate}
+                  endDate={endDate}
+                  onChange={(update) => {
+                    setStartDate(update[0]);
+                    setEndDate(update[1]);
+                  }}
+                  isClearable={true}
+                  customInput={<CustomInput />}
+                />
                 </Menu.Items>
               </div>
             )}
           </Menu>
-          {selectedDates.size > 0 && (
-            [...selectedDates].map((e, i)=> (
-              <SelectionTag
-              value={e}
-              key={i}
-              onDelete={() => {
-                selectedDates.delete(e);
-                click(selectedDates);
-              }}
-            />
-            ))
-          )}
         </div>
       )}
       {combo.length > 0 && (
