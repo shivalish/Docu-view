@@ -4,25 +4,55 @@ import TableHeaders from './TableHeaders'
 import Button from '../atoms/Button'
 import { FetchContext } from "./TableContext.jsx";
 import DummyData from '../atoms/DummyData.js';
+import axios from 'axios';
 
 function FilesTable() {
 
     const {val} = useContext(FetchContext);
 
+    //snatched this off stack overflow; see if u can optimize it
+    function parseParams(params) {
+        const keys = Object.keys(params)
+        let options = ''
+      
+        keys.forEach((key) => {
+          const isParamTypeObject = typeof params[key] === 'object'
+          const isParamTypeArray = isParamTypeObject && params[key].length >= 0
+      
+          if (!isParamTypeObject) {
+            options += `${key}=${params[key]}&`
+          }
+      
+          if (isParamTypeObject && isParamTypeArray) {
+            params[key].forEach((element) => {
+              options += `${key}=${element}&`
+            })
+          }
+        })
+      
+        return options ? options.slice(0, -1) : options
+      }
+
     //this function executes on every element of the DummyData array
-    const filterFunc = (e) => {
-        //temporary filter function
-        let fitsCriteria = true;
-        for (const key in val){
-            if(key === "file_name" || key === "customer_name"){
-                if(val[key].length === 0) continue;
-                fitsCriteria = fitsCriteria && val[key].filter(name => (e[key].includes(name))).length > 0;
-            }
-        }
-        return fitsCriteria;
+
+    const x = async () => {
+        console.log(JSON.stringify({
+            ...val,
+        }));
+        
+        const res = await axios.get('http://localhost:8080/api/v1/database', {
+            params: {
+                ...val
+            },
+            paramsSerializer: parseParams
+        });
+        console.log('THIS IS... ' , res.data);
+        return res.data;
     }
+
     useEffect(()=>{
-        setFiles(DummyData.filter(filterFunc));
+        //TODO: replace DummyData with x() or await x() and reformat the table to support the new parameters
+        setFiles(DummyData);
     },[val])
     /*
     When we receive files from the server we put them in this array
