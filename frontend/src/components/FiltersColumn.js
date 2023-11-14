@@ -8,6 +8,7 @@ import { Combobox } from "@headlessui/react";
 import { Menu } from "@headlessui/react";
 import Button from "../atoms/Button.jsx";
 import SelectionTag from "../atoms/SelectionTag.jsx";
+import Calendar from "react-calendar";
 // import Calendar from 'react-calendar';
 
 //this is each row of the dropdown menu
@@ -18,7 +19,7 @@ function FilterRow({
   textbox = false,
   checkbox = [],
   combo = [],
-  dropdown = [],
+  dropdown = null,
   placeholder = "",
   setQuery,
   api,
@@ -33,7 +34,26 @@ function FilterRow({
   const [combolog] = useState(new Set());
 
   //dropdown states
-  const [currYear] = useState(new Set());
+  // const [currYear] = useState(new Set());
+  const [selectedDates, setSelectedDates] = useState([]);
+
+  const handleDateChange = (date) => {
+    let updatedSelectedDates = [...selectedDates];
+
+    if (updatedSelectedDates.length === 2) {
+      updatedSelectedDates = [date];
+    } else if (updatedSelectedDates.length === 1) {
+      updatedSelectedDates.push(date);
+      if (updatedSelectedDates[0] > updatedSelectedDates[1]) {
+        updatedSelectedDates.reverse();
+      }
+    } else {
+      updatedSelectedDates.push(date);
+    }
+
+    setSelectedDates(updatedSelectedDates);
+    console.log(selectedDates);
+  };
 
   //checkbox states
   const [selectedCheck] = useState([]);
@@ -122,7 +142,7 @@ function FilterRow({
           )}
         </div>
       )}
-      {dropdown.length > 0 && (
+      {dropdown !== null && (
         <div className="bg-iso-blue w-full">
           <Menu>
             {({ open }) => (
@@ -136,7 +156,7 @@ function FilterRow({
                   </span>
                 </Menu.Button>
                 <Menu.Items className="h-32 overflow-auto">
-                  {dropdown.map((year) => (
+                  {/* {dropdown.map((year) => (
                     <Menu.Item
                       onClick={() => {
                         currYear.add(year);
@@ -147,19 +167,24 @@ function FilterRow({
                         <span className="cursor-pointer">{year}</span>
                       </div>
                     </Menu.Item> //TODO: overall style rework
-                  ))}
+                  ))} */}
+                  <Calendar 
+                  onChange={handleDateChange}
+                  value={selectedDates}
+                  selectRange={true}
+                  />
                 </Menu.Items>
               </div>
             )}
           </Menu>
-          {currYear.size > 0 && (
-            [...currYear].map((e, i)=> (
+          {selectedDates.size > 0 && (
+            [...selectedDates].map((e, i)=> (
               <SelectionTag
               value={e}
               key={i}
               onDelete={() => {
-                currYear.delete(e);
-                click(currYear);
+                selectedDates.delete(e);
+                click(selectedDates);
               }}
             />
             ))
