@@ -8,30 +8,31 @@ import axios from 'axios';
 
 function FilesTable() {
 
-    const {val} = useContext(FetchContext);
+    const { val } = useContext(FetchContext);
 
     //snatched this off stack overflow; see if u can optimize it
     function parseParams(params) {
+        console.log(params)
         const keys = Object.keys(params)
         let options = ''
-      
+
         keys.forEach((key) => {
-          const isParamTypeObject = typeof params[key] === 'object'
-          const isParamTypeArray = isParamTypeObject && params[key].length >= 0
-      
-          if (!isParamTypeObject) {
-            options += `${key}=${params[key]}&`
-          }
-      
-          if (isParamTypeObject && isParamTypeArray) {
-            params[key].forEach((element) => {
-              options += `${key}=${element}&`
-            })
-          }
+            const isParamTypeObject = typeof params[key] === 'object'
+            const isParamTypeArray = isParamTypeObject && params[key].length >= 0
+
+            if (!isParamTypeObject) {
+                options += `${key}=${params[key]}&`
+            }
+
+            if (isParamTypeObject && isParamTypeArray) {
+                params[key].forEach((element) => {
+                    options += `${key}=${element}&`
+                })
+            }
         })
-      
+
         return options ? options.slice(0, -1) : options
-      }
+    }
 
     //this function executes on every element of the DummyData array
 
@@ -39,21 +40,27 @@ function FilesTable() {
         console.log(JSON.stringify({
             ...val,
         }));
-        
+
         const res = await axios.get('http://localhost:8080/api/v1/database', {
             params: {
                 ...val
             },
             paramsSerializer: parseParams
         });
-        console.log('THIS IS... ' , res.data);
+        // console.log('THIS IS... ', res.data);
         return res.data;
     }
 
-    useEffect(()=>{
+    useEffect(() => {
         //TODO: replace DummyData with x() or await x() and reformat the table to support the new parameters
+        let fetchData = async() => {
+            const resultingFiles = await x(parseParams(val));
+            console.log(resultingFiles)
+            setFiles(resultingFiles)
+        }
         setFiles(DummyData);
-    },[val])
+        fetchData()
+    }, [val])
     /*
     When we receive files from the server we put them in this array
     We can 'sort' the file table by sorting this array, since the table maps row 
@@ -172,12 +179,12 @@ function FilesTable() {
                         .map((fileData, index) => (
                             <div key={fileData.attachmentID} className={index % 2 ? '' : 'bg-iso-white'}>
                                 <FileRow
-                                    fileName={fileData.file_name}
-                                    customer={fileData.customer_name}
-                                    uploadDate={fileData.uploadDate}
-                                    fileSizeMb={fileData.fileSizeMB}
-                                    attachmentID={fileData.attachmentID}
-                                    isSelected={selectedFiles.includes(fileData.attachmentID)}
+                                    fileName={fileData.attachmentFileName}
+                                    customer={fileData.customerName}
+                                    uploadDate={fileData.createDate}
+                                    fileSizeMb={500}
+                                    attachmentID={fileData.attachmentId}
+                                    isSelected={selectedFiles.includes(fileData.attachmentId)}
                                     onFileSelection={handleFileSelection}
                                 />
                             </div>
