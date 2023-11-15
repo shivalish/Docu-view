@@ -11,6 +11,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.zip.ZipOutputStream;
 import java.util.zip.ZipEntry;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 /* CUSTOM ADDED LIBS */
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,17 +42,35 @@ import org.springframework.http.MediaType;
 
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
-import com.aspose.cells.PdfSaveOptions;
-import com.aspose.cells.Workbook;
-import com.aspose.words.Document;
-import com.aspose.words.SaveFormat;
-import com.aspose.cells.PdfCompliance;
+
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.PDFRenderer;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfWriter;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.stream.IntStream;
+import java.io.FileInputStream;
+import java.io.*;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.ss.usermodel.*;
+import java.util.Iterator;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.*;
 
 //update so database --> google drive
 
@@ -82,14 +105,13 @@ public class FileShareV1 {
         String ext = fileName.substring( fileName.lastIndexOf('.') + 1);
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=" + fileName);
-        InputStreamResource resource;
 
         if (ext.equalsIgnoreCase("zip") || ext.equalsIgnoreCase("zipx") 
         || ext.equalsIgnoreCase("avi") || ext.equalsIgnoreCase("mov") 
         || ext.equalsIgnoreCase("mp3") || ext.equalsIgnoreCase("mpeg")
         || ext.equalsIgnoreCase("msg") || ext.equalsIgnoreCase("tiff")
         ){
-            resource = new InputStreamResource(new java.io.FileInputStream(new java.io.File("src/main/resources/icons/"+ ext + ".png")));
+            inputStream = new java.io.FileInputStream(new java.io.File("src/main/resources/icons/"+ ext + ".png"));
             ext = "png";
         }
         else{
@@ -98,25 +120,71 @@ public class FileShareV1 {
             byte[] bytes = ((ByteArrayOutputStream) outputStream).toByteArray();
             InputStream inputStream = new ByteArrayInputStream(bytes);
             if (ext.equalsIgnoreCase("doc") || ext.equalsIgnoreCase("docx")){
-                Document document = new Document(inputStream);
+                com.aspose.words.Document document = new com.aspose.words.Document(inputStream);
                 outputStream = new ByteArrayOutputStream();
-                document.save(outputStream, SaveFormat.PDF);
+                document.save(outputStream, com.aspose.words.SaveFormat.PDF);
                 bytes = ((ByteArrayOutputStream) outputStream).toByteArray();
                 inputStream = new ByteArrayInputStream(bytes);
                 ext = "pdf";
             }
+            // modified from https://stackoverflow.com/questions/26056485/java-apache-poi-excel-save-as-pdf
             if (ext.equalsIgnoreCase("xlsm") || ext.equalsIgnoreCase("xlsx") || ext.equalsIgnoreCase("xls")){
-                Workbook workbook = new Workbook(inputStream);
-                outputStream = new ByteArrayOutputStream();
-                PdfSaveOptions options = new PdfSaveOptions();
-                options.setOnePagePerSheet(true);
-                workbook.save(outputStream, options);
+		    // Read workbook into HSSFWorkbook
+		    HSSFWorkbook my_xls_workbook = new HSSFWorkbook(inputStream); 
+		    // Read worksheet into HSSFSheet
+		    HSSFSheet my_worksheet = my_xls_workbook.getSheetAt(0); 
+		    // To iterate over the rows
+		    Iterator<Row> rowIterator = my_worksheet.iterator();
+		    //We will create output PDF document objects at this point
+		    Document iText_xls_2_pdf = new Document();
+		    outputStream = new ByteArrayOutputStream();
+		    PdfWriter.getInstance(iText_xls_2_pdf, outputStream);
+		    iText_xls_2_pdf.open();
+		    PdfPTable my_table = new PdfPTable(my_worksheet.getRow(0).getPhysicalNumberOfCells());
+		    //We will use the object below to dynamically add new data to the table
+		    PdfPCell table_cell;
+		    //Loop through rows.
+		    while(rowIterator.hasNext()) {
+			    Row row = rowIterator.next(); 
+			    Iterator<Cell> cellIterator = row.cellIterator();
+			            while(cellIterator.hasNext()) {
+			                    Cell cell = cellIterator.next(); //Fetch CELL
+			                    switch(cell.getCellType()) { //Identify CELL type
+			                            //you need to add more code here based on
+			                            //your requirement / transformations
+			                    case Cell.CELL_TYPE_STRING:
+			                            //Push the data from Excel to PDF Cell
+			                             table_cell=new PdfPCell(new Phrase(cell.getStringCellValue()));
+			                             //feel free to move the code below to suit to your needs
+			                             my_table.addCell(table_cell);
+			                            break;
+			                    }
+			                    //next line
+			            }
+
+		    }
+		    //Finally add the table to PDF document
+		    iText_xls_2_pdf.add(my_table);                       
+		    iText_xls_2_pdf.close();
                 bytes = ((ByteArrayOutputStream) outputStream).toByteArray();
                 inputStream = new ByteArrayInputStream(bytes);
                 ext = "pdf";
             }
-            resource = new InputStreamResource(inputStream);
+            if (ext.equalsIgnoreCase("pdf")){
+            	outputStream = new ByteArrayOutputStream();
+                try (PDDocument document = PDDocument.load(inputStream)) {
+		    PDFRenderer pdfRenderer = new PDFRenderer(document);
+		    int numberOfPages = document.getNumberOfPages();
+		    BufferedImage bim = pdfRenderer.renderImageWithDPI(0, 300);
+		    ImageIO.write(bim, "png", outputStream);
+            	    bytes = ((ByteArrayOutputStream) outputStream).toByteArray();
+            	    inputStream = new ByteArrayInputStream(bytes);
+        	}
+        	ext = "png";
+            }
+            
         }
+        InputStreamResource resource = new InputStreamResource(inputStream);
         
         // TODO make look pretty
         if (ext.equalsIgnoreCase("png"))
