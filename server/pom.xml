@@ -18,11 +18,16 @@
 		<java.version>21</java.version>
 	</properties>
 	<repositories>
-		<repository>
-			<id>AsposeJavaAPI</id>
-			<name>Aspose Java API</name>
-			<url>https://releases.aspose.com/java/repo/</url>
-		</repository>
+	    <repository>
+        	<id>GroupDocs Artifact Repository</id>
+        	<name>GroupDocs Artifact Repository</name>
+        	<url>https://releases.groupdocs.com/java/repo/</url>
+    	    </repository>
+	<repository>
+		<id>AsposeJavaAPI</id>
+		<name>Aspose Java API</name>
+		<url>https://releases.aspose.com/java/repo/</url>
+	</repository>
 	</repositories>
 	<dependencies>
 		<dependency>
@@ -146,9 +151,13 @@
 		    <artifactId>itextpdf</artifactId>
 		    <version>5.5.13.2</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.groupdocs/groupdocs-viewer -->
+		<dependency>
+        		<groupId>com.groupdocs</groupId>
+        		<artifactId>groupdocs-viewer</artifactId>
+        		<version>21.11.1</version> 
+    		</dependency>
 	</dependencies>
-
-
 	<build>
 		<plugins>
 			<plugin>

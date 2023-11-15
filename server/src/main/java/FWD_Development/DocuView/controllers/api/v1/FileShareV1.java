@@ -72,6 +72,10 @@ import java.util.Iterator;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 
+import com.groupdocs.viewer.Viewer;
+import com.groupdocs.viewer.options.HtmlViewOptions;
+
+
 //update so database --> google drive
 
 @CrossOrigin(origins = "http://localhost:3000") // Default React port
@@ -93,12 +97,28 @@ public class FileShareV1 {
         FileList fileList = googleDriveService.drive.files().list().execute();
         return fileList.getFiles();
     }
+    
+    @GetMapping("/test")
+    public ResponseEntity<byte[]> test() throws java.io.FileNotFoundException{
+    	java.io.File file = new java.io.File("/home/pgsurf/Documents/Docu-view/server/src/main/resources/icons/mpeg.png");
+    	InputStream inputStream = new FileInputStream(file);
+    	com.groupdocs.viewer.options.LoadOptions loadOptions = new com.groupdocs.viewer.options.LoadOptions(com.groupdocs.viewer.FileType.PNG);
+    	try (Viewer viewer = new Viewer(inputStream, loadOptions)) {
+	    HtmlViewOptions viewOptions = HtmlViewOptions.forEmbeddedResources("page_{0}.html");
+	    viewer.view(viewOptions);
+	}
+	HttpHeaders headers = new HttpHeaders();
+	headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=mpeg.png");
+	return ResponseEntity.ok()
+                .headers(headers)
+                .body(new byte[100]);
+    }
 
 
     // iframe: pdf and html
     //{".txt", ".xlsm", ".xlsx"}
     @GetMapping("/preview/{fileId}")
-    public ResponseEntity<Resource> previewFile(@PathVariable String fileId) throws Exception {
+    public ResponseEntity<byte[]> previewFile(@PathVariable String fileId) throws Exception {
         fileId = getGoogleId(getFilePath(fileId));
         File fileData = googleDriveService.drive.files().get(fileId).execute();
         String fileName = fileData.getName();
@@ -106,105 +126,17 @@ public class FileShareV1 {
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=" + fileName);
 	InputStream inputStream;
-        if (ext.equalsIgnoreCase("zip") || ext.equalsIgnoreCase("zipx") 
-        || ext.equalsIgnoreCase("avi") || ext.equalsIgnoreCase("mov") 
-        || ext.equalsIgnoreCase("mp3") || ext.equalsIgnoreCase("mpeg")
-        || ext.equalsIgnoreCase("msg") || ext.equalsIgnoreCase("tiff")
-        ){
-            inputStream = new java.io.FileInputStream(new java.io.File("src/main/resources/icons/"+ ext + ".png"));
-            ext = "png";
-        }
-        else{
-            OutputStream outputStream = new ByteArrayOutputStream();
-            googleDriveService.drive.files().get(fileId).executeMediaAndDownloadTo(outputStream);
-            byte[] bytes = ((ByteArrayOutputStream) outputStream).toByteArray();
-            inputStream = new ByteArrayInputStream(bytes);
-            if (ext.equalsIgnoreCase("doc") || ext.equalsIgnoreCase("docx")){
-                com.aspose.words.Document document = new com.aspose.words.Document(inputStream);
-                outputStream = new ByteArrayOutputStream();
-                document.save(outputStream, com.aspose.words.SaveFormat.PDF);
-                bytes = ((ByteArrayOutputStream) outputStream).toByteArray();
-                inputStream = new ByteArrayInputStream(bytes);
-                ext = "pdf";
-            }
-            // modified from https://stackoverflow.com/questions/26056485/java-apache-poi-excel-save-as-pdf
-            if (ext.equalsIgnoreCase("xlsm") || ext.equalsIgnoreCase("xlsx") || ext.equalsIgnoreCase("xls")){
-		    // Read workbook into HSSFWorkbook
-		    HSSFWorkbook my_xls_workbook = new HSSFWorkbook(inputStream); 
-		    // Read worksheet into HSSFSheet
-		    HSSFSheet my_worksheet = my_xls_workbook.getSheetAt(0); 
-		    // To iterate over the rows
-		    Iterator<Row> rowIterator = my_worksheet.iterator();
-		    //We will create output PDF document objects at this point
-		    Document iText_xls_2_pdf = new Document();
-		    outputStream = new ByteArrayOutputStream();
-		    PdfWriter.getInstance(iText_xls_2_pdf, outputStream);
-		    iText_xls_2_pdf.open();
-		    PdfPTable my_table = new PdfPTable(my_worksheet.getRow(0).getPhysicalNumberOfCells());
-		    //We will use the object below to dynamically add new data to the table
-		    PdfPCell table_cell;
-		    //Loop through rows.
-		    while(rowIterator.hasNext()) {
-			    Row row = rowIterator.next(); 
-			    Iterator<Cell> cellIterator = row.cellIterator();
-			            while(cellIterator.hasNext()) {
-			                    Cell cell = cellIterator.next(); //Fetch CELL
-			                    switch(cell.getCellType()) { //Identify CELL type
-			                            //you need to add more code here based on
-			                            //your requirement / transformations
-			                    case Cell.CELL_TYPE_STRING:
-			                            //Push the data from Excel to PDF Cell
-			                             table_cell=new PdfPCell(new Phrase(cell.getStringCellValue()));
-			                             //feel free to move the code below to suit to your needs
-			                             my_table.addCell(table_cell);
-			                            break;
-			                    }
-			                    //next line
-			            }
-
-		    }
-		    //Finally add the table to PDF document
-		    iText_xls_2_pdf.add(my_table);                       
-		    iText_xls_2_pdf.close();
-                bytes = ((ByteArrayOutputStream) outputStream).toByteArray();
-                inputStream = new ByteArrayInputStream(bytes);
-                ext = "pdf";
-            }
-            if (ext.equalsIgnoreCase("pdf")){
-            	outputStream = new ByteArrayOutputStream();
-                try (PDDocument document = PDDocument.load(inputStream)) {
-		    PDFRenderer pdfRenderer = new PDFRenderer(document);
-		    int numberOfPages = document.getNumberOfPages();
-		    BufferedImage bim = pdfRenderer.renderImageWithDPI(0, 300);
-		    ImageIO.write(bim, "png", outputStream);
-            	    bytes = ((ByteArrayOutputStream) outputStream).toByteArray();
-            	    inputStream = new ByteArrayInputStream(bytes);
-        	}
-        	ext = "png";
-            }
-            
-        }
-        InputStreamResource resource = new InputStreamResource(inputStream);
-        
-        // TODO make look pretty
-        if (ext.equalsIgnoreCase("png"))
-            headers.add(HttpHeaders.CONTENT_TYPE, MediaType.IMAGE_PNG_VALUE);
-        else if (ext.equalsIgnoreCase("jpg"))
-            headers.add(HttpHeaders.CONTENT_TYPE, MediaType.IMAGE_JPEG_VALUE);
-        else if (ext.equalsIgnoreCase("gif"))
-            headers.add(HttpHeaders.CONTENT_TYPE, MediaType.IMAGE_GIF_VALUE);
-        else if (ext.equalsIgnoreCase("bmp"))
-            headers.add(HttpHeaders.CONTENT_TYPE, "image/bmp");
-        else if (ext.equalsIgnoreCase("htm") || ext.equalsIgnoreCase("html"))
-            headers.add(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML_VALUE);
-        else if (ext.equalsIgnoreCase("txt"))
-            headers.add(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_VALUE);
-        else if (ext.equalsIgnoreCase("pdf"))
-            headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_PDF_VALUE);
-            
+	OutputStream outputStream = new ByteArrayOutputStream();
+        googleDriveService.drive.files().get(fileId).executeMediaAndDownloadTo(outputStream);
+        byte[] bytes = ((ByteArrayOutputStream) outputStream).toByteArray();
+        inputStream = new ByteArrayInputStream(bytes);
+        try (Viewer viewer = new Viewer(inputStream)) {
+	    HtmlViewOptions viewOptions = HtmlViewOptions.forEmbeddedResources("page_{0}.html");
+	    viewer.view(viewOptions);
+	}   
         return ResponseEntity.ok()
                 .headers(headers)
-                .body(resource);
+                .body(bytes);
     }
     
 
