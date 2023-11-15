@@ -105,7 +105,7 @@ public class FileShareV1 {
         String ext = fileName.substring( fileName.lastIndexOf('.') + 1);
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=" + fileName);
-
+	InputStream inputStream;
         if (ext.equalsIgnoreCase("zip") || ext.equalsIgnoreCase("zipx") 
         || ext.equalsIgnoreCase("avi") || ext.equalsIgnoreCase("mov") 
         || ext.equalsIgnoreCase("mp3") || ext.equalsIgnoreCase("mpeg")
@@ -118,7 +118,7 @@ public class FileShareV1 {
             OutputStream outputStream = new ByteArrayOutputStream();
             googleDriveService.drive.files().get(fileId).executeMediaAndDownloadTo(outputStream);
             byte[] bytes = ((ByteArrayOutputStream) outputStream).toByteArray();
-            InputStream inputStream = new ByteArrayInputStream(bytes);
+            inputStream = new ByteArrayInputStream(bytes);
             if (ext.equalsIgnoreCase("doc") || ext.equalsIgnoreCase("docx")){
                 com.aspose.words.Document document = new com.aspose.words.Document(inputStream);
                 outputStream = new ByteArrayOutputStream();
