@@ -1,6 +1,6 @@
 package FWD_Development.DocuView.controllers.api.v1;
 
-
+import java.util.ArrayList;
 /* CUSTOM ADDED LIBS */
 import java.util.List;
 import java.io.ByteArrayInputStream;
@@ -11,21 +11,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.zip.ZipOutputStream;
 import java.util.zip.ZipEntry;
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 /* CUSTOM ADDED LIBS */
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.util.MimeType;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.DataClassRowMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -43,38 +33,11 @@ import org.springframework.http.MediaType;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.rendering.PDFRenderer;
-
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.pdf.PdfWriter;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.stream.IntStream;
-import java.io.FileInputStream;
-import java.io.*;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.ss.usermodel.*;
-import java.util.Iterator;
-import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.*;
-
 import com.groupdocs.viewer.Viewer;
+import com.groupdocs.viewer.interfaces.PageStreamFactory;
+import com.groupdocs.viewer.interfaces.ResourceStreamFactory;
 import com.groupdocs.viewer.options.HtmlViewOptions;
-
+import com.groupdocs.viewer.options.ViewOptions;
 
 //update so database --> google drive
 
@@ -85,7 +48,8 @@ public class FileShareV1 {
 
     private final GoogleDriveService googleDriveService;
     @Autowired
-    	private JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
+
     @Autowired
     public FileShareV1(GoogleDriveService googleDriveService) {
         this.googleDriveService = googleDriveService;
@@ -97,48 +61,63 @@ public class FileShareV1 {
         FileList fileList = googleDriveService.drive.files().list().execute();
         return fileList.getFiles();
     }
-    
-    @GetMapping("/test")
-    public ResponseEntity<byte[]> test() throws java.io.FileNotFoundException{
-    	java.io.File file = new java.io.File("/home/pgsurf/Documents/Docu-view/server/src/main/resources/icons/mpeg.png");
-    	InputStream inputStream = new FileInputStream(file);
-    	com.groupdocs.viewer.options.LoadOptions loadOptions = new com.groupdocs.viewer.options.LoadOptions(com.groupdocs.viewer.FileType.PNG);
-    	try (Viewer viewer = new Viewer(inputStream, loadOptions)) {
-	    HtmlViewOptions viewOptions = HtmlViewOptions.forEmbeddedResources("page_{0}.html");
-	    viewer.view(viewOptions);
-	}
-	HttpHeaders headers = new HttpHeaders();
-	headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=mpeg.png");
-	return ResponseEntity.ok()
-                .headers(headers)
-                .body(new byte[100]);
-    }
-
 
     // iframe: pdf and html
-    //{".txt", ".xlsm", ".xlsx"}
+    // {".txt", ".xlsm", ".xlsx"}
     @GetMapping("/preview/{fileId}")
-    public ResponseEntity<byte[]> previewFile(@PathVariable String fileId) throws Exception {
+    public ResponseEntity<Resource> previewFile(@PathVariable String fileId) throws Exception {
+
         fileId = getGoogleId(getFilePath(fileId));
         File fileData = googleDriveService.drive.files().get(fileId).execute();
         String fileName = fileData.getName();
         String ext = fileName.substring( fileName.lastIndexOf('.') + 1);
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=" + fileName);
-	InputStream inputStream;
-	OutputStream outputStream = new ByteArrayOutputStream();
+        headers.setContentType(MediaType.TEXT_HTML);
+        InputStream inputStream;
+        OutputStream outputStream = new ByteArrayOutputStream();
         googleDriveService.drive.files().get(fileId).executeMediaAndDownloadTo(outputStream);
         byte[] bytes = ((ByteArrayOutputStream) outputStream).toByteArray();
         inputStream = new ByteArrayInputStream(bytes);
+        final List<ByteArrayOutputStream> pages = new ArrayList<>();
+        if (ext.equalsIgnoreCase("avi") || ext.equalsIgnoreCase("mov") 
+        || ext.equalsIgnoreCase("mp3") || ext.equalsIgnoreCase("mpeg")
+        || ext.equalsIgnoreCase("msg")
+        ){
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            //java.net.URL resourceUrl =classLoader.getResource("icons/"+ ext + ".png");
+            //java.io.File resourceFile = new java.io.File(resourceUrl.getFile());
+            //inputStream = new FileInputStream(resourceFile);
+            inputStream = classLoader.getResourceAsStream("icons/"+ ext + ".png");
+            
+            ext = "png";
+        }
         try (Viewer viewer = new Viewer(inputStream)) {
-	    HtmlViewOptions viewOptions = HtmlViewOptions.forEmbeddedResources("page_{0}.html");
-	    viewer.view(viewOptions);
-	}   
+            // https://docs.groupdocs.com/viewer/java/save-output-to-stream/
+            PageStreamFactory pageStreamFactory = new PageStreamFactory() {
+
+                @Override
+                public OutputStream createPageStream(int pageNumber) {
+                    ByteArrayOutputStream pageStream = new ByteArrayOutputStream();
+                    pages.add(pageStream);
+                    return pageStream;
+                }
+
+                @Override
+                public void closePageStream(int pageNumber, OutputStream outputStream) {
+                    // Do not release page stream as we'll need to keep the stream open
+                }
+            };
+
+            ViewOptions viewOptions = HtmlViewOptions.forEmbeddedResources(pageStreamFactory);
+
+            viewer.view(viewOptions);
+            inputStream = new ByteArrayInputStream(pages.get(0).toByteArray());
+        }
+        InputStreamResource resource = new InputStreamResource(inputStream);
         return ResponseEntity.ok()
                 .headers(headers)
-                .body(bytes);
+                .body(resource);
     }
-    
 
     @GetMapping("/download/{fileId}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileId) throws IOException {
@@ -165,9 +144,9 @@ public class FileShareV1 {
                 .body(resource);
     }
 
-    //zip files
+    // zip files
     @GetMapping("/download/zipFiles")
-    public ResponseEntity<Resource> zipFiles(@RequestParam List<String> fileIds) throws IOException {  
+    public ResponseEntity<Resource> zipFiles(@RequestParam List<String> fileIds) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ZipOutputStream zipOut = new ZipOutputStream(outputStream);
 

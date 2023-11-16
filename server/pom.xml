@@ -16,18 +16,14 @@
 	<description>DocuView Spring Boot project</description>
 	<properties>
 		<java.version>21</java.version>
+		<jdk.jar.maxSignatureFileSize>30806623</jdk.jar.maxSignatureFileSize>
 	</properties>
 	<repositories>
-	    <repository>
-        	<id>GroupDocs Artifact Repository</id>
-        	<name>GroupDocs Artifact Repository</name>
-        	<url>https://releases.groupdocs.com/java/repo/</url>
-    	    </repository>
-	<repository>
-		<id>AsposeJavaAPI</id>
-		<name>Aspose Java API</name>
-		<url>https://releases.aspose.com/java/repo/</url>
-	</repository>
+		<repository>
+			<id>GroupDocs Artifact Repository</id>
+			<name>GroupDocs Artifact Repository</name>
+			<url>https://releases.groupdocs.com/java/repo/</url>
+		</repository>
 	</repositories>
 	<dependencies>
 		<dependency>
@@ -105,58 +101,10 @@
 			<version>v3-rev197-1.25.0</version>
 		</dependency>
 		<dependency>
-			<groupId>com.aspose</groupId>
-			<artifactId>aspose-words</artifactId>
-			<version>22.11</version>
-			<classifier>jdk17</classifier>
+			<groupId>com.groupdocs</groupId>
+			<artifactId>groupdocs-viewer</artifactId>
+			<version>21.11.1</version>
 		</dependency>
-		<dependency>
-			<groupId>com.aspose</groupId>
-			<artifactId>aspose-words</artifactId>
-			<version>22.11</version>
-			<classifier>javadoc</classifier>
-		</dependency>
-		<dependency>
-			<groupId>com.aspose</groupId>
-			<artifactId>aspose-cells</artifactId>
-			<version>20.7</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.apache.pdfbox/pdfbox -->
-		<dependency>
-		    <groupId>org.apache.pdfbox</groupId>
-		    <artifactId>pdfbox</artifactId>
-		    <version>2.0.1</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.apache.poi/poi -->
-		<dependency>
-		    <groupId>org.apache.poi</groupId>
-		    <artifactId>poi</artifactId>
-		    <version>4.1.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.poi</groupId>
-			<artifactId>poi</artifactId>
-			<version>3.7</version>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml -->
-		<dependency>
-		    <groupId>org.apache.poi</groupId>
-		    <artifactId>poi-ooxml</artifactId>
-		    <version>3.9</version>
-		</dependency>
-		<!-- Example: iText -->
-		<dependency>
-		    <groupId>com.itextpdf</groupId>
-		    <artifactId>itextpdf</artifactId>
-		    <version>5.5.13.2</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.groupdocs/groupdocs-viewer -->
-		<dependency>
-        		<groupId>com.groupdocs</groupId>
-        		<artifactId>groupdocs-viewer</artifactId>
-        		<version>21.11.1</version> 
-    		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -166,14 +114,17 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.2.2</version>
 				<configuration>
-				    <source>1.8</source>
-				    <target>1.8</target>
+					<systemPropertyVariables>
+						<name>jdk.jar.maxSignatureFileSize</name>
+             			<value>30806623</value>
+					</systemPropertyVariables>
 				</configuration>
 			</plugin>
 		</plugins>
+
 	</build>
 
 </project>
