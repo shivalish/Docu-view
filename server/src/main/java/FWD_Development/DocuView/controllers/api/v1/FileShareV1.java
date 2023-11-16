@@ -65,7 +65,9 @@ public class FileShareV1 {
 
     private Viewer viewerChecker(InputStream inputStream, String ext){
         if (ext.equalsIgnoreCase("msg")) return new Viewer(inputStream, new LoadOptions(FileType.MSG));
-        return new Viewer(inputStream, new LoadOptions(FileType.fromExtension("." + ext)));
+        FileType filetype = FileType.fromExtension("." + ext);
+        if (filetype == null) return new Viewer(inputStream);
+        return new Viewer(inputStream, new LoadOptions(filetype));
     }
 
     // iframe: pdf and html
