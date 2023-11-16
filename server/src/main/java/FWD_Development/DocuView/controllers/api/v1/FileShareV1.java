@@ -64,12 +64,8 @@ public class FileShareV1 {
     }
 
     private Viewer viewerChecker(InputStream inputStream, String ext){
-        if (ext.equalsIgnoreCase("doc")) 
-            return new Viewer(inputStream, new LoadOptions(FileType.DOC));
-        if (ext.equalsIgnoreCase("xls")) 
-            return new Viewer(inputStream, new LoadOptions(FileType.XLS));
-        else 
-            return new Viewer(inputStream);
+        if (ext.equalsIgnoreCase("msg")) return new Viewer(inputStream, new LoadOptions(FileType.MSG));
+        return new Viewer(inputStream, new LoadOptions(FileType.fromExtension("." + ext)));
     }
 
     // iframe: pdf and html
@@ -92,15 +88,10 @@ public class FileShareV1 {
         System.out.println(fileName);
         // add for Praesent.doc
         if (ext.equalsIgnoreCase("avi") || ext.equalsIgnoreCase("mov") 
-        || ext.equalsIgnoreCase("mp3") || ext.equalsIgnoreCase("mpeg")
-        || ext.equalsIgnoreCase("msg")
+        || ext.equalsIgnoreCase("mp3") || ext.equalsIgnoreCase("mpeg") || ext.equalsIgnoreCase("msg")
         ){
             ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-            //java.net.URL resourceUrl =classLoader.getResource("icons/"+ ext + ".png");
-            //java.io.File resourceFile = new java.io.File(resourceUrl.getFile());
-            //inputStream = new FileInputStream(resourceFile);
-            inputStream = classLoader.getResourceAsStream("icons/"+ ext + ".png");
-            
+            inputStream = classLoader.getResourceAsStream("icons/"+ ext + ".png");    
             ext = "png";
         }
         try (Viewer viewer = viewerChecker(inputStream, ext)) {
