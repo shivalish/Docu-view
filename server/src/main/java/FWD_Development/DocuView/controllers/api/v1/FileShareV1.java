@@ -66,6 +66,8 @@ public class FileShareV1 {
     private Viewer viewerChecker(InputStream inputStream, String ext){
         if (ext.equalsIgnoreCase("doc")) 
             return new Viewer(inputStream, new LoadOptions(FileType.DOC));
+        if (ext.equalsIgnoreCase("xls")) 
+            return new Viewer(inputStream, new LoadOptions(FileType.XLS));
         else 
             return new Viewer(inputStream);
     }
