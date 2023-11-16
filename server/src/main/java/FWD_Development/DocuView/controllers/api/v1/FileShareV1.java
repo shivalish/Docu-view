@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
@@ -39,6 +40,10 @@ import com.groupdocs.viewer.interfaces.ResourceStreamFactory;
 import com.groupdocs.viewer.options.HtmlViewOptions;
 import com.groupdocs.viewer.options.ViewOptions;
 import com.groupdocs.viewer.options.LoadOptions;
+import javax.activation.MimetypesFileTypeMap;
+
+import com.groupdocs.merger.Merger;
+import java.time.Instant;
 
 //update so database --> google drive
 
@@ -50,6 +55,9 @@ public class FileShareV1 {
     private final GoogleDriveService googleDriveService;
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    
+    final MimetypesFileTypeMap fileTypeMap = new MimetypesFileTypeMap();
+    
 
     @Autowired
     public FileShareV1(GoogleDriveService googleDriveService) {
@@ -74,21 +82,11 @@ public class FileShareV1 {
     // {".txt", ".xlsm", ".xlsx"}
     @GetMapping("/preview/{fileId}")
     public ResponseEntity<Resource> previewFile(@PathVariable String fileId) throws Exception {
-
         fileId = getGoogleId(getFilePath(fileId));
         File fileData = googleDriveService.drive.files().get(fileId).execute();
         String fileName = fileData.getName();
         String ext = fileName.substring( fileName.lastIndexOf('.') + 1);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.TEXT_HTML);
         InputStream inputStream;
-        OutputStream outputStream = new ByteArrayOutputStream();
-        googleDriveService.drive.files().get(fileId).executeMediaAndDownloadTo(outputStream);
-        byte[] bytes = ((ByteArrayOutputStream) outputStream).toByteArray();
-        inputStream = new ByteArrayInputStream(bytes);
-        final List<ByteArrayOutputStream> pages = new ArrayList<>();
-        System.out.println(fileName);
-        // add for Praesent.doc
         if (ext.equalsIgnoreCase("avi") || ext.equalsIgnoreCase("mov") 
         || ext.equalsIgnoreCase("mp3") || ext.equalsIgnoreCase("mpeg") || ext.equalsIgnoreCase("msg")
         ){
@@ -96,6 +94,11 @@ public class FileShareV1 {
             inputStream = classLoader.getResourceAsStream("icons/"+ ext + ".png");    
             ext = "png";
         }
+        else {
+            inputStream = googleDriveService.drive.files().get(fileId).executeMediaAsInputStream();
+        }
+        final List<ByteArrayOutputStream> pages = new ArrayList<>();
+        System.out.println(fileName);
         try (Viewer viewer = viewerChecker(inputStream, ext)) {
             // https://docs.groupdocs.com/viewer/java/save-output-to-stream/
             PageStreamFactory pageStreamFactory = new PageStreamFactory() {
@@ -112,15 +115,28 @@ public class FileShareV1 {
                     // Do not release page stream as we'll need to keep the stream open
                 }
             };
-
             ViewOptions viewOptions = HtmlViewOptions.forEmbeddedResources(pageStreamFactory);
             viewer.view(viewOptions);
-            inputStream = new ByteArrayInputStream(pages.get(0).toByteArray());
+            //inputStream = new ByteArrayInputStream(pages.get(0).toByteArray());
+            byte[] out = pages.get(0).toByteArray();
+            //Merger merger = new Merger(inputStream);
+            //for (int i = 1; i < pages.size(); i++) {
+            //	InputStream page = new ByteArrayInputStream(pages.get(i).toByteArray());
+            //	merger.join(page);
+            //}
+            //outputStream = new ByteArrayOutputStream();
+            //merger.save(outputStream);
+            //byte[] bytes = ((ByteArrayOutputStream) outputStream).toByteArray();
+            //inputStream = new ByteArrayInputStream(bytes);
+            // Set content type and headers
+            
+	    ByteArrayResource resource = new ByteArrayResource(out);
+	    return ResponseEntity.ok()
+		        .contentLength(resource.contentLength())
+		        .contentType(MediaType.TEXT_HTML)
+		        .body(resource);
         }
-        InputStreamResource resource = new InputStreamResource(inputStream);
-        return ResponseEntity.ok()
-                .headers(headers)
-                .body(resource);
+        
     }
 
     @GetMapping("/download/{fileId}")
@@ -129,21 +145,13 @@ public class FileShareV1 {
         fileId = getGoogleId(getFilePath(fileId));
         OutputStream outputStream = new ByteArrayOutputStream();
         File fileData = googleDriveService.drive.files().get(fileId).execute();
-        googleDriveService.drive.files().get(fileId).executeMediaAndDownloadTo(outputStream);
-
-        // Convert OutputStream to InputStream
-        byte[] bytes = ((ByteArrayOutputStream) outputStream).toByteArray();
-        InputStream inputStream = new ByteArrayInputStream(bytes);
-
-        // Return the file as a resource
-        InputStreamResource resource = new InputStreamResource(inputStream);
-
-        // Set content type and headers
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileData.getName() + "\"");
-
+        InputStream inputStream = googleDriveService.drive.files().get(fileId).executeMediaAsInputStream();
+	
+	byte[] bytes = inputStream.readAllBytes();
+	ByteArrayResource resource = new ByteArrayResource(bytes);	
         return ResponseEntity.ok()
-                .headers(headers)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileData.getName() + "\"")
+                .contentLength(resource.contentLength())
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(resource);
     }
@@ -157,10 +165,13 @@ public class FileShareV1 {
         for (String fileId : fileIds) {
             fileId = getGoogleId(getFilePath(fileId));
             File fileData = googleDriveService.drive.files().get(fileId).execute();
+            String fileName = fileData.getName();
+            String name = fileName.substring(0, fileName.lastIndexOf('.'));
+            String ext = fileName.substring( fileName.lastIndexOf('.') + 1);
 
             InputStream inputStream = googleDriveService.drive.files().get(fileId).executeMediaAsInputStream();
 
-            ZipEntry zipEntry = new ZipEntry(fileData.getName());
+            ZipEntry zipEntry = new ZipEntry(name + Instant.now().getEpochSecond() + ext);
             zipOut.putNextEntry(zipEntry);
 
             byte[] bytes = new byte[1024];
@@ -172,11 +183,12 @@ public class FileShareV1 {
             zipOut.closeEntry();
         }
         zipOut.close();
-
-        InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(outputStream.toByteArray()));
+        byte[] bytes = outputStream.toByteArray();
+	ByteArrayResource resource = new ByteArrayResource(bytes);
         return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"files.zip\"")
+        	.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"files.zip\"")
+        	.contentLength(resource.contentLength())
+                .contentType(MediaType.MULTIPART_FORM_DATA)
                 .body(resource);
     }
 
