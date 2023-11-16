@@ -32,12 +32,13 @@ import org.springframework.http.MediaType;
 
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
-
+import com.groupdocs.viewer.FileType;
 import com.groupdocs.viewer.Viewer;
 import com.groupdocs.viewer.interfaces.PageStreamFactory;
 import com.groupdocs.viewer.interfaces.ResourceStreamFactory;
 import com.groupdocs.viewer.options.HtmlViewOptions;
 import com.groupdocs.viewer.options.ViewOptions;
+import com.groupdocs.viewer.options.LoadOptions;
 
 //update so database --> google drive
 
@@ -62,6 +63,13 @@ public class FileShareV1 {
         return fileList.getFiles();
     }
 
+    private Viewer viewerChecker(InputStream inputStream, String ext){
+        if (ext.equalsIgnoreCase("doc")) 
+            return new Viewer(inputStream, new LoadOptions(FileType.DOC));
+        else 
+            return new Viewer(inputStream);
+    }
+
     // iframe: pdf and html
     // {".txt", ".xlsm", ".xlsx"}
     @GetMapping("/preview/{fileId}")
@@ -79,6 +87,8 @@ public class FileShareV1 {
         byte[] bytes = ((ByteArrayOutputStream) outputStream).toByteArray();
         inputStream = new ByteArrayInputStream(bytes);
         final List<ByteArrayOutputStream> pages = new ArrayList<>();
+        System.out.println(fileName);
+        // add for Praesent.doc
         if (ext.equalsIgnoreCase("avi") || ext.equalsIgnoreCase("mov") 
         || ext.equalsIgnoreCase("mp3") || ext.equalsIgnoreCase("mpeg")
         || ext.equalsIgnoreCase("msg")
@@ -91,7 +101,7 @@ public class FileShareV1 {
             
             ext = "png";
         }
-        try (Viewer viewer = new Viewer(inputStream)) {
+        try (Viewer viewer = viewerChecker(inputStream, ext)) {
             // https://docs.groupdocs.com/viewer/java/save-output-to-stream/
             PageStreamFactory pageStreamFactory = new PageStreamFactory() {
 
@@ -109,7 +119,6 @@ public class FileShareV1 {
             };
 
             ViewOptions viewOptions = HtmlViewOptions.forEmbeddedResources(pageStreamFactory);
-
             viewer.view(viewOptions);
             inputStream = new ByteArrayInputStream(pages.get(0).toByteArray());
         }
