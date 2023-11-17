@@ -102,7 +102,6 @@ public class FileShareV1 {
         try (Viewer viewer = viewerChecker(inputStream, ext)) {
             // https://docs.groupdocs.com/viewer/java/save-output-to-stream/
             PageStreamFactory pageStreamFactory = new PageStreamFactory() {
-
                 @Override
                 public OutputStream createPageStream(int pageNumber) {
                     ByteArrayOutputStream pageStream = new ByteArrayOutputStream();
@@ -130,8 +129,8 @@ public class FileShareV1 {
             //inputStream = new ByteArrayInputStream(bytes);
             // Set content type and headers
             
-	    ByteArrayResource resource = new ByteArrayResource(out);
-	    return ResponseEntity.ok()
+	        ByteArrayResource resource = new ByteArrayResource(out);
+	        return ResponseEntity.ok()
 		        .contentLength(resource.contentLength())
 		        .contentType(MediaType.TEXT_HTML)
 		        .body(resource);
@@ -143,12 +142,10 @@ public class FileShareV1 {
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileId) throws IOException {
         // Use Google Drive API to get the file
         fileId = getGoogleId(getFilePath(fileId));
-        OutputStream outputStream = new ByteArrayOutputStream();
         File fileData = googleDriveService.drive.files().get(fileId).execute();
         InputStream inputStream = googleDriveService.drive.files().get(fileId).executeMediaAsInputStream();
-	
-	byte[] bytes = inputStream.readAllBytes();
-	ByteArrayResource resource = new ByteArrayResource(bytes);	
+	    byte[] bytes = inputStream.readAllBytes();
+	    ByteArrayResource resource = new ByteArrayResource(bytes);	
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileData.getName() + "\"")
                 .contentLength(resource.contentLength())
@@ -184,12 +181,12 @@ public class FileShareV1 {
         }
         zipOut.close();
         byte[] bytes = outputStream.toByteArray();
-	ByteArrayResource resource = new ByteArrayResource(bytes);
+	    ByteArrayResource resource = new ByteArrayResource(bytes);
         return ResponseEntity.ok()
         	.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"files.zip\"")
         	.contentLength(resource.contentLength())
-                .contentType(MediaType.MULTIPART_FORM_DATA)
-                .body(resource);
+            .contentType(MediaType.MULTIPART_FORM_DATA)
+            .body(resource);
     }
 
     public String getFilePath(String file_id) {
