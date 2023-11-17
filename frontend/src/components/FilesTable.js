@@ -4,8 +4,14 @@ import TableHeaders from './TableHeaders'
 import Button from '../atoms/Button'
 import { FetchContext } from "./TableContext.jsx";
 import DummyData from '../atoms/DummyData.js';
+import Popup from '../atoms/Popup.jsx';
+import { Tab } from '@headlessui/react';
 
 function FilesTable() {
+
+    //popup states
+    const [openPreview, setOpenPreview] = useState(false);
+    const [openDownload, setOpenDownload] = useState(false);
 
     const {val} = useContext(FetchContext);
 
@@ -124,12 +130,45 @@ function FilesTable() {
 
     return (
         <div className='bg-iso-grey h-full w-full p-4'>
+            
+            <Popup
+            onOpen={openPreview}
+            onClose={()=>{setOpenPreview(false)}}>
+                <div className="flex flex-col">
+                    <Tab.Group>
+                        <Tab.List className="grid grid-cols-5 ">{selectedFiles.map(e => (
+                            <Tab className="tab">{DummyData.find(f => f.attachmentID === e).file_name}</Tab>
+                        )
+                        
+                        )}</Tab.List>
+
+                        <Tab.Panels>
+                            {selectedFiles.map(e => (
+                                <Tab.Panel className="flex-1 tab-body !p-0">
+                                    <div className="flex flex-row w-full h-full">
+                                        <div className="flex h-60 w-1/3 bg-iso-blue-grey-100">
+                                        
+
+                                        </div>
+
+                                        <div className="flex h-60 w-2/3">
+                                            [INSERT IMAGE HERE]
+                                        </div>
+                                    </div> 
+                                </Tab.Panel>
+                            ))}
+                        </Tab.Panels>
+                    </Tab.Group>
+                </div>
+            </Popup>
+
+
             <div className="flex justify-between items-center mb-4">
                 <div className="text-lg font-bold text-iso-blue-grey">
                     Results...
                 </div>
                 <div className="space-x-2">
-                    <Button className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded">View</Button>
+                    <Button className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded" OnClick={()=>setOpenPreview(true)}>View</Button>
                     <Button className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded">Download</Button>
                 </div>
             </div>
