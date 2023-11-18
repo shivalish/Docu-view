@@ -1,6 +1,6 @@
 package FWD_Development.DocuView.controllers.api.v1;
 
-
+import java.util.ArrayList;
 /* CUSTOM ADDED LIBS */
 import java.util.List;
 import java.io.ByteArrayInputStream;
@@ -16,11 +16,6 @@ import java.util.zip.ZipEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.util.MimeType;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.DataClassRowMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -32,22 +27,23 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
-import com.aspose.cells.PdfSaveOptions;
-import com.aspose.cells.Workbook;
-import com.aspose.words.Document;
-import com.aspose.words.SaveFormat;
-import com.aspose.cells.PdfCompliance;
+import com.groupdocs.viewer.FileType;
+import com.groupdocs.viewer.Viewer;
+import com.groupdocs.viewer.interfaces.PageStreamFactory;
+import com.groupdocs.viewer.interfaces.ResourceStreamFactory;
+import com.groupdocs.viewer.options.HtmlViewOptions;
+import com.groupdocs.viewer.options.ViewOptions;
+import com.groupdocs.viewer.options.LoadOptions;
+import javax.activation.MimetypesFileTypeMap;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import com.groupdocs.merger.Merger;
+import java.time.Instant;
 
 //update so database --> google drive
 
@@ -58,7 +54,11 @@ public class FileShareV1 {
 
     private final GoogleDriveService googleDriveService;
     @Autowired
-    	private JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
+    
+    final MimetypesFileTypeMap fileTypeMap = new MimetypesFileTypeMap();
+    
+
     @Autowired
     public FileShareV1(GoogleDriveService googleDriveService) {
         this.googleDriveService = googleDriveService;
@@ -71,113 +71,104 @@ public class FileShareV1 {
         return fileList.getFiles();
     }
 
+    private Viewer viewerChecker(InputStream inputStream, String ext){
+        if (ext.equalsIgnoreCase("msg")) return new Viewer(inputStream, new LoadOptions(FileType.MSG));
+        FileType filetype = FileType.fromExtension("." + ext);
+        if (filetype == null) return new Viewer(inputStream);
+        return new Viewer(inputStream, new LoadOptions(filetype));
+    }
 
     // iframe: pdf and html
-    //{".txt", ".xlsm", ".xlsx"}
+    // {".txt", ".xlsm", ".xlsx"}
     @GetMapping("/preview/{fileId}")
     public ResponseEntity<Resource> previewFile(@PathVariable String fileId) throws Exception {
         fileId = getGoogleId(getFilePath(fileId));
         File fileData = googleDriveService.drive.files().get(fileId).execute();
         String fileName = fileData.getName();
         String ext = fileName.substring( fileName.lastIndexOf('.') + 1);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=" + fileName);
-        InputStreamResource resource;
-
-        if (ext.equalsIgnoreCase("zip") || ext.equalsIgnoreCase("zipx") 
-        || ext.equalsIgnoreCase("avi") || ext.equalsIgnoreCase("mov") 
-        || ext.equalsIgnoreCase("mp3") || ext.equalsIgnoreCase("mpeg")
-        || ext.equalsIgnoreCase("msg") || ext.equalsIgnoreCase("tiff")
+        InputStream inputStream;
+        if (ext.equalsIgnoreCase("avi") || ext.equalsIgnoreCase("mov") 
+        || ext.equalsIgnoreCase("mp3") || ext.equalsIgnoreCase("mpeg") || ext.equalsIgnoreCase("msg")
         ){
-            resource = new InputStreamResource(new java.io.FileInputStream(new java.io.File("src/main/resources/icons/"+ ext + ".png")));
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            inputStream = classLoader.getResourceAsStream("icons/"+ ext + ".png");    
             ext = "png";
         }
-        else{
-            OutputStream outputStream = new ByteArrayOutputStream();
-            googleDriveService.drive.files().get(fileId).executeMediaAndDownloadTo(outputStream);
-            byte[] bytes = ((ByteArrayOutputStream) outputStream).toByteArray();
-            InputStream inputStream = new ByteArrayInputStream(bytes);
-            if (ext.equalsIgnoreCase("doc") || ext.equalsIgnoreCase("docx")){
-                Document document = new Document(inputStream);
-                outputStream = new ByteArrayOutputStream();
-                document.save(outputStream, SaveFormat.PDF);
-                bytes = ((ByteArrayOutputStream) outputStream).toByteArray();
-                inputStream = new ByteArrayInputStream(bytes);
-                ext = "pdf";
-            }
-            if (ext.equalsIgnoreCase("xlsm") || ext.equalsIgnoreCase("xlsx") || ext.equalsIgnoreCase("xls")){
-                Workbook workbook = new Workbook(inputStream);
-                outputStream = new ByteArrayOutputStream();
-                PdfSaveOptions options = new PdfSaveOptions();
-                options.setOnePagePerSheet(true);
-                workbook.save(outputStream, options);
-                bytes = ((ByteArrayOutputStream) outputStream).toByteArray();
-                inputStream = new ByteArrayInputStream(bytes);
-                ext = "pdf";
-            }
-            resource = new InputStreamResource(inputStream);
+        else {
+            inputStream = googleDriveService.drive.files().get(fileId).executeMediaAsInputStream();
+        }
+        final List<ByteArrayOutputStream> pages = new ArrayList<>();
+        System.out.println(fileName);
+        try (Viewer viewer = viewerChecker(inputStream, ext)) {
+            // https://docs.groupdocs.com/viewer/java/save-output-to-stream/
+            PageStreamFactory pageStreamFactory = new PageStreamFactory() {
+                @Override
+                public OutputStream createPageStream(int pageNumber) {
+                    ByteArrayOutputStream pageStream = new ByteArrayOutputStream();
+                    pages.add(pageStream);
+                    return pageStream;
+                }
+
+                @Override
+                public void closePageStream(int pageNumber, OutputStream outputStream) {
+                    // Do not release page stream as we'll need to keep the stream open
+                }
+            };
+            ViewOptions viewOptions = HtmlViewOptions.forEmbeddedResources(pageStreamFactory);
+            viewer.view(viewOptions);
+            //inputStream = new ByteArrayInputStream(pages.get(0).toByteArray());
+            byte[] out = pages.get(0).toByteArray();
+            //Merger merger = new Merger(inputStream);
+            //for (int i = 1; i < pages.size(); i++) {
+            //	InputStream page = new ByteArrayInputStream(pages.get(i).toByteArray());
+            //	merger.join(page);
+            //}
+            //outputStream = new ByteArrayOutputStream();
+            //merger.save(outputStream);
+            //byte[] bytes = ((ByteArrayOutputStream) outputStream).toByteArray();
+            //inputStream = new ByteArrayInputStream(bytes);
+            // Set content type and headers
+            
+	        ByteArrayResource resource = new ByteArrayResource(out);
+	        return ResponseEntity.ok()
+		        .contentLength(resource.contentLength())
+		        .contentType(MediaType.TEXT_HTML)
+		        .body(resource);
         }
         
-        // TODO make look pretty
-        if (ext.equalsIgnoreCase("png"))
-            headers.add(HttpHeaders.CONTENT_TYPE, MediaType.IMAGE_PNG_VALUE);
-        else if (ext.equalsIgnoreCase("jpg"))
-            headers.add(HttpHeaders.CONTENT_TYPE, MediaType.IMAGE_JPEG_VALUE);
-        else if (ext.equalsIgnoreCase("gif"))
-            headers.add(HttpHeaders.CONTENT_TYPE, MediaType.IMAGE_GIF_VALUE);
-        else if (ext.equalsIgnoreCase("bmp"))
-            headers.add(HttpHeaders.CONTENT_TYPE, "image/bmp");
-        else if (ext.equalsIgnoreCase("htm") || ext.equalsIgnoreCase("html"))
-            headers.add(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML_VALUE);
-        else if (ext.equalsIgnoreCase("txt"))
-            headers.add(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_VALUE);
-        else if (ext.equalsIgnoreCase("pdf"))
-            headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_PDF_VALUE);
-            
-        return ResponseEntity.ok()
-                .headers(headers)
-                .body(resource);
     }
-    
 
     @GetMapping("/download/{fileId}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileId) throws IOException {
         // Use Google Drive API to get the file
         fileId = getGoogleId(getFilePath(fileId));
-        OutputStream outputStream = new ByteArrayOutputStream();
         File fileData = googleDriveService.drive.files().get(fileId).execute();
-        googleDriveService.drive.files().get(fileId).executeMediaAndDownloadTo(outputStream);
-
-        // Convert OutputStream to InputStream
-        byte[] bytes = ((ByteArrayOutputStream) outputStream).toByteArray();
-        InputStream inputStream = new ByteArrayInputStream(bytes);
-
-        // Return the file as a resource
-        InputStreamResource resource = new InputStreamResource(inputStream);
-
-        // Set content type and headers
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileData.getName() + "\"");
-
+        InputStream inputStream = googleDriveService.drive.files().get(fileId).executeMediaAsInputStream();
+	    byte[] bytes = inputStream.readAllBytes();
+	    ByteArrayResource resource = new ByteArrayResource(bytes);	
         return ResponseEntity.ok()
-                .headers(headers)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileData.getName() + "\"")
+                .contentLength(resource.contentLength())
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(resource);
     }
 
-    //zip files
+    // zip files
     @GetMapping("/download/zipFiles")
-    public ResponseEntity<Resource> zipFiles(@RequestParam List<String> fileIds) throws IOException {  
+    public ResponseEntity<Resource> zipFiles(@RequestParam List<String> fileIds) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ZipOutputStream zipOut = new ZipOutputStream(outputStream);
 
         for (String fileId : fileIds) {
             fileId = getGoogleId(getFilePath(fileId));
             File fileData = googleDriveService.drive.files().get(fileId).execute();
+            String fileName = fileData.getName();
+            String name = fileName.substring(0, fileName.lastIndexOf('.'));
+            String ext = fileName.substring( fileName.lastIndexOf('.') + 1);
 
             InputStream inputStream = googleDriveService.drive.files().get(fileId).executeMediaAsInputStream();
 
-            ZipEntry zipEntry = new ZipEntry(fileData.getName());
+            ZipEntry zipEntry = new ZipEntry(name + Instant.now().getEpochSecond() + ext);
             zipOut.putNextEntry(zipEntry);
 
             byte[] bytes = new byte[1024];
@@ -189,12 +180,13 @@ public class FileShareV1 {
             zipOut.closeEntry();
         }
         zipOut.close();
-
-        InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(outputStream.toByteArray()));
+        byte[] bytes = outputStream.toByteArray();
+	    ByteArrayResource resource = new ByteArrayResource(bytes);
         return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"files.zip\"")
-                .body(resource);
+        	.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"files.zip\"")
+        	.contentLength(resource.contentLength())
+            .contentType(MediaType.MULTIPART_FORM_DATA)
+            .body(resource);
     }
 
     public String getFilePath(String file_id) {
