@@ -3,9 +3,7 @@ package FWD_Development.DocuView.controllers.api.v1;
 import java.util.ArrayList;
 /* CUSTOM ADDED LIBS */
 import java.util.List;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -14,7 +12,6 @@ import java.util.zip.ZipEntry;
 /* CUSTOM ADDED LIBS */
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.http.ResponseEntity;
 
@@ -23,8 +20,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ByteArrayResource;
@@ -36,13 +31,11 @@ import com.google.api.services.drive.model.FileList;
 import com.groupdocs.viewer.FileType;
 import com.groupdocs.viewer.Viewer;
 import com.groupdocs.viewer.interfaces.PageStreamFactory;
-import com.groupdocs.viewer.interfaces.ResourceStreamFactory;
 import com.groupdocs.viewer.options.HtmlViewOptions;
 import com.groupdocs.viewer.options.ViewOptions;
 import com.groupdocs.viewer.options.LoadOptions;
 import javax.activation.MimetypesFileTypeMap;
 
-import com.groupdocs.merger.Merger;
 import java.time.Instant;
 
 //update so database --> google drive
