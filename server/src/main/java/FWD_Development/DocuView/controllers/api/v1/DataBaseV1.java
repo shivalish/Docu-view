@@ -75,6 +75,7 @@ public class DataBaseV1 {
 		page = Math.max(1, page);
 		var query = Hardcoded.dataBaseTree.generateQuery(allRequestParams);
 
+
 		String sql = "SELECT " + rename +" FROM (" 
 			+ query.parametrized + ") AS x LIMIT " 
 			+ perPage + " OFFSET " 
