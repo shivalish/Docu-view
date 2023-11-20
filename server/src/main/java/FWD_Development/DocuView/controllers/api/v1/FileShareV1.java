@@ -33,13 +33,12 @@ import com.groupdocs.viewer.FileType;
 import com.groupdocs.viewer.Viewer;
 import com.groupdocs.viewer.interfaces.PageStreamFactory;
 import com.groupdocs.viewer.options.HtmlViewOptions;
+import com.groupdocs.viewer.options.PngViewOptions;
 import com.groupdocs.viewer.options.ViewOptions;
 import com.groupdocs.viewer.options.LoadOptions;
 import javax.activation.MimetypesFileTypeMap;
 
 import java.time.Instant;
-
-//update so database --> google drive
 
 @CrossOrigin(origins = "http://localhost:3000") // Default React port
 @RestController
@@ -95,23 +94,29 @@ public class FileShareV1 {
         System.out.println(fileName);
         try (Viewer viewer = viewerChecker(inputStream, ext)) {
             // https://docs.groupdocs.com/viewer/java/save-output-to-stream/
-            PageStreamFactory pageStreamFactory = new PageStreamFactory() {
-                @Override
-                public OutputStream createPageStream(int pageNumber) {
-                    ByteArrayOutputStream pageStream = new ByteArrayOutputStream();
-                    pages.add(pageStream);
-                    return pageStream;
-                }
-
-                @Override
-                public void closePageStream(int pageNumber, OutputStream outputStream) {
-                    // Do not release page stream as we'll need to keep the stream open
-                }
-            };
-            ViewOptions viewOptions = HtmlViewOptions.forEmbeddedResources(pageStreamFactory);
+            //PageStreamFactory pageStreamFactory = new PageStreamFactory() {
+            //    @Override
+            //    public OutputStream createPageStream(int pageNumber) {
+            //        ByteArrayOutputStream pageStream = new ByteArrayOutputStream();
+            //        pages.add(pageStream);
+            //        return pageStream;
+            //    }
+            //
+            //    @Override
+            //    public void closePageStream(int pageNumber, OutputStream outputStream) {
+            //        // Do not release page stream as we'll need to keep the stream open
+            //    }
+            //};
+            //ViewOptions viewOptions = HtmlViewOptions.forEmbeddedResources(pageStreamFactory);
+            String outputName = fileId + "_" + Instant.now().getEpochSecond();
+            ViewOptions viewOptions = new PngViewOptions(outputName);
+            Instant.now().getEpochSecond();
             viewer.view(viewOptions);
             //inputStream = new ByteArrayInputStream(pages.get(0).toByteArray());
-            byte[] out = pages.get(0).toByteArray();
+            java.io.File file = new java.io.File(outputName);
+            inputStream = new java.io.FileInputStream(file);
+            byte[] bytes = inputStream.readAllBytes();
+	        ByteArrayResource resource = new ByteArrayResource(bytes);	
             //Merger merger = new Merger(inputStream);
             //for (int i = 1; i < pages.size(); i++) {
             //	InputStream page = new ByteArrayInputStream(pages.get(i).toByteArray());
@@ -122,11 +127,9 @@ public class FileShareV1 {
             //byte[] bytes = ((ByteArrayOutputStream) outputStream).toByteArray();
             //inputStream = new ByteArrayInputStream(bytes);
             // Set content type and headers
-            
-	        ByteArrayResource resource = new ByteArrayResource(out);
 	        return ResponseEntity.ok()
 		        .contentLength(resource.contentLength())
-		        .contentType(MediaType.TEXT_HTML)
+		        .contentType(MediaType.IMAGE_PNG)
 		        .body(resource);
         }
         
