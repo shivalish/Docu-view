@@ -1,30 +1,19 @@
 package FWD_Development.DocuView.controllers.api.v1;
 
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
-/* CUSTOM ADDED LIBS */
 import java.util.ArrayList;
+/* CUSTOM ADDED LIBS */
 import java.util.List;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.zip.ZipOutputStream;
 import java.util.zip.ZipEntry;
-import java.util.Set;
 /* CUSTOM ADDED LIBS */
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.DataClassRowMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -33,14 +22,25 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
+import com.groupdocs.viewer.FileType;
+import com.groupdocs.viewer.Viewer;
+import com.groupdocs.viewer.interfaces.PageStreamFactory;
+import com.groupdocs.viewer.options.HtmlViewOptions;
+import com.groupdocs.viewer.options.PngViewOptions;
+import com.groupdocs.viewer.options.ViewOptions;
+import com.groupdocs.viewer.options.LoadOptions;
+import javax.activation.MimetypesFileTypeMap;
+
+import java.time.Instant;
 //update so database --> google drive
 
 @CrossOrigin(origins = "http://localhost:3000") // Default React port
@@ -48,22 +48,23 @@ import com.google.api.services.drive.model.FileList;
 @RequestMapping("/api/v1/fileshare")
 public class FileShareV1 {
     
-    private final String VIEWER_LOC_VALUE = "viewer/.cache/";
+    private final String VIEWER_LOC_VALUE = "viewerCache";
     private final java.nio.file.Path VIEWER_LOC = java.nio.file.Paths.get(VIEWER_LOC_VALUE);
 
     private final GoogleDriveService googleDriveService;
     @Autowired
-<<<<<<< Updated upstream
     	private JdbcTemplate jdbcTemplate;
-=======
-    private JdbcTemplate jdbcTemplate;
-   
-    final MimetypesFileTypeMap fileTypeMap = new MimetypesFileTypeMap(); 
 
->>>>>>> Stashed changes
     @Autowired
     public FileShareV1(GoogleDriveService googleDriveService) {
         this.googleDriveService = googleDriveService;
+        if (!java.nio.file.Files.exists(VIEWER_LOC)) {
+            try {
+                java.nio.file.Files.createDirectory(VIEWER_LOC);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 
@@ -74,12 +75,6 @@ public class FileShareV1 {
         FileList fileList = googleDriveService.drive.files().list().execute();
         return fileList.getFiles();
     }
-<<<<<<< Updated upstream
-    
-     @GetMapping("/preview/{fileId}")
-    public ResponseEntity<Resource> previewFile(@PathVariable String fileId) throws IOException {
-        return null;
-=======
 
     private Viewer viewerChecker(InputStream inputStream, String ext){
         if (ext.equalsIgnoreCase("msg")) return new Viewer(inputStream, new LoadOptions(FileType.MSG));
@@ -96,21 +91,6 @@ public class FileShareV1 {
         if (fileId == null) return ResponseEntity.notFound().build();
         if (fileId.equals("")) return ResponseEntity.notFound().build();
 
-        try {
-            java.nio.file.Path element = VIEWER_LOC.resolve(fileId + ".png");
-            java.nio.file.attribute.FileTime lastModifiedTime = java.nio.file.Files.getLastModifiedTime(element);
-            long hours = java.time.temporal.ChronoUnit.HOURS.between(lastModifiedTime.toInstant(), Instant.now());
-            if (hours > 24) {
-                java.nio.file.Files.delete(element);
-            }
-            else {
-                FileSystemResource resource = new FileSystemResource(VIEWER_LOC.toFile());
-                return ResponseEntity.ok()
-                    .contentLength(resource.contentLength())
-                    .contentType(MediaType.IMAGE_PNG)
-                    .body(resource);
-            }
-        } catch(IOException e) {}
               
         File fileData = googleDriveService.drive.files().get(fileId).execute();
         String fileName = fileData.getName();
@@ -165,8 +145,6 @@ public class FileShareV1 {
 		        .contentType(MediaType.IMAGE_PNG)
 		        .body(resource);
         }
-        
->>>>>>> Stashed changes
     }
     
 
@@ -216,12 +194,47 @@ public class FileShareV1 {
             zipOut.closeEntry();
         }
         zipOut.close();
-
-        InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(outputStream.toByteArray()));
+        // fix to be be byte resource
+        ByteArrayResource resource = new ByteArrayResource(outputStream.toByteArray());
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"files.zip\"")
                 .body(resource);
+    }
+    public String getFilePath(String file_id) {
+        String query = "SELECT CONCAT(file_path, '/', file_name) AS full_path FROM ATTACHMENT_FILE WHERE attachment_id = ?;";
+        return jdbcTemplate.queryForList(query, String.class, file_id).get(0);
+    }
+
+    public String getGoogleId(String path) throws IOException {
+        path = path.startsWith("/") ? path.substring(1) : path;
+        path = path.startsWith("\\") ? path.substring(1) : path;
+        String rootFolderId = googleDriveService.drive.files().get("root").execute().getId();
+        String[] pathArray;
+        if (path.contains("\\"))
+            pathArray = path.split("\\\\");
+        else
+            pathArray = path.split("/");
+        String currentFolderId = rootFolderId;
+        String fileId = null;
+        for (String file : pathArray) {
+            if (!file.isEmpty()) {
+                FileList result = googleDriveService.drive.files().list()
+                        .setQ("'" + currentFolderId + "' in parents and name = '" + file + "'")
+                        .setFields("files(id)")
+                        .execute();
+                if (result.getFiles() != null && !result.getFiles().isEmpty()) {
+                    fileId = result.getFiles().get(0).getId();
+                } else {
+                    return null;
+                }
+            }
+            if (fileId == null) {
+                return null; // File not found
+            }
+            currentFolderId = fileId;
+        }
+        return currentFolderId;
     }
 
 };
