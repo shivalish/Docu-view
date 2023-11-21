@@ -55,7 +55,7 @@
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
-			<version>2.10.1</version> <!-- Use a compatible version -->
+			<version>2.10.1</version>			<!-- Use a compatible version -->
 		</dependency>
 		<dependency>
 			<groupId>com.google.http-client</groupId>
@@ -88,9 +88,38 @@
 			<version>1.30.6</version>
 		</dependency>
 		<dependency>
+<<<<<<< Updated upstream
     		<groupId>com.google.apis</groupId>
    			<artifactId>google-api-services-drive</artifactId>
     		<version>v3-rev197-1.25.0</version> <!-- Replace with a compatible version -->
+=======
+			<groupId>com.google.apis</groupId>
+			<artifactId>google-api-services-drive</artifactId>
+			<version>v3-rev197-1.25.0</version>
+		</dependency>
+		<!--Viewer-->
+		<dependency>
+			<groupId>com.groupdocs</groupId>
+			<artifactId>groupdocs-viewer</artifactId>
+			<version>21.11.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.groupdocs</groupId>
+			<artifactId>groupdocs-merger</artifactId>
+			<version>23.10</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/javax.activation/activation -->
+		<dependency>
+			<groupId>javax.activation</groupId>
+			<artifactId>activation</artifactId>
+			<version>1.1.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/jakarta.annotation/jakarta.annotation-api -->
+		<dependency>
+			<groupId>jakarta.annotation</groupId>
+			<artifactId>jakarta.annotation-api</artifactId>
+			<version>3.0.0-M1</version>
+>>>>>>> Stashed changes
 		</dependency>
 	</dependencies>
 
