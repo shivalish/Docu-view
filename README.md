@@ -48,10 +48,13 @@ Download [installer](https://dev.mysql.com/downloads/workbench/) and follow the 
 
 * Node 18
 
-### Commands (Windows/Linux/Mac):
+### Commands (Windows)
 
-start application from parent directory
-``cd .\frontend\docuview-react-app ; npm install; cd ..\.. ; npm start --prefix frontend/docuview-react-app``
+``cd .\frontend ; npm install; cd .. ; npm start --prefix .\frontend``
+
+### Commands (Linux/Mac):
+
+``cd ./frontend ; npm install; cd .. ; npm start --prefix ./frontend``
 
 ## Server (Springboot)
 
@@ -66,13 +69,22 @@ start application from parent directory
 Note: setup a env variable JAVA_HOME to the main dirrectory where java is installed
 start server from inside `.server`  dir
 
-``mvn package -f pom.xml; .\mvnw.cmd -f pom.xml spring-boot:run``
+env setup:
+``$env:JAVA_TOOL_OPTIONS = "$env:JAVA_TOOL_OPTIONS -Djdk.jar.maxSignatureFileSize=30806623"``
+
+command:
+``; mvn package -f pom.xml; .\mvnw.cmd -f pom.xml spring-boot:run``
 
 ### Commands (Linux):
 
 Note: before executing, exectute ``chmod +x server/mvnw`` to allow file to executed
 start server from parent dir
-``export JAVA_HOME=/usr ; mvn package -f server/pom.xml ; ./mvnw -f server/pom.xml spring-boot:run``
+
+env setup:
+``export _JAVA_OPTIONS="$_JAVA_OPTIONS -Djdk.jar.maxSignatureFileSize=30806623"``
+
+command:
+``export JAVA_HOME=/usr ; mvn package -f server/pom.xml ; server/mvnw -f server/pom.xml spring-boot:run``
 
 ### Commands (Mac)
 

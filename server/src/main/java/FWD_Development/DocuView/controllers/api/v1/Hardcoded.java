@@ -16,6 +16,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -52,7 +53,7 @@ import java.util.HashMap;
 // Hardcoded is a antipattern interface to allow vars to share the same immutable variables,
 // allowing the uses to use the same vars.
 
-@Component
+@Service
 public class Hardcoded{
 
 	@Autowired
@@ -97,32 +98,33 @@ public class Hardcoded{
 		holder2.add("resource_type", "RES_TYPE");
 
 		Filter[] filterArray = new Filter[] {
-			new Filter("file_creation", "ISO 8601","create_date", root, "attachment_id", false),
-			new Filter("file_extension", "string","file_name", root, "attachment_id", new String[]{".bmp", ".doc", ".docx", ".htm", ".html", ".jpg", ".msg", ".pdf", ".txt", ".xlsm", ".xlsx", ".zip", ".zipx"}, '^'),
-			new Filter("filename", "string","file_name", root, "attachment_id", false),
-			new Filter("attachment_type", "string", "attachment_type", root, "attachment_type", true),
+			new Filter("fileCreation", "ISO 8601","create_date", root, "attachment_id", false),
+			new Filter("fileExtension", "string","file_name", root, "attachment_id", new String[]{".bmp", ".doc", ".docx", ".htm", ".html", ".jpg", ".msg", ".pdf", ".txt", ".xlsm", ".xlsx", ".zip", ".zipx"}, '^'),
+			new Filter("fileName", "string","file_name", root, "attachment_id", false),
+			new Filter("attachmentType", "string", "attachment_type", root, "attachment_type", true, '='),
 
-			new Filter("customer_name", "string", "customer_name", holder,"customer_id", false),
+			new Filter("customerName", "string", "customer_name", holder,"customer_id", false),
 
 			
-			new Filter("commitment_date_start", "ISO 8601", "begin_date", holder1, "commitment_period_id",false, '['),
-			new Filter("commitment_date_end", "ISO 8601", "end_date", holder1, "commitment_period_id",false, ']'),
-			new Filter("auction_type", "string", "auction_type", holder1, "auction_type", true),
+			new Filter("commitmentDateStart", "ISO 8601", "begin_date", holder1, "commitment_period_id",false, '['),
+			new Filter("commitmentDateEnd", "ISO 8601", "end_date", holder1, "commitment_period_id",false, ']'),
+			new Filter("auctionType", "string", "auction_type", holder1, "auction_type", true, '='),
 
-			new Filter("resource_type", "string", "resource_type", holder2, "resource_type", true),
+			new Filter("resourceType", "string", "resource_type", holder2, "resource_type", true, '='),
 	
 			
 			
-			new Filter("auction_date_start", "ISO 8601", "auction_begin_date", holder1, "auction_period_id",false, '['),
-			new Filter("auction_date_end", "ISO 8601", "auction_end_date", holder1, "auction_period_id",false, ']'),
+			new Filter("auctionDateStart", "ISO 8601", "auction_begin_date", holder1, "auction_period_id",false, '['),
+			new Filter("auctionDateEnd", "ISO 8601", "auction_end_date", holder1, "auction_period_id",false, ']'),
 	
-			new Filter("proposal_date_start", "ISO 8601", "begin_date", holder, "period_id",false, '['),
-			new Filter("proposals_date_end", "ISO 8601", "end_date", holder, "period_id",false, ']'),
+			new Filter("proposalDateStart", "ISO 8601", "begin_date", holder, "period_id",false, '['),
+			new Filter("proposalsDateEnd", "ISO 8601", "end_date", holder, "period_id",false, ']'),
 		};
 
 		Hardcoded.dataBaseTree.addFilters(filterArray);
 	}
-  
+	
+	//147.61 
 	private void initializeOuterArray(){
 		outerArray = objMapper.createArrayNode();
 	   for (Map.Entry<String, Filter> entry : Hardcoded.dataBaseTree.getFilterMap().entrySet()) {
