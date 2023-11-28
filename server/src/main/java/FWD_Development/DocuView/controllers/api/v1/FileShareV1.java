@@ -165,7 +165,7 @@ public class FileShareV1 {
 
             InputStream inputStream = googleDriveService.drive.files().get(fileId).executeMediaAsInputStream();
 
-            ZipEntry zipEntry = new ZipEntry(name + Instant.now().getEpochSecond() + ext);
+            ZipEntry zipEntry = new ZipEntry(name + Instant.now().getEpochSecond() + "." + ext);
             zipOut.putNextEntry(zipEntry);
 
             byte[] bytes = new byte[1024];
