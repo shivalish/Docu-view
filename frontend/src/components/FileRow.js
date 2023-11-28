@@ -1,12 +1,7 @@
 import React from 'react';
 
-function formatDate(uDate) {
-    if (!uDate) return uDate
-    if (typeof (uDate) === 'string') {
-        uDate = new Date(uDate)?.getTime()
-    }
-    
-    const date = new Date(uDate);
+function formatDate(milliseconds) {
+    const date = new Date(milliseconds);
     const options = {
         month: '2-digit',
         day: '2-digit',
@@ -16,7 +11,6 @@ function formatDate(uDate) {
         hour12: true
     };
     return new Intl.DateTimeFormat('en-US', options).format(date);
-
 }
 
 function formatFileSize(mbSize) {
@@ -27,6 +21,7 @@ function formatFileSize(mbSize) {
         return `${gbSize.toFixed(2)} GB`;
     }
 }
+
 
 const FileRow = ({ fileName, customer, uploadDate, fileSizeMb, attachmentID, isSelected, onFileSelection }) => {
     return (
