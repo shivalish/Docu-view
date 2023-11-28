@@ -51,8 +51,20 @@ function FilesTable() {
         return res.data;
     }
 
+    // preview function implementation, feel free to modify here
+    const previewEndpoint = async (fileId) => {
+        const result = await axios.get('/api', {
+            params: {
+                fileId: fileId
+            },
+            paramsSerializer: parseParams
+        });
+        return result.data;
+    }
+
     useEffect(() => {
-        let fetchData = async () => {
+        //TODO: replace DummyData with x() or await x() and reformat the table to support the new parameters
+        let fetchData = async() => {
             const resultingFiles = await x(parseParams(val));
             console.log(resultingFiles)
             setFiles(resultingFiles)
@@ -158,15 +170,6 @@ function FilesTable() {
         }
     }
 
-    const downloadFiles = async () => {
-        console.log(`download: ${selectedFiles}`)
-        const res = await axios.get('api/v1/fileshare/download/', {
-            params: {
-                fileId: selectedFiles[0]
-            },
-        });
-    }
-
     return (
         <div className='bg-iso-grey h-full w-full p-4'>
             <div className="flex justify-between items-center mb-4">
@@ -175,10 +178,7 @@ function FilesTable() {
                 </div>
                 <div className="space-x-2">
                     <Button className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded">View</Button>
-                    <Button
-                        className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded"
-                        OnClick={downloadFiles}
-                    >Download</Button>
+                    <Button className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded">Download</Button>
                 </div>
             </div>
 
