@@ -164,7 +164,16 @@ function FilesTable() {
                                         </div>
 
                                         <div className="flex h-60 w-2/3">
-                                            [INSERT IMAGE HERE]
+                                            {Object.entries(DummyData.find(f => f.attachmentID === e)).map(async kv => {
+                                                //fetch png
+                                                // const source = (await fetch("")).data.json();
+
+                                                // return (
+                                                //     <img src={source}/>
+                                                // )
+                                            })
+                                            
+                                            }
                                         </div>
                                     </div> 
                                 </Tab.Panel>
