@@ -7,12 +7,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import java.util.concurrent.Future;
 
 import javax.sql.rowset.spi.SyncResolver;
 
 import java.util.Iterator;
 import java.util.HashMap;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -21,9 +23,11 @@ import java.util.Date;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.util.MultiValueMap;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.DataClassRowMapper;
@@ -43,6 +47,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.api.services.drive.model.File;
+import com.groupdocs.merger.core.a.g;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.annotation.JsonView;
 
@@ -57,14 +63,18 @@ import org.springframework.http.ResponseEntity;
 @CrossOrigin(origins = "http://localhost:3000") // Default React port
 @RestController
 @RequestMapping("/api/v1/database")
+@EnableAsync
 public class DataBaseV1 {
 
 	@Autowired
     	private JdbcTemplate jdbcTemplate;
 
+	@Autowired
+		Async_Func async_func;
+
 	private final GoogleDriveService googleDriveService;
 	private final java.nio.file.Path VIEWER_LOC = FileShareV1.VIEWER_LOC;
-	
+
 	@Autowired
 	public DataBaseV1(GoogleDriveService googleDriveService) {
 		this.googleDriveService = googleDriveService;
@@ -76,6 +86,8 @@ public class DataBaseV1 {
 			}
 		}
 	}
+
+
     	
 	private static String rename = "x.attach_proposal_attachment_type AS attachmentType, "
 		+ "x.attach_proposal_proposal_id_project_type AS projectType, "
@@ -107,14 +119,16 @@ public class DataBaseV1 {
 		+ "x.attach_proposal_attachment_id_create_date AS createDate, "
 		+ "x.attach_proposal_attachment_id_description AS description";
 
-	//@Async
+		
 
 	@GetMapping({"", "/infinite"})
 	public ResponseEntity<List<Map<String, Object>>> getDocs(@RequestParam MultiValueMap<String,String> allRequestParams){
 		var query =  Hardcoded.dataBaseTree.generateQuery(allRequestParams);
+		List<Map<String, Object>> resp = jdbcTemplate.queryForList("SELECT " + rename +" FROM (" + query.parametrized + ") AS x;", query.params);
+		async_func.cache(googleDriveService, jdbcTemplate, resp);
 		return ResponseEntity.ok()
 			.contentType(MediaType.APPLICATION_JSON)
-			.body(jdbcTemplate.queryForList("SELECT " + rename +" FROM (" + query.parametrized + ") AS x;", query.params));
+			.body(resp);
 	}
 
 	@GetMapping("/pages")
@@ -131,9 +145,11 @@ public class DataBaseV1 {
 			+ query.parametrized + ") AS x LIMIT " 
 			+ perPage + " OFFSET " 
 			+ ((page-1) * perPage) + ";";
+		List<Map<String, Object>> resp = jdbcTemplate.queryForList(sql, query.params);
+		async_func.cache(googleDriveService, jdbcTemplate, resp);
         return ResponseEntity.ok()
 			.contentType(MediaType.APPLICATION_JSON)
-			.body(jdbcTemplate.queryForList(sql, query.params));
+			.body(resp);
 	}
 
 	@GetMapping("/pages/content")

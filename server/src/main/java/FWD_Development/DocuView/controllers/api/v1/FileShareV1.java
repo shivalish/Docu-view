@@ -7,12 +7,16 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.attribute.FileTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.zip.ZipOutputStream;
 import java.util.zip.ZipEntry;
 /* CUSTOM ADDED LIBS */
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -30,11 +34,9 @@ import org.springframework.http.MediaType;
 
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
-import com.groupdocs.viewer.FileType;
 import com.groupdocs.viewer.Viewer;
 import com.groupdocs.viewer.options.PngViewOptions;
 import com.groupdocs.viewer.options.ViewOptions;
-import com.groupdocs.viewer.options.LoadOptions;
 
 //update so database --> google drive
 
@@ -74,20 +76,55 @@ public class FileShareV1 {
     // iframe: pdf and html
     // {".txt", ".xlsm", ".xlsx"}
 
+    public static void previewCache(GoogleDriveService googleDriveService, JdbcTemplate jdbcTemplate, String fileId) throws Exception{
+        fileId = getGoogleId(googleDriveService, getFilePath(jdbcTemplate, fileId));
+        if (fileId == null || fileId.equals("")) return;
+        java.nio.file.Path filePath = VIEWER_LOC.resolve(fileId + ".png");
+        if (java.nio.file.Files.exists(filePath)) return;
+
+        File fileData = googleDriveService.drive.files().get(fileId).execute();
+        String fileName = fileData.getName();
+        String ext = fileName.substring( fileName.lastIndexOf('.') + 1);
+        InputStream inputStream;
+        if (ext.equalsIgnoreCase("avi") || ext.equalsIgnoreCase("mov") 
+        || ext.equalsIgnoreCase("mp3") || ext.equalsIgnoreCase("mpeg")
+        || ext.equalsIgnoreCase("msg") || ext.equalsIgnoreCase("zip")
+        ){
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            inputStream = classLoader.getResourceAsStream("icons/"+ ext + ".png");    
+            ext = "png";
+        }
+        else {
+            inputStream = googleDriveService.drive.files().get(fileId).executeMediaAsInputStream();
+        }
+        try (Viewer viewer = new Viewer(inputStream)) {
+            ViewOptions viewOptions = new PngViewOptions(filePath.toString());
+            viewer.view(viewOptions, 1);
+        }
+    }
+
     @GetMapping("/preview/{fileId}")
     public ResponseEntity<Resource> previewFile(@PathVariable String fileId) throws Exception {
-        fileId = getGoogleId(googleDriveService, getFilePath(fileId));
+        fileId = getGoogleId(googleDriveService, getFilePath(jdbcTemplate, fileId));
         if (fileId == null) return ResponseEntity.notFound().build();
         if (fileId.equals("")) return ResponseEntity.notFound().build();
         
         java.nio.file.Path filePath = VIEWER_LOC.resolve(fileId + ".png");
         if (java.nio.file.Files.exists(filePath)) {
-            FileSystemResource resource = new FileSystemResource(filePath.toFile());
-            return ResponseEntity.ok()
-                .contentLength(resource.contentLength())
-                .contentType(MediaType.IMAGE_PNG)
-                .body(resource);
-        }     
+            
+            FileTime lastModifiedTime = java.nio.file.Files.getLastModifiedTime(filePath);
+            long hours = ChronoUnit.HOURS.between(lastModifiedTime.toInstant(), Instant.now());
+
+            if (hours > 24) {
+                java.nio.file.Files.delete(filePath);
+            } else {
+                FileSystemResource resource = new FileSystemResource(filePath.toFile());
+                return ResponseEntity.ok()
+                    .contentLength(resource.contentLength())
+                    .contentType(MediaType.IMAGE_PNG)
+                    .body(resource);
+            }
+        }
         File fileData = googleDriveService.drive.files().get(fileId).execute();
         String fileName = fileData.getName();
         String ext = fileName.substring( fileName.lastIndexOf('.') + 1);
@@ -102,27 +139,24 @@ public class FileShareV1 {
         else {
             inputStream = googleDriveService.drive.files().get(fileId).executeMediaAsInputStream();
         }
-        String outputName = filePath.toString();
-        cachePng(inputStream, outputName);
-        java.io.File file = new java.io.File(outputName);
-        FileSystemResource resource = new FileSystemResource(file);
-        return ResponseEntity.ok()
-		        .contentLength(resource.contentLength())
-		        .contentType(MediaType.IMAGE_PNG)
-		        .body(resource);
-    }
-
-    public static void cachePng(InputStream inputStream, String outputName) throws Exception {
         try (Viewer viewer = new Viewer(inputStream)) {
+            String outputName = filePath.toString();
             ViewOptions viewOptions = new PngViewOptions(outputName);
             viewer.view(viewOptions, 1);
+            java.io.File file = new java.io.File(outputName);
+            FileSystemResource resource = new FileSystemResource(file);
+            return ResponseEntity.ok()
+                    .contentLength(resource.contentLength())
+                    .contentType(MediaType.IMAGE_PNG)
+                    .body(resource);
         }
+        
+        
     }
-    
 
     @GetMapping("/download/{fileId}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileId) throws IOException {
-        fileId = getGoogleId(googleDriveService, getFilePath(fileId));
+        fileId = getGoogleId(googleDriveService, getFilePath(jdbcTemplate, fileId));
         // Use Google Drive API to get the file
         OutputStream outputStream = new ByteArrayOutputStream();
         googleDriveService.drive.files().get(fileId).executeMediaAndDownloadTo(outputStream);
@@ -151,7 +185,7 @@ public class FileShareV1 {
         ZipOutputStream zipOut = new ZipOutputStream(outputStream);
 
         for (String fileId : fileIds) {
-            fileId = getGoogleId(googleDriveService, getFilePath(fileId));
+            fileId = getGoogleId(googleDriveService, getFilePath(jdbcTemplate, fileId));
             File fileData = googleDriveService.drive.files().get(fileId).execute();
 
             InputStream inputStream = googleDriveService.drive.files().get(fileId).executeMediaAsInputStream();
@@ -175,12 +209,12 @@ public class FileShareV1 {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"files.zip\"")
                 .body(resource);
     }
-    public String getFilePath(String file_id) {
+    public static String getFilePath(JdbcTemplate jdbcTemplate, String file_id) {
         String query = "SELECT CONCAT(file_path, '/', file_name) AS full_path FROM ATTACHMENT_FILE WHERE attachment_id = ?;";
         return jdbcTemplate.queryForList(query, String.class, file_id).get(0);
     }
 
-    public String getGoogleId(GoogleDriveService googleDriveService, String path) throws IOException {
+    public static String getGoogleId(GoogleDriveService googleDriveService, String path) throws IOException {
         path = path.startsWith("/") ? path.substring(1) : path;
         path = path.startsWith("\\") ? path.substring(1) : path;
         String rootFolderId = googleDriveService.drive.files().get("root").execute().getId();
