@@ -3,10 +3,12 @@ import React from 'react';
 import Header from './atoms/Header';
 import FiltersColumn from './components/FiltersColumn';
 import FilesTable from './components/FilesTable';
+import { FetchContextProvider } from './components/TableContext';
 
 function MainPage() {
     return (
-        <div className="h-full w-full flex flex-col">
+        <FetchContextProvider>
+            <div className="h-full w-full flex flex-col">
             <div className="flex-shrink-0 ">
                 <Header />
             </div>
@@ -22,6 +24,7 @@ function MainPage() {
 
             </div>
         </div>
+        </FetchContextProvider>
     );
 }
 
