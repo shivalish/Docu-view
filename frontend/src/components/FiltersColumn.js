@@ -2,28 +2,18 @@ import { React, useContext, useEffect, useState } from "react";
 import { ChevronDoubleRightIcon } from "@heroicons/react/24/solid";
 import { FetchContext } from "./TableContext";
 import classNames from "classnames";
+import ToggleSwitch from "../atoms/ToggleSwitch";
 import { Disclosure } from "@headlessui/react";
+import { Popover } from "@headlessui/react";
 import FilterTypes from "../atoms/FilterTypes";
-import { Combobox } from "@headlessui/react";
-import { Menu } from "@headlessui/react";
-import Button from "../atoms/Button.jsx";
-import SelectionTag from "../atoms/SelectionTag.jsx";
-// import Calendar from 'react-calendar';
+import {CalendarIcon} from "@heroicons/react/24/solid"; //this may be used later to clean up the calendar
+import Calendar from 'react-calendar';
 
 //this is each row of the dropdown menu
 //textboxes = 1 or 2 dictactes how many textboxes there will be
 //setQuery is the function called (might have args)
-function FilterRow({
-  name,
-  textbox = false,
-  checkbox = [],
-  combo = [],
-  dropdown = [],
-  placeholder = "",
-  setQuery,
-  api,
-}) {
-  //textbox states
+function FilterRow({ name, textboxes = 0, checkbox = [], calendar, setQuery }) {
+  //TODO: simplify this into 1 state that uses an object instead of string => {text1: "example", text2: "something"};
   const [text, setText] = useState("");
   const [textlog] = useState(new Set());
 
@@ -40,115 +30,54 @@ function FilterRow({
 
   //TODO: code cleanup + visual alignment fixes
 
-  //TODO: create a custom textbox component
+  //TODO: create a separate custom dropdown component
 
-  const filtered =
-    comboText === ""
-      ? combo
-      : combo.filter((val) =>
-          val.toLowerCase().includes(comboText.toLowerCase())
-        );
-
+  //TODO: createa custom textbox component
   //adds a key/value pair to the global query variable
   const click = (selectedValue) => {
     setQuery(selectedValue instanceof Set ? {[Object.keys(api)[0]]: [...selectedValue]} : { [Object.keys(api)[0]]: selectedValue });
   };
 
   return (
-    <div className="w-full">
-      {checkbox.length > 0 && (
-        <div>
-          <Disclosure className="w-full">
-            {({ open }) => (
-              <div>
-                <Disclosure.Button>
-                  <span className="flex flex-row w-full h-10 items-center text-lg pl-2">
-                    {name}
-                    <ChevronDoubleRightIcon
-                      className={classNames("w-6 h-6", open && "rotate-90")}
-                    />
-                  </span>
-                </Disclosure.Button>
-                <Disclosure.Panel>
-                  <div className="flex flex-col gap-2 w-full">
-                    {checkbox.map((docType, index) => (
-                      <div>
-                        <input
-                          type="checkbox"
-                          id={index}
-                          checked={
-                            selectedCheck.find((v) => v === docType) !==
-                            undefined
-                          }
-                          className="form-checkbox mx-1"
-                          onChange={(e) => {
-                            e.target.checked
-                              ? selectedCheck.push(docType)
-                              : selectedCheck.splice(
-                                  selectedCheck.indexOf(docType),
-                                  1
-                                );
-                            click(selectedCheck);
-                          }}
-                        />
-                        <label>{docType}</label>
-                      </div>
-                    ))}
-                  </div>
-                </Disclosure.Panel>
-              </div>
-            )}
-          </Disclosure>
-          {selectedCheck.length > 0 && (
-            <div>
-              {selectedCheck.map((e, index) => (
-                <SelectionTag
-                  key={index}
-                  value={e}
-                  onDelete={() => {
-                    selectedCheck.splice(selectedCheck.indexOf(e), 1);
-                    click(selectedCheck);
+    <Disclosure>
+      {({ open }) => (
+        <>
+          <Disclosure.Button className="flex flex-col w-full py-2 items-center gap-4">
+            <span className="flex flex-row w-full h-10 items-center text-lg">
+              {name}
+              <ChevronDoubleRightIcon
+                className={classNames("w-6 h-6", open && "rotate-90")}
+              />
+            </span>
+          </Disclosure.Button>
 
-                    checkbox.forEach((box, i) => {
-                      if (document.getElementById(i)) {
-                        document.getElementById(i).checked =
-                          selectedCheck.find((v) => v === box) !== undefined;
-                      }
-                    });
+          <Disclosure.Panel>
+            <ToggleSwitch changer={setQuery} />
+            {textboxes === 2 && (
+              <div className="flex flex-row gap-4 w-full">
+                <input
+                  className="w-16 bg-iso-blue-grey-300 border-iso-blue-grey-100 border-2"
+                  onChange={(e) => {
+                    setText(e.target.value);
                   }}
                 />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-      {dropdown.length > 0 && (
-        <div className="bg-iso-blue w-full">
-          <Menu>
-            {({ open }) => (
+                <input
+                  className="w-16 bg-iso-blue-grey-300 border-iso-blue-grey-100 border-2"
+                  onChange={(e) => {
+                    setText2(e.target.value);
+                  }}
+                />
+              </div>
+            )}
+
+            {textboxes === 1 && (
               <div>
-                <Menu.Button className="w-full h-10">
-                  <span className="flex flex-row w-full h-10 items-center text-lg pl-2">
-                    {name}
-                    <ChevronDoubleRightIcon
-                      className={classNames("w-6 h-6", open && "rotate-90")}
-                    />
-                  </span>
-                </Menu.Button>
-                <Menu.Items className="h-32 overflow-auto">
-                  {dropdown.map((year) => (
-                    <Menu.Item
-                      onClick={() => {
-                        currYear.add(year);
-                        click(currYear);
-                      }}
-                    >
-                      <div className="w-full justify-center items-center hover:text-blue-400">
-                        <span className="cursor-pointer">{year}</span>
-                      </div>
-                    </Menu.Item> //TODO: overall style rework
-                  ))}
-                </Menu.Items>
+                <input
+                  className="w-10 bg-iso-blue-grey-300 border-iso-blue-grey-100 border-2"
+                  onChange={(e) => {
+                    setText(e.target.value);
+                  }}
+                />
               </div>
             )}
           </Menu>
@@ -240,7 +169,7 @@ function FilterRow({
           )}
         </div>
       )}
-    </div>
+    </Disclosure>
   );
 }
 
@@ -249,7 +178,6 @@ function FilterRow({
 //   //testing if useContext works
 
 //   const x = useContext(fetchContext);
-
 //   useEffect(() => {
 //     console.log("query is changing!", x);
 //   }, [x]);
