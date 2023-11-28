@@ -19,14 +19,22 @@ export default [
     api: "/api/v1/bruh2",
   },
   {
-    name: "Auction Type",
-    textboxes: 2,
-    api: "/api/v1/bruh3",
+    name: "Customer Name",
+    textbox: true,
+    placeholder: "customer name",
+    api: { customer_name: [] },
   },
   {
-    name: "Resource Type",
-    dropdown: 2,
-    api: "/api/v1/bruh4",
+    name: "Project Name",
+    combo: [
+      "Gravity Works",
+      "Nice Load Response",
+      "Solar Yes",
+      "New Contract Year",
+      "Additional LR"
+    ],
+    placeholder: "project",
+    api: { project_name: [] }
   },
 
   {
@@ -36,13 +44,9 @@ export default [
     api: "/api/v1/bruh6",
   },
   {
-    name: "Periods",
-    calendar: true,
-    api: "/api/v1/bruh7",
-  },
-  {
-    name: "Proposal Type",
-    calendar: true,
-    api: "/api/v1/bruh8",
+    name: "File Name",
+    textbox: true,
+    placeholder: "file name",
+    api: { file_name: [] },
   },
 ];

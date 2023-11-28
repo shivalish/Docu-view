@@ -177,7 +177,7 @@ public class DataBaseV1 {
 	@GetMapping("/help")
 	public ResponseEntity<String> getHelp(@RequestParam Map<String,String> allRequestParams){
 		return ResponseEntity.ok()
-			.contentType(MediaType.APPLICATION_JSON)
+			.contentType(MediaType.TEXT_PLAIN)
 			.body(Hardcoded.dataBaseTree.getURIquery("/api/v1/database"));
 	}
 	
