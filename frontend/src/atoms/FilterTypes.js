@@ -11,12 +11,12 @@ export default [
       "Monthly Reconfiguration Auction",
       "RCA2",
     ],
-    api: { auction_type: [] }, //default value unselected
+    api: { auctionType: [] }, //default value unselected
   },
   {
     name: "Auction Period",
     dropdown: Array.from({ length: 151 }, (_, i) => i + 1900),
-    api: { auction_period: 1900 }, //default value starts at 1900
+    api: { auctionPeriod: 1900 }, //default value starts at 1900
   },
   {
     name: "Resource Type",
@@ -25,7 +25,7 @@ export default [
       "Generator",
       "Import"
     ],
-    api: { resource_type: [] }
+    api: { resourceType: [] }
   },
   {
     name: "Attachment Type",
@@ -45,7 +45,7 @@ export default [
       "QP.IMPORT.SYS_LOAD_PROJECTIONS"
     ],
     placeholder: "attachment",
-    api: { attachment_type: "" }, //default value is unselected
+    api: { attachmentType: "" }, //default value is unselected
   },
   {
     name: "Customer Name",
@@ -81,7 +81,7 @@ export default [
       "Significant Increase",
     ],
     placeholder: "project type",
-    api: { project_type: [] }
+    api: { projectType: [] }
   },
   {
     name: "File Name",
