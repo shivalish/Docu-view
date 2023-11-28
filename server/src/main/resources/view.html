@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Document Viewer</title>
+</head>
+<body>
+    <div th:each="page : ${viewInfo.pages}">
+        <img th:src="${'/view/' + viewInfo.fileName + '/' + page.number}" alt="Page"/>
+    </div>
+</body>
+</html>

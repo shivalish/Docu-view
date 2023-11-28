@@ -1,4 +1,4 @@
-package FWD_Development.DocuView.controllers.api.v1;
+	package FWD_Development.DocuView.controllers.api.v1;
 
 import java.util.Arrays;
 import java.util.List;
@@ -11,8 +11,8 @@ import FWD_Development.DocuView.controllers.api.v1.DataBaseTree.DataBaseNode;
 	//"SELECT DISTINCT auction_type FROM AUC_TYPE"  "SELECT DISTINCT attachment_type FROM ATTACH_TYPE" , new String[]{".pdf",".csv",".xlsx",".docs"}
 public class Filter {
 
-	    private String name;		// name of filter
-	    private String type;		// filter datatype
+	    	private String name;			// name of filter
+	    	private String type;			// filter datatype
 		private DataBaseNode originTable;
 		private String originId;	
 		private DataBaseNode targetTable;
@@ -28,186 +28,186 @@ public class Filter {
 	    	public Filter(String _name, String _type, String _originId, DataBaseNode _targetTable, String _targetId, boolean _finiteStates){
 	    		this.name = _name;
 	    		this.type = _type;
-				this.originTable = _targetTable.getConnectedId(_targetId);
-				this.originId = _originId;
-				this.targetTable = _targetTable;
-				this.targetId = _targetId;
-				this.finiteStates = _finiteStates;
-				this.filteringQuerySQLFormat =  generatefilteringQueryFormat();
+			this.originTable = _targetTable.getConnectedId(_targetId);
+			this.originId = _originId;
+			this.targetTable = _targetTable;
+			this.targetId = _targetId;
+			this.finiteStates = _finiteStates;
+			this.filteringQuerySQLFormat =  generatefilteringQueryFormat();
 
-				this.finiteStatesQuery =  String.format("SELECT DISTINCT %s FROM %s", originId, originTable.getName());
+			this.finiteStatesQuery =  String.format("SELECT DISTINCT %s FROM %s", originId, originTable.getName());
 	    	}
 
-			public Filter(String _name, String _type, String _originId, DataBaseNode _targetTable, String _targetId, boolean _finiteStates, char _compType){
+		public Filter(String _name, String _type, String _originId, DataBaseNode _targetTable, String _targetId, boolean _finiteStates, char _compType){
 	    		this.name = _name;
 	    		this.type = _type;
-				this.originTable = _targetTable.getConnectedId(_targetId);
-				this.originId = _originId;
-				this.targetTable = _targetTable;
-				this.targetId = _targetId;
-				this.finiteStates = _finiteStates;
-				this.compType = _compType;
+			this.originTable = _targetTable.getConnectedId(_targetId);
+			this.originId = _originId;
+			this.targetTable = _targetTable;
+			this.targetId = _targetId;
+			this.finiteStates = _finiteStates;
+			this.compType = _compType;
         
-				this.filteringQuerySQLFormat =  generatefilteringQueryFormat();
-
-				this.finiteStatesQuery =  String.format("SELECT DISTINCT %s FROM %s", originId, originTable.getName());
+			this.filteringQuerySQLFormat =  generatefilteringQueryFormat();
+			this.finiteStatesQuery =  String.format("SELECT DISTINCT %s FROM %s", originId, originTable.getName());
 	    	}
 
-			public Filter(String _name, String _type,  String _originId, DataBaseNode _targetTable, String _targetId, String[] _finiteStatesArray){
+		public Filter(String _name, String _type,  String _originId, DataBaseNode _targetTable, String _targetId, String[] _finiteStatesArray){
 	    		this.name = _name;
 	    		this.type = _type;
-				this.originTable = _targetTable.getConnectedId(_targetId);
-				this.originId = _originId;
-				this.targetTable = _targetTable;
-				this.targetId = _targetId;
-				this.finiteStates = true;
+			this.originTable = _targetTable.getConnectedId(_targetId);
+			this.originId = _originId;
+			this.targetTable = _targetTable;
+			this.targetId = _targetId;
+			this.finiteStates = true;
 
-				this.filteringQuerySQLFormat =  generatefilteringQueryFormat();
+			this.filteringQuerySQLFormat =  generatefilteringQueryFormat();
 
-				this.finiteStatesArray = _finiteStatesArray;
+			this.finiteStatesArray = _finiteStatesArray;
 	    	}
 
-			public Filter(String _name, String _type, String _originId, DataBaseNode _targetTable, String _targetId, String[] _finiteStatesArray, char _compType){
-	    		this.name = _name;
-	    		this.type = _type;
-				this.originTable = _targetTable.getConnectedId(_targetId);
-				this.originId = _originId;
-				this.targetTable = _targetTable;
-				this.targetId = _targetId;
-				this.finiteStates = true;
-				this.compType = _compType;
-        
-				this.filteringQuerySQLFormat =  generatefilteringQueryFormat();
+		public Filter(String _name, String _type, String _originId, DataBaseNode _targetTable, String _targetId, String[] _finiteStatesArray, char _compType){
+    			this.name = _name;
+    			this.type = _type;
+			this.originTable = _targetTable.getConnectedId(_targetId);
+			this.originId = _originId;
+			this.targetTable = _targetTable;
+			this.targetId = _targetId;
+			this.finiteStates = true;
+			this.compType = _compType;
 
-				this.finiteStatesArray = _finiteStatesArray;
-	    	}
+			this.filteringQuerySQLFormat =  generatefilteringQueryFormat();
 
-			// 
-			// SELECT (SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_NAME="ATTACHMENT_FILE") ATTACHMENT_FILE WHERE file_name LIKE .bmp
-			// todo. pre-generated then format
-			public String filteringQueryCondition(String param){
-				String filteringQuerySQL;
-				switch(compType){
-					case '(':
-						filteringQuerySQL = this.originId + " > " + "\'" + param + "\'";
-						break;
-					case ')':
-						filteringQuerySQL = this.originId + " < " + "\'" + param + "\'";
-						break;
-					case '[':
-						filteringQuerySQL = this.originId + " >= " + "\'" + param + "\'";
-						break;
-					case ']':
-						filteringQuerySQL = this.originId + " <= " + "\'" + param + "\'";
-						break;
-					case '!':
-						filteringQuerySQL = this.originId + " <> " + "\'" + param + "\'";
-						break;
-					case '=':
-						filteringQuerySQL = this.originId + " = " + "\'" + param + "\'";
-						break;
+			this.finiteStatesArray = _finiteStatesArray;
+    		}
 
-					case '^':
-						filteringQuerySQL = this.originId + " LIKE \'%" + param + "\'";
-						break;
-					case '.':
-						filteringQuerySQL = this.originId + " LIKE \'" + param + "%\'";
-						break;
-					case '*':
-					default:
-						filteringQuerySQL = this.originId + " LIKE \'%" + param + "%\'";
-				}
-				return filteringQuerySQL;
+		// 
+		// SELECT (SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_NAME="ATTACHMENT_FILE") ATTACHMENT_FILE WHERE file_name LIKE .bmp
+		// todo. pregenrated then format
+		public String filteringQueryCondition(String param){
+			String filteringQuerySQL;
+			switch(compType){
+				case '(':
+					filteringQuerySQL = this.originId + " > " + "\'" + param + "\'";
+					break;
+				case ')':
+					filteringQuerySQL = this.originId + " < " + "\'" + param + "\'";
+					break;
+				case '[':
+					filteringQuerySQL = this.originId + " >= " + "\'" + param + "\'";
+					break;
+				case ']':
+					filteringQuerySQL = this.originId + " <= " + "\'" + param + "\'";
+					break;
+				case '!':
+					filteringQuerySQL = this.originId + " <> " + "\'" + param + "\'";
+					break;
+				case '=':
+					filteringQuerySQL = this.originId + " = " + "\'" + param + "\'";
+					break;
+
+				case '^':
+					filteringQuerySQL = this.originId + " LIKE \'%" + param + "\'";
+					break;
+				case '.':
+					filteringQuerySQL = this.originId + " LIKE \'" + param + "%\'";
+					break;
+				case '*':
+				default:
+					filteringQuerySQL = this.originId + " LIKE \'%" + param + "%\'";
 			}
+			return filteringQuerySQL;
+		}
 
-			private String generatefilteringQueryFormat(){
-				String filteringQuerySQL;
-				switch(compType){
-					case '(':
-						filteringQuerySQL = this.originId + " > %s";
-						break;
-					case ')':
-						filteringQuerySQL = this.originId + " < %s";
-						break;
-					case '[':
-						filteringQuerySQL = this.originId + " >= %s";
-						break;
-					case ']':
-						filteringQuerySQL = this.originId + " <= %s";
-						break;
-					case '!':
-						filteringQuerySQL = this.originId + " <> %s";
-						break;
-					case '=':
-						filteringQuerySQL = this.originId + " = %s";
-						break;
+		private String generatefilteringQueryFormat(){
+			String filteringQuerySQL;
+			switch(compType){
+				case '(':
+					filteringQuerySQL = this.originId + " > %s";
+					break;
+				case ')':
+					filteringQuerySQL = this.originId + " < %s";
+					break;
+				case '[':
+					filteringQuerySQL = this.originId + " >= %s";
+					break;
+				case ']':
+					filteringQuerySQL = this.originId + " <= %s";
+					break;
+				case '!':
+					filteringQuerySQL = this.originId + " <> %s";
+					break;
+				case '=':
+					filteringQuerySQL = this.originId + " = %s";
+					break;
 
-					case '^':
-						filteringQuerySQL = this.originId + " LIKE %s";
-						break;
-					case '.':
-						filteringQuerySQL = this.originId + " LIKE %s";
-						break;
-					case '*':
-					default:
-						filteringQuerySQL = this.originId + " LIKE %s";
-				}
-				return filteringQuerySQL;
+				case '^':
+					filteringQuerySQL = this.originId + " LIKE %s";
+					break;
+				case '.':
+					filteringQuerySQL = this.originId + " LIKE %s";
+					break;
+				case '*':
+				default:
+					filteringQuerySQL = this.originId + " LIKE %s";
 			}
+			return filteringQuerySQL;
+		}
 
-			public String paramFormat(String param){
-				switch(compType){
-					case '(':
-					case ')':
-					case '!':
-					case '[':
-					case ']':
-					case '=':
-						return param;
-					case '^':
-						return "%%" + param +"";
-					case '.':
-						return "" + param +"%%";
-					case '*':
-					default:
-						return "%%" + param +"%%";
-				}
+		public String paramFormat(String param){
+			switch(compType){
+				case '(':
+				case ')':
+				case '!':
+				case '[':
+				case ']':
+				case '=':
+					return param;
+				case '^':
+					return "%%" + param +"";
+				case '.':
+					return "" + param +"%%";
+				case '*':
+				default:
+					return "%%" + param +"%%";
 			}
+		}
 
-			public String filteringQueryFormat(){
-				return filteringQuerySQLFormat;
-			}
-			public String getName(){
-				return this.name;
-			}
+		public String filteringQueryFormat(){
+			return filteringQuerySQLFormat;
+		}
+		
+		public String getName(){
+			return this.name;
+		}
 
-			public String getType(){
-				return this.type;
-			}
+		public String getType(){
+			return this.type;
+		}
 
-			public DataBaseNode getOriginTable(){
-				return this.originTable;
-			}
+		public DataBaseNode getOriginTable(){
+			return this.originTable;
+		}
 
-			public String getOriginId(){
-				return this.originId;
-			}
+		public String getOriginId(){
+			return this.originId;
+		}
 
-			public DataBaseNode getTargetTable(){
-				return this.targetTable;
-			}
+		public DataBaseNode getTargetTable(){
+			return this.targetTable;
+		}
 
-			public String getTargetId(){
-				return this.targetId;
-			}
+		public String getTargetId(){
+			return this.targetId;
+		}
 
-			public boolean getFiniteStates(){
-				return this.finiteStates;
-			}	    	
+		public boolean getFiniteStates(){
+			return this.finiteStates;
+		}	    	
 	    	//////////////////////////////
 	    	
 	    	private List<String> queryExecutor(JdbcTemplate jdbcTemplate){
-				List<String> temp = jdbcTemplate.queryForList(finiteStatesQuery,String.class);
+			List<String> temp = jdbcTemplate.queryForList(finiteStatesQuery,String.class);
 	    		return temp;
 	    	};
 	    	
