@@ -60,7 +60,7 @@ function HomePageTabs() {
             ))}
           </Tab.List>
           <Tab.Panels>
-            <Tab.Panel className="w-96 h-1/3 tab-body">
+            <Tab.Panel className="tab-body">
               <HomePageInput
                 label="Username"
                 forgot={true}
@@ -78,7 +78,7 @@ function HomePageTabs() {
               />
               <HomePageButton text="Login" OnClick={movePage} />
             </Tab.Panel>
-            <Tab.Panel className="w-96 h-1/3 tab-body">
+            <Tab.Panel className="flex flex-col tab-body gap-5">
               <HomePageInput label="Username" 
               userInput={signUpID}
               setUserInput={setSignUpID}/>

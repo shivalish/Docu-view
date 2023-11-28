@@ -10,7 +10,7 @@
 /* reusable tailwind classes */
 @layer components {
   .tab-body {
-    @apply bg-iso-white p-10 rounded-b-md rounded-tr-md;
+    @apply w-96 h-1/3 bg-iso-white p-10 rounded-b-md rounded-tr-md;
   }
 
   .tab {
