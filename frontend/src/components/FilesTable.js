@@ -67,6 +67,7 @@ function FilesTable() {
             console.log("Failed to store the file");
         })
     }
+    previewEndpoint(738)
 
     useEffect(() => {
         //TODO: replace DummyData with x() or await x() and reformat the table to support the new parameters
