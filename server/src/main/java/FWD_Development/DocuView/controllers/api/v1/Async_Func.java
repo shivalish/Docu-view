@@ -14,7 +14,6 @@ public class Async_Func {
     @Async
     public void cache(GoogleDriveService googleDriveService, JdbcTemplate jdbcTemplate, List<Map<String, Object>> resp) {
         int counter = 0;
-        
         for (Map<String, Object> row : resp) {
             if (counter >= 12) {
                 break;
@@ -26,13 +25,7 @@ public class Async_Func {
                 e.printStackTrace();
             }
             counter++;
-            java.io.File[] files = FileShareV1.VIEWER_LOC.toFile().listFiles();
-            if (files.length > 100) {
-                java.util.Arrays.sort(files, (f1, f2) -> Long.compare(f1.lastModified(), f2.lastModified()));
-                files[0].delete();
-            }
         }
-        
         return;
 	}
 }

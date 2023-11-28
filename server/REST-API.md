@@ -1,4 +1,4 @@
-# REST-API
+## REST-API
 
 ## `GET /api/v1/fileshare/preview/{fileId}`
 
