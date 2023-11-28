@@ -18,8 +18,6 @@ public class Async_Func {
             if (counter >= 12) {
                 break;
             }
-            System.out.println("Caching: " + counter + " of " + resp.size() + " type " + row.get("fileExtension"));
-            System.out.println("Caching: " + counter + " of " + resp.size());
             String attachmentId = ((Integer) row.get("attachmentId")).toString();
             try {
                 FileShareV1.previewCache(googleDriveService, jdbcTemplate, attachmentId);
