@@ -158,6 +158,92 @@ function FilesTable() {
         }
     }
 
+    return (
+        <div className='bg-iso-grey h-full w-full p-4'>
+            
+            <Popup
+            onOpen={openPreview}
+            onClose={()=>{setOpenPreview(false)}}>
+                <div className="flex flex-col">
+                    <Tab.Group>
+                        <Tab.List className="grid grid-cols-5 ">{selectedFiles.map(e => (
+                            <Tab className="tab">{DummyData.find(f => f.attachmentID === e).file_name}</Tab>
+                        )
+                        
+                        )}</Tab.List>
+                        <Tab.Panels>
+                            {selectedFiles.map(e => (
+                                <Tab.Panel className="flex-1 tab-body !p-0">
+                                    <div className="flex flex-row w-full h-full">
+                                        <div className="flex flex-col gap-1 h-60 w-1/3">
+                                            {Object.entries(DummyData.find(f => f.attachmentID === e)).map(kv => {
+                                                const key = kv[0].replace("_", ' ').replace(/([a-z])([A-Z])/g, '$1 $2');
+                                                const val = kv[1];
+                                                //replace dummydata with actual data
+                                                //kv is a key/value pair of some object in dummydata with attachmentID specified by selected file
+                                                return (
+                                                    <div className="block font-bold text-xs first-letter:capitalize">
+                                                        {`${key}: ${val}`}
+                                                    </div>
+                                                )
+                                            })
+                                            
+                                            }
+                                        </div>
+                                        <div className="flex h-60 w-2/3">
+                                            [INSERT IMAGE HERE]
+                                            {Object.entries(DummyData.find(f => f.attachmentID === e)).map(async kv => {
+                                                //fetch png
+                                                // const source = (await fetch("")).data.json();
+                                                // return (
+                                                //     <img src={source}/>
+                                                // )
+                                            })
+                                            
+                                            }
+                                        </div>
+                                    </div> 
+                                </Tab.Panel>
+                            ))}
+                        </Tab.Panels>
+                    </Tab.Group>
+                </div>
+            </Popup>
+            <div className="flex justify-between items-center mb-4">
+                <div className="text-lg font-bold text-iso-blue-grey">
+                    Results...
+                </div>
+                <div className="space-x-2">
+                    <Button className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded" OnClick={()=>setOpenPreview(true)}>View</Button>
+                    <Button className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded">Download</Button>
+                </div>
+            </div>
+            <TableHeaders sortFiles={sortFiles} currentSort={currentSort} />
+            <div className='flex justify-center'>
+                <div className='w-11/12 border border-gray-400'>
+                    {files
+                        .slice((filePage - 1) * filesPerPage, filePage * filesPerPage)
+                        .map((fileData, index) => (
+                            <div key={fileData.attachmentID} className={index % 2 ? '' : 'bg-iso-white'}>
+                                <FileRow
+                                    fileName={fileData.file_name}
+                                    customer={fileData.customer_name}
+                                    uploadDate={fileData.uploadDate}
+                                    fileSizeMb={fileData.fileSizeMB}
+                                    attachmentID={fileData.attachmentID}
+                                    isSelected={selectedFiles.includes(fileData.attachmentID)}
+                                    onFileSelection={handleFileSelection}
+                                />
+                            </div>
+                        ))
+                    }
+                </div>
+            </div>
+            {filePageFooter()}
+            {fileCountFooter()}
+        </div>
+    );
+
     const downloadFiles = async () => {
         console.log(`download: ${selectedFiles}`)
         const res = await axios.get('http://localhost:8080/api/v1/fileshare/download/zipFiles', {
