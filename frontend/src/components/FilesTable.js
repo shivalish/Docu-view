@@ -160,11 +160,20 @@ function FilesTable() {
 
     const downloadFiles = async () => {
         console.log(`download: ${selectedFiles}`)
-        const res = await axios.get('api/v1/fileshare/download/', {
+        const res = await axios.get('http://localhost:8080/api/v1/fileshare/download/zipFiles', {
             params: {
-                fileId: selectedFiles[0]
+                fileIds: selectedFiles.join(',')
             },
-        });
+            responseType: 'blob'
+        }).then((response) => {
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'file.zip'); // or any other filename you want
+            document.body.appendChild(link);
+            link.click();
+        })
+        .catch((error) => console.error(error));;
     }
 
     return (
