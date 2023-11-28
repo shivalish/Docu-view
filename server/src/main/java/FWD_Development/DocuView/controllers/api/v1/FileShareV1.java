@@ -1,34 +1,61 @@
 package FWD_Development.DocuView.controllers.api.v1;
 
+<<<<<<< HEAD
 import java.util.ArrayList;
+=======
+
+>>>>>>> parent of d7e2204 (Backend stage (#69))
 /* CUSTOM ADDED LIBS */
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+<<<<<<< HEAD
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.zip.ZipOutputStream;
 import java.util.zip.ZipEntry;
+=======
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.HashMap;
+>>>>>>> parent of d7e2204 (Backend stage (#69))
 /* CUSTOM ADDED LIBS */
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.jdbc.core.JdbcTemplate;
+<<<<<<< HEAD
 import org.springframework.http.ResponseEntity;
 
+=======
+import org.springframework.jdbc.core.RowMapper;
+>>>>>>> parent of d7e2204 (Backend stage (#69))
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+<<<<<<< HEAD
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+=======
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+>>>>>>> parent of d7e2204 (Backend stage (#69))
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
+<<<<<<< HEAD
 import com.groupdocs.viewer.FileType;
 import com.groupdocs.viewer.Viewer;
 import com.groupdocs.viewer.interfaces.PageStreamFactory;
@@ -39,6 +66,26 @@ import com.groupdocs.viewer.options.LoadOptions;
 import javax.activation.MimetypesFileTypeMap;
 
 import java.time.Instant;
+=======
+
+import org.springframework.dao.EmptyResultDataAccessException;
+
+// FILTERS
+//      file_creation
+//      document_type
+//      file_name
+//      customer_name
+//      auction_type
+//      proposal_type
+//      project_type
+//      commitment_date_start
+//      commitment_date_end
+//      auction_date_start
+//      auction_date_end
+//      proposal_date_start
+//      proposals_date_end
+
+>>>>>>> parent of d7e2204 (Backend stage (#69))
 
 @CrossOrigin(origins = "http://localhost:3000") // Default React port
 @RestController
@@ -46,12 +93,16 @@ import java.time.Instant;
 public class FileShareV1 {
 
     private final GoogleDriveService googleDriveService;
+<<<<<<< HEAD
     @Autowired
     private JdbcTemplate jdbcTemplate;
     
     final MimetypesFileTypeMap fileTypeMap = new MimetypesFileTypeMap();
     
 
+=======
+//
+>>>>>>> parent of d7e2204 (Backend stage (#69))
     @Autowired
     public FileShareV1(GoogleDriveService googleDriveService) {
         this.googleDriveService = googleDriveService;
@@ -63,6 +114,7 @@ public class FileShareV1 {
         FileList fileList = googleDriveService.drive.files().list().execute();
         return fileList.getFiles();
     }
+<<<<<<< HEAD
 
     private Viewer viewerChecker(InputStream inputStream, String ext){
         if (ext.equalsIgnoreCase("msg")) return new Viewer(inputStream, new LoadOptions(FileType.MSG));
@@ -221,4 +273,6 @@ public class FileShareV1 {
         }
         return currentFolderId;
     }
+=======
+>>>>>>> parent of d7e2204 (Backend stage (#69))
 };

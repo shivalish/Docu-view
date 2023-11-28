@@ -7,50 +7,33 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
-import java.util.concurrent.Future;
 
 import javax.sql.rowset.spi.SyncResolver;
 
 import java.util.Iterator;
 import java.util.HashMap;
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.util.Date;
 /* CUSTOM ADDED LIBS */
 
 import org.springframework.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.util.MultiValueMap;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.DataClassRowMapper;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.http.MediaType;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.api.services.drive.model.File;
-import com.groupdocs.merger.core.a.g;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.annotation.JsonView;
 
 import FWD_Development.DocuView.controllers.api.v1.DataBaseTree.DataBaseNode;
 import FWD_Development.DocuView.controllers.api.v1.DataBaseTree.Query;
@@ -60,35 +43,32 @@ import java.sql.ResultSetMetaData;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
 
+// FILTERS
+//      file_creation
+//      document_type
+//      file_name
+//      customer_name
+//      auction_type
+//      proposal_type
+//      project_type
+//      commitment_date_start
+//      commitment_date_end
+//      auction_date_start
+//      auction_date_end
+//      proposal_date_start
+//      proposals_date_end
+
+// All this stuff, evil.
+// better impletion form, make tree that maps out all TABLES and has data of every table, THEN use that to navigate the database
+
 @CrossOrigin(origins = "http://localhost:3000") // Default React port
 @RestController
 @RequestMapping("/api/v1/database")
-@EnableAsync
 public class DataBaseV1 {
 
 	@Autowired
     	private JdbcTemplate jdbcTemplate;
 
-	@Autowired
-		Async_Func async_func;
-
-	private final GoogleDriveService googleDriveService;
-	private final java.nio.file.Path VIEWER_LOC = FileShareV1.VIEWER_LOC;
-
-	@Autowired
-	public DataBaseV1(GoogleDriveService googleDriveService) {
-		this.googleDriveService = googleDriveService;
-		if (!java.nio.file.Files.exists(VIEWER_LOC)) {
-			try {
-				java.nio.file.Files.createDirectory(VIEWER_LOC);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-
-    	
 	private static String rename = "x.attach_proposal_attachment_type AS attachmentType, "
 		+ "x.attach_proposal_proposal_id_project_type AS projectType, "
 		+ "x.attach_proposal_proposal_id_proposal_label AS proposalLabel, "
@@ -119,16 +99,14 @@ public class DataBaseV1 {
 		+ "x.attach_proposal_attachment_id_create_date AS createDate, "
 		+ "x.attach_proposal_attachment_id_description AS description";
 
-		
-
 	@GetMapping({"", "/infinite"})
 	public ResponseEntity<List<Map<String, Object>>> getDocs(@RequestParam MultiValueMap<String,String> allRequestParams){
 		var query =  Hardcoded.dataBaseTree.generateQuery(allRequestParams);
-		List<Map<String, Object>> resp = jdbcTemplate.queryForList("SELECT " + rename +" FROM (" + query.parametrized + ") AS x;", query.params);
-		async_func.cache(googleDriveService, jdbcTemplate, resp);
-		return ResponseEntity.ok()
-			.contentType(MediaType.APPLICATION_JSON)
-			.body(resp);
+		
+		return new ResponseEntity<>(
+			jdbcTemplate.queryForList("SELECT " + rename +" FROM (" + query.parametrized + ") AS x;", query.params), 
+			HttpStatus.OK
+		);
 	}
 
 	@GetMapping("/pages")
@@ -145,11 +123,10 @@ public class DataBaseV1 {
 			+ query.parametrized + ") AS x LIMIT " 
 			+ perPage + " OFFSET " 
 			+ ((page-1) * perPage) + ";";
-		List<Map<String, Object>> resp = jdbcTemplate.queryForList(sql, query.params);
-		async_func.cache(googleDriveService, jdbcTemplate, resp);
-        return ResponseEntity.ok()
-			.contentType(MediaType.APPLICATION_JSON)
-			.body(resp);
+        return new ResponseEntity<>(
+			jdbcTemplate.queryForList(sql, query.params), 
+			HttpStatus.OK
+		);
 	}
 
 	@GetMapping("/pages/content")
@@ -169,16 +146,12 @@ public class DataBaseV1 {
         data.put("page", page);
         data.put("per_page", perPage);
         data.put("total_pages", (((Long) data.get("count"))/perPage) + 1);
-        return ResponseEntity.ok()
-			.contentType(MediaType.APPLICATION_JSON)
-			.body(data);
+        return new ResponseEntity<>(data, HttpStatus.OK);
 	}
 	
 	@GetMapping("/help")
 	public ResponseEntity<String> getHelp(@RequestParam Map<String,String> allRequestParams){
-		return ResponseEntity.ok()
-			.contentType(MediaType.TEXT_PLAIN)
-			.body(Hardcoded.dataBaseTree.getURIquery("/api/v1/database"));
+		return new ResponseEntity<>(Hardcoded.dataBaseTree.getURIquery("/api/v1/database"), HttpStatus.OK);
 	}
 	
 };

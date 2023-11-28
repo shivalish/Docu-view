@@ -104,10 +104,6 @@ public class DataBaseTree {
         return root;
     }
 
-    public Map<String, Filter> getFilterMap(){
-        return new HashMap<>(filterMap);
-    }
-    
     public String getURIquery(String endpoint){
     	List<String> uri = new ArrayList<>();
     	for (Map.Entry<String, Filter> set : filterMap.entrySet()){
@@ -123,6 +119,11 @@ public class DataBaseTree {
         }
         return String.join("\n", filters);
     }
+
+    public Map<String, Filter> getFilterMap(){
+        return new HashMap<>(filterMap);
+    }
+
     public void addNode(DataBaseNode node){
         if (node == null) {return ;}
         nodes.put(node.getName(), node);
@@ -140,6 +141,7 @@ public class DataBaseTree {
     public Query generateQuery(MultiValueMap<String,String> allRequestParams){
         List<String> params = new ArrayList<>();
         if (paramFormatStrings == null || paramFormatStrings.isEmpty()) { return new Query(this.getTreeInnerJoin() + " WHERE TRUE", params); }
+        int counter = 0; 
         List<String> query = new ArrayList<>();
         for (Map.Entry<String, String[]> set : paramFormatStrings.entrySet()){
             if ( !allRequestParams.containsKey( set.getKey() ) ){ continue; }
@@ -190,7 +192,7 @@ public class DataBaseTree {
             for(String column : set.getValue().getColumns()){
                 columns_alias.add(set.getValue().getName() + "." + column + " AS " +  alias + "_" + column.toLowerCase());
             }
-            String query = "LEFT JOIN " + "( SELECT " + String.join(", ", columns_alias) + " FROM " + set.getValue().getName() +")" + " AS " + alias + "_Table"
+            String query = "INNER JOIN " + "( SELECT " + String.join(", ", columns_alias) + " FROM " + set.getValue().getName() +")" + " AS " + alias + "_Table"
                 + " ON " + node.getPath() + "_" + set.getKey() + " = " + alias + "_" + set.getValue().getPrimaryKey()
                 + "\n" + treeInnerJoinGenerate(set.getValue());
             strLst.add(query);
@@ -198,7 +200,4 @@ public class DataBaseTree {
         return String.join("", strLst);
         
     }
-    
-    
-    
 }

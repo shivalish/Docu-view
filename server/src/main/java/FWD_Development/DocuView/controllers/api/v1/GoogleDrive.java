@@ -12,6 +12,8 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
+import com.google.api.services.drive.model.File;
+import com.google.api.services.drive.model.FileList;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,25 +22,29 @@ import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 // FROM : https://developers.google.com/drive/api/quickstart/java
 /* class to demonstrate use of Drive files list API */
-@Service
-public class GoogleDriveService {
+public class GoogleDrive {
+  /**
+   * Application name.
+   */
+  private static final String APPLICATION_NAME = "Google Drive API Java Quickstart";
+  /**
+   * Global instance of the JSON factory.
+   */
+  private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
+  /**
+   * Directory to store authorization tokens for this application.
+   */
+  private static final String TOKENS_DIRECTORY_PATH = "tokens";
 
-    //Application name.
-    private static final String APPLICATION_NAME = "Google Drive API";
-    //Global instance of the JSON factory.
-     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
-    //Directory to store authorization tokens for this application.
-    private static final String TOKENS_DIRECTORY_PATH = "tokens";
-
-    //Global instance of the scopes required by this quickstart.  If modifying these scopes, delete your previously saved tokens/ folder.
-    private static final List<String> SCOPES =
+  /**
+   * Global instance of the scopes required by this quickstart.
+   * If modifying these scopes, delete your previously saved tokens/ folder.
+   */
+  private static final List<String> SCOPES =
       Collections.singletonList(DriveScopes.DRIVE_METADATA_READONLY);
-    private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
+  private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
 
   /**
    * Creates an authorized Credential object.
@@ -50,7 +56,7 @@ public class GoogleDriveService {
   private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT)
       throws IOException {
     // Load client secrets.
-    InputStream in = GoogleDriveService.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
+    InputStream in = GoogleDrive.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
     if (in == null) {
       throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
     }
@@ -69,12 +75,26 @@ public class GoogleDriveService {
     return credential;
   }
 
-  public final Drive drive;
-  @Autowired
-  public GoogleDriveService() throws IOException, GeneralSecurityException{
-      final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-      this.drive = new Drive.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-      .setApplicationName(APPLICATION_NAME)
-      .build();
+  public static void main(String... args) throws IOException, GeneralSecurityException {
+    // Build a new authorized API client service.
+    final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+    Drive service = new Drive.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+        .setApplicationName(APPLICATION_NAME)
+        .build();
+
+    // Print the names and IDs for up to 10 files.
+    FileList result = service.files().list()
+        .setPageSize(10)
+        .setFields("nextPageToken, files(id, name)")
+        .execute();
+    List<File> files = result.getFiles();
+    if (files == null || files.isEmpty()) {
+      System.out.println("No files found.");
+    } else {
+      System.out.println("Files:");
+      for (File file : files) {
+        System.out.printf("%s (%s)\n", file.getName(), file.getId());
+      }
+    }
   }
 }
