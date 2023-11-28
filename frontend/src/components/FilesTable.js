@@ -4,32 +4,62 @@ import TableHeaders from './TableHeaders'
 import Button from '../atoms/Button'
 import { FetchContext } from "./TableContext.jsx";
 import DummyData from '../atoms/DummyData.js';
-import Popup from '../atoms/Popup.jsx';
-import { Tab } from '@headlessui/react';
+import axios from 'axios';
 
 function FilesTable() {
 
-    //popup states
-    const [openPreview, setOpenPreview] = useState(false);
-    const [openDownload, setOpenDownload] = useState(false);
+    const { val } = useContext(FetchContext);
 
-    const {val} = useContext(FetchContext);
+    //snatched this off stack overflow; see if u can optimize it
+    function parseParams(params) {
+        console.log(params)
+        const keys = Object.keys(params)
+        let options = ''
+
+        keys.forEach((key) => {
+            const isParamTypeObject = typeof params[key] === 'object'
+            const isParamTypeArray = isParamTypeObject && params[key].length >= 0
+
+            if (!isParamTypeObject) {
+                options += `${key}=${params[key]}&`
+            }
+
+            if (isParamTypeObject && isParamTypeArray) {
+                params[key].forEach((element) => {
+                    options += `${key}=${element}&`
+                })
+            }
+        })
+
+        return options ? options.slice(0, -1) : options
+    }
 
     //this function executes on every element of the DummyData array
-    const filterFunc = (e) => {
-        //temporary filter function
-        let fitsCriteria = true;
-        for (const key in val){
-            if(key === "file_name" || key === "customer_name"){
-                if(val[key].length === 0) continue;
-                fitsCriteria = fitsCriteria && val[key].filter(name => (e[key].includes(name))).length > 0;
-            }
-        }
-        return fitsCriteria;
+
+    const x = async () => {
+        console.log(JSON.stringify({
+            ...val,
+        }));
+
+        const res = await axios.get('http://localhost:8080/api/v1/database', {
+            params: {
+                ...val
+            },
+            paramsSerializer: parseParams
+        });
+        // console.log('THIS IS... ', res.data);
+        return res.data;
     }
-    useEffect(()=>{
-        setFiles(DummyData.filter(filterFunc));
-    },[val])
+
+    useEffect(() => {
+        let fetchData = async () => {
+            const resultingFiles = await x(parseParams(val));
+            console.log(resultingFiles)
+            setFiles(resultingFiles)
+        }
+        setFiles(DummyData);
+        fetchData()
+    }, [val])
     /*
     When we receive files from the server we put them in this array
     We can 'sort' the file table by sorting this array, since the table maps row 
@@ -128,69 +158,36 @@ function FilesTable() {
         }
     }
 
+    const downloadFiles = async () => {
+        console.log(`download: ${selectedFiles}`)
+        const res = await axios.get('http://localhost:8080/api/v1/fileshare/download/zipFiles', {
+            params: {
+                fileIds: selectedFiles.join(',')
+            },
+            responseType: 'blob'
+        }).then((response) => {
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'file.zip'); // or any other filename you want
+            document.body.appendChild(link);
+            link.click();
+        })
+        .catch((error) => console.error(error));;
+    }
+
     return (
         <div className='bg-iso-grey h-full w-full p-4'>
-            
-            <Popup
-            onOpen={openPreview}
-            onClose={()=>{setOpenPreview(false)}}>
-                <div className="flex flex-col">
-                    <Tab.Group>
-                        <Tab.List className="grid grid-cols-5 ">{selectedFiles.map(e => (
-                            <Tab className="tab">{DummyData.find(f => f.attachmentID === e).file_name}</Tab>
-                        )
-                        
-                        )}</Tab.List>
-
-                        <Tab.Panels>
-                            {selectedFiles.map(e => (
-                                <Tab.Panel className="flex-1 tab-body !p-0">
-                                    <div className="flex flex-row w-full h-full">
-                                        <div className="flex flex-col gap-1 h-60 w-1/3">
-                                            {Object.entries(DummyData.find(f => f.attachmentID === e)).map(kv => {
-                                                const key = kv[0].replace("_", ' ').replace(/([a-z])([A-Z])/g, '$1 $2');
-                                                const val = kv[1];
-                                                //replace dummydata with actual data
-                                                //kv is a key/value pair of some object in dummydata with attachmentID specified by selected file
-                                                return (
-                                                    <div className="block font-bold text-xs first-letter:capitalize">
-                                                        {`${key}: ${val}`}
-                                                    </div>
-                                                )
-                                            })
-                                            
-                                            }
-
-                                        </div>
-
-                                        <div className="flex h-60 w-2/3">
-                                            {Object.entries(DummyData.find(f => f.attachmentID === e)).map(async kv => {
-                                                //fetch png
-                                                // const source = (await fetch("")).data.json();
-
-                                                // return (
-                                                //     <img src={source}/>
-                                                // )
-                                            })
-                                            
-                                            }
-                                        </div>
-                                    </div> 
-                                </Tab.Panel>
-                            ))}
-                        </Tab.Panels>
-                    </Tab.Group>
-                </div>
-            </Popup>
-
-
             <div className="flex justify-between items-center mb-4">
                 <div className="text-lg font-bold text-iso-blue-grey">
                     Results...
                 </div>
                 <div className="space-x-2">
-                    <Button className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded" OnClick={()=>setOpenPreview(true)}>View</Button>
-                    <Button className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded">Download</Button>
+                    <Button className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded">View</Button>
+                    <Button
+                        className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded"
+                        OnClick={downloadFiles}
+                    >Download</Button>
                 </div>
             </div>
 
@@ -202,12 +199,12 @@ function FilesTable() {
                         .map((fileData, index) => (
                             <div key={fileData.attachmentID} className={index % 2 ? '' : 'bg-iso-white'}>
                                 <FileRow
-                                    fileName={fileData.file_name}
-                                    customer={fileData.customer_name}
-                                    uploadDate={fileData.uploadDate}
-                                    fileSizeMb={fileData.fileSizeMB}
-                                    attachmentID={fileData.attachmentID}
-                                    isSelected={selectedFiles.includes(fileData.attachmentID)}
+                                    fileName={fileData.attachmentFileName}
+                                    customer={fileData.customerName}
+                                    uploadDate={fileData.createDate}
+                                    fileSizeMb={500}
+                                    attachmentID={fileData.attachmentId}
+                                    isSelected={selectedFiles.includes(fileData.attachmentId)}
                                     onFileSelection={handleFileSelection}
                                 />
                             </div>
