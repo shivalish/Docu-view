@@ -165,6 +165,8 @@ public class FileShareV1 {
     @GetMapping("/download/{fileId}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileId) throws IOException {
         fileId = getGoogleId(googleDriveService, getFilePath(jdbcTemplate, fileId));
+        File fileData = googleDriveService.drive.files().get(fileId).execute();
+        String fileName = fileData.getName();
         // Use Google Drive API to get the file
         OutputStream outputStream = new ByteArrayOutputStream();
         googleDriveService.drive.files().get(fileId).executeMediaAndDownloadTo(outputStream);
@@ -178,7 +180,7 @@ public class FileShareV1 {
 
         // Set content type and headers
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileId + "\"");
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"");
 
         return ResponseEntity.ok()
                 .headers(headers)
@@ -197,7 +199,6 @@ public class FileShareV1 {
             File fileData = googleDriveService.drive.files().get(fileId).execute();
 
             InputStream inputStream = googleDriveService.drive.files().get(fileId).executeMediaAsInputStream();
-
             ZipEntry zipEntry = new ZipEntry(fileData.getName());
             zipOut.putNextEntry(zipEntry);
 
