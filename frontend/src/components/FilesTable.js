@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import FileRow from './FileRow'
 import TableHeaders from './TableHeaders'
+import Button from '../atoms/Button'
 
 function FilesTable() {
 
@@ -267,8 +268,8 @@ function FilesTable() {
                     Results...
                 </div>
                 <div className="space-x-2">
-                    <button className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded">View</button>
-                    <button className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded">Download</button>
+                    <Button className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded">View</Button>
+                    <Button className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded">Download</Button>
                 </div>
             </div>
 
