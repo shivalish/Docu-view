@@ -16,7 +16,15 @@
 	<description>DocuView Spring Boot project</description>
 	<properties>
 		<java.version>21</java.version>
+		<jdk.jar.maxSignatureFileSize>30806623</jdk.jar.maxSignatureFileSize>
 	</properties>
+	<repositories>
+		<repository>
+			<id>GroupDocs Artifact Repository</id>
+			<name>GroupDocs Artifact Repository</name>
+			<url>https://releases.groupdocs.com/java/repo/</url>
+		</repository>
+	</repositories>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -38,7 +46,7 @@
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>8.0.28</version>			<!-- Example version. Update this if necessary. -->
+			<version>8.0.28</version>
 		</dependency>
 
 
@@ -55,12 +63,17 @@
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
-			<version>2.10.1</version> <!-- Use a compatible version -->
+			<version>2.10.1</version>			<!-- Use a compatible version -->
 		</dependency>
 		<dependency>
 			<groupId>com.google.http-client</groupId>
 			<artifactId>google-http-client-gson</artifactId>
 			<version>1.43.3</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.10.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.oauth-client</groupId>
@@ -85,16 +98,77 @@
 		<dependency>
 			<groupId>com.google.oauth-client</groupId>
 			<artifactId>google-oauth-client-java6</artifactId>
-			<version>1.30.6</version>
+			<version>1.30.4</version>
 		</dependency>
 		<dependency>
-    		<groupId>com.google.apis</groupId>
-   			<artifactId>google-api-services-drive</artifactId>
-    		<version>v3-rev197-1.25.0</version> <!-- Replace with a compatible version -->
+			<groupId>com.google.apis</groupId>
+			<artifactId>google-api-services-drive</artifactId>
+			<version>v3-rev197-1.25.0</version>
 		</dependency>
+		<!--Viewer-->
+		<dependency>
+			<groupId>com.groupdocs</groupId>
+			<artifactId>groupdocs-viewer</artifactId>
+			<version>21.11.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.groupdocs</groupId>
+			<artifactId>groupdocs-merger</artifactId>
+			<version>23.10</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/javax.activation/activation -->
+		<dependency>
+			<groupId>javax.activation</groupId>
+			<artifactId>activation</artifactId>
+			<version>1.1.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.springframework.security/spring-security-core -->
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-core</artifactId>
+			<version>6.1.5</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.springframework.security/spring-security-web -->
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-web</artifactId>
+			<version>6.1.5</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-api -->
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-api</artifactId>
+			<version>0.12.3</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-impl -->
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+			<version>0.12.3</version>
+			<scope>runtime</scope>
+		</dependency>
+
+
+		<!-- https://mvnrepository.com/artifact/jakarta.xml.bind/jakarta.xml.bind-api -->
+		<dependency>
+			<groupId>jakarta.xml.bind</groupId>
+			<artifactId>jakarta.xml.bind-api</artifactId>
+			<version>4.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.xml.bind</groupId>
+			<artifactId>jaxb-impl</artifactId>
+			<version>4.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.annotation</groupId>
+			<artifactId>jakarta.annotation-api</artifactId>
+			<version>3.0.0-M1</version>
+		</dependency>
+
+
 	</dependencies>
-
-
 	<build>
 		<plugins>
 			<plugin>
@@ -102,6 +176,7 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
+
 	</build>
 
 </project>
