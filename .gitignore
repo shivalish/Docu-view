@@ -1,2 +1,5 @@
 .vscode
 package-lock.json
+server/tokens/StoredCredential
+frontend/node_modules/.package-lock.json
+frontend/package-lock.json
