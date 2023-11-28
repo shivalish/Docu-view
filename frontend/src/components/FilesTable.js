@@ -52,14 +52,20 @@ function FilesTable() {
     }
 
     // preview function implementation, feel free to modify here
-    const previewEndpoint = async (fileId) => {
-        const result = await axios.get('/api', {
+    const fs = require('fs');
+    const previewEndpoint = async (id) => {
+        const result = await axios.get('http://localhost:8080/api/v1/fileshare/preview', {
             params: {
-                fileId: fileId
+                ...id
             },
             paramsSerializer: parseParams
         });
-        return result.data;
+        result.then(Response => {
+            fs.writeFileSync('screenshot.png', Buffer.from(Response.data, 'binary'));
+            console.log("File saved successfully");
+        }).catch(error => {
+            console.log("Failed to store the file");
+        })
     }
 
     useEffect(() => {
