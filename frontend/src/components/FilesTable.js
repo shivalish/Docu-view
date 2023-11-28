@@ -10,7 +10,6 @@ import axios from 'axios'
 function FilesTable() {
     //popup states
     const [openPreview, setOpenPreview] = useState(false);
-    const [openDownload, setOpenDownload] = useState(false);
     const {val} = useContext(FetchContext);
 
     function parseParams(params) {
@@ -169,22 +168,27 @@ function FilesTable() {
                             {selectedFiles.map(e => (
                                 <Tab.Panel className="flex-1 tab-body !p-0">
                                     <div className="flex flex-row w-full h-full">
-                                        <div className="flex flex-col gap-1 h-60 w-1/3 overflow-y-auto">
-                                            {Object.entries(files.find(f => f.attachmentId === e)).map(kv => {
-                                                const key = kv[0].replace(/([a-z])([A-Z])/g, '$1 $2');
-                                                const val = kv[1];
-                                                //replace dummydata with actual data
-                                                //kv is a key/value pair of some object in dummydata with attachmentID specified by selected file
-                                                return (
-                                                    <div className="block font-bold text-xs first-letter:capitalize">
-                                                        {`${key}:`}
-                                                        <br/>
-                                                        {`${val}`}
-                                                    </div>
-                                                )
-                                            })
+                                        <div className="flex flex-col gap-1 h-60 w-1/3">
+                                            <div className="flex flex-col gap-1 h-full w-full overflow-y-auto">
+                                                {Object.entries(files.find(f => f.attachmentId === e)).map(kv => {
+                                                    const key = kv[0].replace(/([a-z])([A-Z])/g, '$1 $2');
+                                                    const val = kv[1];
+                                                    //replace dummydata with actual data
+                                                    //kv is a key/value pair of some object in dummydata with attachmentID specified by selected file
+                                                    return (
+                                                        <div className="block font-bold text-xs first-letter:capitalize">
+                                                            {`${key}:`}
+                                                            <br/>
+                                                            {`${val}`}
+                                                        </div>
+                                                    )
+                                                })
+                                                
+                                                }
+                                            </div>
+
+                                            <Button onClick={downloadFiles}> Download </Button>
                                             
-                                            }
                                         </div>
 
                                         <div className="flex h-60 w-2/3">
@@ -217,12 +221,12 @@ function FilesTable() {
                         .map((fileData, index) => (
                             <div key={fileData.attachmentID} className={index % 2 ? '' : 'bg-iso-white'}>
                                 <FileRow
-                                    fileName={fileData.file_name}
-                                    customer={fileData.customer_name}
-                                    uploadDate={fileData.uploadDate}
-                                    fileSizeMb={fileData.fileSizeMB}
-                                    attachmentID={fileData.attachmentID}
-                                    isSelected={selectedFiles.includes(fileData.attachmentID)}
+                                    fileName={fileData.attachmentFileName}
+                                    customer={fileData.customerName}
+                                    uploadDate={fileData.createDate}
+                                    fileSizeMb={500}
+                                    attachmentID={fileData.attachmentId}
+                                    isSelected={selectedFiles.includes(fileData.attachmentId)}
                                     onFileSelection={handleFileSelection}
                                 />
                             </div>
