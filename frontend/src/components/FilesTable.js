@@ -4,86 +4,44 @@ import TableHeaders from './TableHeaders'
 import Button from '../atoms/Button'
 import { FetchContext } from "./TableContext.jsx";
 import DummyData from '../atoms/DummyData.js';
-import axios from 'axios';
-
+import Popup from '../atoms/Popup.jsx';
+import { Tab } from '@headlessui/react';
 function FilesTable() {
-
-    const { val } = useContext(FetchContext);
-
-    //snatched this off stack overflow; see if u can optimize it
-    function parseParams(params) {
-        console.log(params)
-        const keys = Object.keys(params)
-        let options = ''
-
-        keys.forEach((key) => {
-            const isParamTypeObject = typeof params[key] === 'object'
-            const isParamTypeArray = isParamTypeObject && params[key].length >= 0
-
-            if (!isParamTypeObject) {
-                options += `${key}=${params[key]}&`
-            }
-
-            if (isParamTypeObject && isParamTypeArray) {
-                params[key].forEach((element) => {
-                    options += `${key}=${element}&`
-                })
-            }
-        })
-
-        return options ? options.slice(0, -1) : options
-    }
-
+    //popup states
+    const [openPreview, setOpenPreview] = useState(false);
+    const [openDownload, setOpenDownload] = useState(false);
+    const {val} = useContext(FetchContext);
     //this function executes on every element of the DummyData array
-
-    const x = async () => {
-        console.log(JSON.stringify({
-            ...val,
-        }));
-
-        const res = await axios.get('http://localhost:8080/api/v1/database', {
-            params: {
-                ...val
-            },
-            paramsSerializer: parseParams
-        });
-        // console.log('THIS IS... ', res.data);
-        return res.data;
-    }
-
-    useEffect(() => {
-        let fetchData = async () => {
-            const resultingFiles = await x(parseParams(val));
-            console.log(resultingFiles)
-            setFiles(resultingFiles)
+    const filterFunc = (e) => {
+        //temporary filter function
+        let fitsCriteria = true;
+        for (const key in val){
+            if(key === "file_name" || key === "customer_name"){
+                if(val[key].length === 0) continue;
+                fitsCriteria = fitsCriteria && val[key].filter(name => (e[key].includes(name))).length > 0;
+            }
         }
-        setFiles(DummyData);
-        fetchData()
-    }, [val])
+        return fitsCriteria;
+    }
+    useEffect(()=>{
+        setFiles(DummyData.filter(filterFunc));
+    },[val])
     /*
     When we receive files from the server we put them in this array
     We can 'sort' the file table by sorting this array, since the table maps row 
     elements in order based on this array
-
     uploadDate is current ms since epoch since that's a pretty standard way to store
     dates, can change once backend team tells us how they will be sending us them
     */
-
     const [files, setFiles] = useState(DummyData);
-
     const [selectedFiles, setSelectedFiles] = useState([]);
-
     const [filePage, setFilePage] = useState(1);
     const filesPerPage = 12;
     const totalFiles = files.length;
-
     const [currentSort, setCurrentSort] = useState({ key: '', direction: 'ascending' });
-
     const sortFiles = (key) => {
         const byAscending = currentSort.key === key ? currentSort.direction === 'descending' : true;
-
         setCurrentSort({ key, direction: byAscending ? 'ascending' : 'descending' });
-
         if (!files || files.length === 0 || !Object.keys(files[0]).includes(key)) {
             return;
         }
@@ -99,7 +57,6 @@ function FilesTable() {
             return newFiles;
         });
     }
-
     const handlePageChange = (direction) => {
         setFilePage((prevPage) => {
             if (direction === 'prev' && prevPage > 1) {
@@ -110,7 +67,6 @@ function FilesTable() {
             return prevPage;
         });
     };
-
     const handleFileSelection = (attachmentID) => {
         setSelectedFiles((prevSelectedFiles) => {
             if (prevSelectedFiles.includes(attachmentID)) {
@@ -120,11 +76,9 @@ function FilesTable() {
             }
         });
     };
-
     const filePageFooter = () => {
         const startFile = (filePage - 1) * filesPerPage + 1;
         const endFile = Math.min(filePage * filesPerPage, totalFiles);
-
         return (
             <div className="flex justify-center items-center mt-4 p-2 bg-gray-100 rounded">
                 <button
@@ -147,7 +101,6 @@ function FilesTable() {
             </div>
         );
     };
-
     const fileCountFooter = () => {
         if (selectedFiles.length > 0) {
             return (
@@ -157,7 +110,6 @@ function FilesTable() {
             );
         }
     }
-
     return (
         <div className='bg-iso-grey h-full w-full p-4'>
             
@@ -190,15 +142,18 @@ function FilesTable() {
                                             
                                             }
                                         </div>
+
                                         <div className="flex h-60 w-2/3">
                                             {Object.entries(DummyData.find(f => f.attachmentID === e)).map(async kv => {
                                                 //fetch png
-                                                // const source = (await fetch("")).data.json();
-                                                // return (
-                                                //     <img src={source}/>
-                                                // )
+                                                //const source = (await fetch("")).data.json();
+                                                console.log(kv);
+                                                const source = 'https://buffer.com/cdn-cgi/image/w=1000,fit=contain,q=90,f=auto/library/content/images/size/w1200/2023/10/free-images.jpg'
+                                                return (
+                                                    <img src={source}/>
+                                                )
                                             })
-                                            
+
                                             }
                                         </div>
                                     </div> 
@@ -242,66 +197,5 @@ function FilesTable() {
             {fileCountFooter()}
         </div>
     );
-
-    const downloadFiles = async () => {
-        console.log(`download: ${selectedFiles}`)
-        const res = await axios.get('http://localhost:8080/api/v1/fileshare/download/zipFiles', {
-            params: {
-                fileIds: selectedFiles.join(',')
-            },
-            responseType: 'blob'
-        }).then((response) => {
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', 'file.zip'); // or any other filename you want
-            document.body.appendChild(link);
-            link.click();
-        })
-        .catch((error) => console.error(error));;
-    }
-
-    return (
-        <div className='bg-iso-grey h-full w-full p-4'>
-            <div className="flex justify-between items-center mb-4">
-                <div className="text-lg font-bold text-iso-blue-grey">
-                    Results...
-                </div>
-                <div className="space-x-2">
-                    <Button className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded">View</Button>
-                    <Button
-                        className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded"
-                        OnClick={downloadFiles}
-                    >Download</Button>
-                </div>
-            </div>
-
-            <TableHeaders sortFiles={sortFiles} currentSort={currentSort} />
-            <div className='flex justify-center'>
-                <div className='w-11/12 border border-gray-400'>
-                    {files
-                        .slice((filePage - 1) * filesPerPage, filePage * filesPerPage)
-                        .map((fileData, index) => (
-                            <div key={fileData.attachmentID} className={index % 2 ? '' : 'bg-iso-white'}>
-                                <FileRow
-                                    fileName={fileData.attachmentFileName}
-                                    customer={fileData.customerName}
-                                    uploadDate={fileData.createDate}
-                                    fileSizeMb={500}
-                                    attachmentID={fileData.attachmentId}
-                                    isSelected={selectedFiles.includes(fileData.attachmentId)}
-                                    onFileSelection={handleFileSelection}
-                                />
-                            </div>
-                        ))
-                    }
-                </div>
-            </div>
-            {filePageFooter()}
-            {fileCountFooter()}
-        </div>
-    );
-
 }
-
 export default FilesTable
