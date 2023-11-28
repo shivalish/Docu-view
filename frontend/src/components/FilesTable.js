@@ -146,8 +146,20 @@ function FilesTable() {
                             {selectedFiles.map(e => (
                                 <Tab.Panel className="flex-1 tab-body !p-0">
                                     <div className="flex flex-row w-full h-full">
-                                        <div className="flex h-60 w-1/3 bg-iso-blue-grey-100">
-                                        
+                                        <div className="flex flex-col gap-1 h-60 w-1/3">
+                                            {Object.entries(DummyData.find(f => f.attachmentID === e)).map(kv => {
+                                                const key = kv[0].replace("_", ' ').replace(/([a-z])([A-Z])/g, '$1 $2');
+                                                const val = kv[1];
+                                                //replace dummydata with actual data
+                                                //kv is a key/value pair of some object in dummydata with attachmentID specified by selected file
+                                                return (
+                                                    <div className="block font-bold text-xs first-letter:capitalize">
+                                                        {`${key}: ${val}`}
+                                                    </div>
+                                                )
+                                            })
+                                            
+                                            }
 
                                         </div>
 
