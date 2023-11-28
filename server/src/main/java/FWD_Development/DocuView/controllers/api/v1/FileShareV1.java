@@ -1,6 +1,5 @@
 package FWD_Development.DocuView.controllers.api.v1;
 
-import java.util.ArrayList;
 /* CUSTOM ADDED LIBS */
 import java.util.List;
 import java.io.ByteArrayOutputStream;
@@ -33,14 +32,10 @@ import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 import com.groupdocs.viewer.FileType;
 import com.groupdocs.viewer.Viewer;
-import com.groupdocs.viewer.interfaces.PageStreamFactory;
-import com.groupdocs.viewer.options.HtmlViewOptions;
 import com.groupdocs.viewer.options.PngViewOptions;
 import com.groupdocs.viewer.options.ViewOptions;
 import com.groupdocs.viewer.options.LoadOptions;
-import javax.activation.MimetypesFileTypeMap;
 
-import java.time.Instant;
 //update so database --> google drive
 
 @CrossOrigin(origins = "http://localhost:3000") // Default React port
@@ -48,8 +43,8 @@ import java.time.Instant;
 @RequestMapping("/api/v1/fileshare")
 public class FileShareV1 {
     
-    private final String VIEWER_LOC_VALUE = "viewerCache";
-    private final java.nio.file.Path VIEWER_LOC = java.nio.file.Paths.get(VIEWER_LOC_VALUE);
+    private static final String VIEWER_LOC_VALUE = "viewerCache";
+    public static final java.nio.file.Path VIEWER_LOC = java.nio.file.Paths.get(VIEWER_LOC_VALUE);
 
     private final GoogleDriveService googleDriveService;
     @Autowired
@@ -76,22 +71,23 @@ public class FileShareV1 {
         return fileList.getFiles();
     }
 
-    private Viewer viewerChecker(InputStream inputStream, String ext){
-        if (ext.equalsIgnoreCase("msg")) return new Viewer(inputStream, new LoadOptions(FileType.MSG));
-        FileType filetype = FileType.fromExtension("." + ext);
-        if (filetype == null) return new Viewer(inputStream);
-        return new Viewer(inputStream, new LoadOptions(filetype));
-    }
-
     // iframe: pdf and html
     // {".txt", ".xlsm", ".xlsx"}
+
     @GetMapping("/preview/{fileId}")
     public ResponseEntity<Resource> previewFile(@PathVariable String fileId) throws Exception {
-        fileId = getGoogleId(getFilePath(fileId));
+        fileId = getGoogleId(googleDriveService, getFilePath(fileId));
         if (fileId == null) return ResponseEntity.notFound().build();
         if (fileId.equals("")) return ResponseEntity.notFound().build();
-
-              
+        
+        java.nio.file.Path filePath = VIEWER_LOC.resolve(fileId + ".png");
+        if (java.nio.file.Files.exists(filePath)) {
+            FileSystemResource resource = new FileSystemResource(filePath.toFile());
+            return ResponseEntity.ok()
+                .contentLength(resource.contentLength())
+                .contentType(MediaType.IMAGE_PNG)
+                .body(resource);
+        }     
         File fileData = googleDriveService.drive.files().get(fileId).execute();
         String fileName = fileData.getName();
         String ext = fileName.substring( fileName.lastIndexOf('.') + 1);
@@ -106,50 +102,27 @@ public class FileShareV1 {
         else {
             inputStream = googleDriveService.drive.files().get(fileId).executeMediaAsInputStream();
         }
-        // System.out.println(fileName);
-        try (Viewer viewer = viewerChecker(inputStream, ext)) {
-            //final List<ByteArrayOutputStream> pages = new ArrayList<>();
-            // https://docs.groupdocs.com/viewer/java/save-output-to-stream/
-            //PageStreamFactory pageStreamFactory = new PageStreamFactory() {
-            //    @Override
-            //    public OutputStream createPageStream(int pageNumber) {
-            //        ByteArrayOutputStream pageStream = new ByteArrayOutputStream();
-            //        pages.add(pageStream);
-            //        return pageStream;
-            //    }
-            //
-            //    @Override
-            //    public void closePageStream(int pageNumber, OutputStream outputStream) {
-            //        // Do not release page stream as we'll need to keep the stream open
-            //    }
-            //};
-            //ViewOptions viewOptions = HtmlViewOptions.forEmbeddedResources(pageStreamFactory);
-            String outputName = VIEWER_LOC.resolve(fileId + ".png").toString();
-            ViewOptions viewOptions = new PngViewOptions(outputName);
-            viewer.view(viewOptions, 1);
-            //inputStream = new ByteArrayInputStream(pages.get(0).toByteArray());
-            java.io.File file = new java.io.File(outputName);
-            FileSystemResource resource = new FileSystemResource(file);
-            //Merger merger = new Merger(inputStream);
-            //for (int i = 1; i < pages.size(); i++) {
-            //	InputStream page = new ByteArrayInputStream(pages.get(i).toByteArray());
-            //	merger.join(page);
-            //}
-            //outputStream = new ByteArrayOutputStream();
-            //merger.save(outputStream);
-            //byte[] bytes = ((ByteArrayOutputStream) outputStream).toByteArray();
-            //inputStream = new ByteArrayInputStream(bytes);
-            // Set content type and headers
-	        return ResponseEntity.ok()
+        String outputName = filePath.toString();
+        cachePng(inputStream, outputName);
+        java.io.File file = new java.io.File(outputName);
+        FileSystemResource resource = new FileSystemResource(file);
+        return ResponseEntity.ok()
 		        .contentLength(resource.contentLength())
 		        .contentType(MediaType.IMAGE_PNG)
 		        .body(resource);
+    }
+
+    public static void cachePng(InputStream inputStream, String outputName) throws Exception {
+        try (Viewer viewer = new Viewer(inputStream)) {
+            ViewOptions viewOptions = new PngViewOptions(outputName);
+            viewer.view(viewOptions, 1);
         }
     }
     
 
     @GetMapping("/download/{fileId}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileId) throws IOException {
+        fileId = getGoogleId(googleDriveService, getFilePath(fileId));
         // Use Google Drive API to get the file
         OutputStream outputStream = new ByteArrayOutputStream();
         googleDriveService.drive.files().get(fileId).executeMediaAndDownloadTo(outputStream);
@@ -178,6 +151,7 @@ public class FileShareV1 {
         ZipOutputStream zipOut = new ZipOutputStream(outputStream);
 
         for (String fileId : fileIds) {
+            fileId = getGoogleId(googleDriveService, getFilePath(fileId));
             File fileData = googleDriveService.drive.files().get(fileId).execute();
 
             InputStream inputStream = googleDriveService.drive.files().get(fileId).executeMediaAsInputStream();
@@ -206,7 +180,7 @@ public class FileShareV1 {
         return jdbcTemplate.queryForList(query, String.class, file_id).get(0);
     }
 
-    public String getGoogleId(String path) throws IOException {
+    public String getGoogleId(GoogleDriveService googleDriveService, String path) throws IOException {
         path = path.startsWith("/") ? path.substring(1) : path;
         path = path.startsWith("\\") ? path.substring(1) : path;
         String rootFolderId = googleDriveService.drive.files().get("root").execute().getId();

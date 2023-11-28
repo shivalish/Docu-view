@@ -12,6 +12,7 @@ import javax.sql.rowset.spi.SyncResolver;
 
 import java.util.Iterator;
 import java.util.HashMap;
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -22,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.util.MultiValueMap;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.DataClassRowMapper;
@@ -59,6 +61,21 @@ public class DataBaseV1 {
 
 	@Autowired
     	private JdbcTemplate jdbcTemplate;
+
+	private final GoogleDriveService googleDriveService;
+	private final java.nio.file.Path VIEWER_LOC = FileShareV1.VIEWER_LOC;
+	
+	@Autowired
+	public DataBaseV1(GoogleDriveService googleDriveService) {
+		this.googleDriveService = googleDriveService;
+		if (!java.nio.file.Files.exists(VIEWER_LOC)) {
+			try {
+				java.nio.file.Files.createDirectory(VIEWER_LOC);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
     	
 	private static String rename = "x.attach_proposal_attachment_type AS attachmentType, "
 		+ "x.attach_proposal_proposal_id_project_type AS projectType, "
@@ -89,6 +106,8 @@ public class DataBaseV1 {
 		+ "SUBSTRING_INDEX(x.attach_proposal_attachment_id_file_name, '.', -1) AS fileExtension, "
 		+ "x.attach_proposal_attachment_id_create_date AS createDate, "
 		+ "x.attach_proposal_attachment_id_description AS description";
+
+	//@Async
 
 	@GetMapping({"", "/infinite"})
 	public ResponseEntity<List<Map<String, Object>>> getDocs(@RequestParam MultiValueMap<String,String> allRequestParams){
