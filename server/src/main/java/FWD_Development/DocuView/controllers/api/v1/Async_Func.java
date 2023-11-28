@@ -26,9 +26,9 @@ public class Async_Func {
                 e.printStackTrace();
             }
             counter++;
-            File[] files = FileShareV1.VIEWER_LOC.toFile().listFiles();
+            java.io.File[] files = FileShareV1.VIEWER_LOC.toFile().listFiles();
             if (files.length > 100) {
-                Arrays.sort(files, (f1, f2) -> Long.compare(f1.lastModified(), f2.lastModified()));
+                java.util.Arrays.sort(files, (f1, f2) -> Long.compare(f1.lastModified(), f2.lastModified()));
                 files[0].delete();
             }
         }
