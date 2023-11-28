@@ -71,6 +71,22 @@ public class FileShareV1 {
         return new Viewer(inputStream, new LoadOptions(filetype));
     }
 
+	public static void previewCache(GoogleDriveService googleDriveService, JdbcTemplate jdbcTemplate, String fileId) throws Exception{
+        fileId = getGoogleId(googleDriveService, getFilePath(jdbcTemplate, fileId));
+        if (fileId == null || fileId.equals("")) return;
+        java.nio.file.Path filePath = VIEWER_LOC.resolve(fileId + ".png");
+        if (java.nio.file.Files.exists(filePath)) return;
+        if (java.nio.file.Files.exists(filePath)) {
+
+            FileTime lastModifiedTime = java.nio.file.Files.getLastModifiedTime(filePath);
+            long hours = ChronoUnit.HOURS.between(lastModifiedTime.toInstant(), Instant.now());
+            if (hours < 24) {
+                return;
+            } else {
+                java.nio.file.Files.delete(filePath);
+            }
+        }
+
     // iframe: pdf and html
     // {".txt", ".xlsm", ".xlsx"}
     @GetMapping("/preview/{fileId}")
