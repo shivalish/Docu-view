@@ -160,7 +160,7 @@ function FilesTable() {
                 <div className="flex flex-col">
                     <Tab.Group>
                         <Tab.List className="grid grid-cols-5">{selectedFiles.map(e => (
-                            <Tab className="tab truncate">{files.find(f => f.attachmentId === e).attachmentFileName}</Tab>
+                            <Tab className="tab !w-auto !h-auto truncate">{files.find(f => f.attachmentId === e).attachmentFileName}</Tab>
                         )
                         
                         )}</Tab.List>
@@ -168,7 +168,7 @@ function FilesTable() {
                             {selectedFiles.map(e => (
                                 <Tab.Panel className="flex-1 tab-body !p-0">
                                     <div className="flex flex-row w-full h-full">
-                                        <div className="flex flex-col gap-1 h-60 w-1/3">
+                                        <div className="flex flex-col gap-1 h-60 w-1/3 p-1">
                                             <div className="flex flex-col gap-1 h-full w-full overflow-y-auto">
                                                 {Object.entries(files.find(f => f.attachmentId === e)).map(kv => {
                                                     const key = kv[0].replace(/([a-z])([A-Z])/g, '$1 $2');
@@ -187,11 +187,11 @@ function FilesTable() {
                                                 }
                                             </div>
 
-                                            <Button onClick={downloadFiles}> Download </Button>
+                                            <Button width="w-32" height="h-10" onClick={downloadFiles}> Download </Button>
                                             
                                         </div>
 
-                                        <div className="flex h-60 w-2/3">
+                                        <div className="flex h-60 w-2/3 p-1">
                                             {// replace anonymous func with await fetch the png
                                             files.find(f => f.attachmentId === e) && 
                                             (<img src={(()=>'https://buffer.com/cdn-cgi/image/w=1000,fit=contain,q=90,f=auto/library/content/images/size/w1200/2023/10/free-images.jpg')()} alt="preview page" width="500" height="500"/>)
