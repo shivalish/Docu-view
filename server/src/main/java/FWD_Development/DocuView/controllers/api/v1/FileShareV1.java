@@ -187,7 +187,7 @@ public class FileShareV1 {
     }
 
     //zip files
-    @GetMapping("/download/zipFiles")
+    @GetMapping({"/download/zipFiles", "/download/zipfiles"})
     public ResponseEntity<Resource> zipFiles(@RequestParam List<String> fileIds) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ZipOutputStream zipOut = new ZipOutputStream(outputStream);
