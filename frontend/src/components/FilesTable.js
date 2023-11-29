@@ -31,6 +31,8 @@ function FilesTable() {
         return options ? options.slice(0, -1) : options
     }
 
+    //this function executes on every element of the DummyData array
+
     const x = async () => {
         const res = await axios.get('http://localhost:8080/api/v1/database', {
             params: {
@@ -42,13 +44,19 @@ function FilesTable() {
         return res.data;
     }
 
-    useEffect(async () => {
-        let fetchData = async () => {
-            const resultingFiles = await x(parseParams(val));
-            setFiles(resultingFiles)
+    const fetchData = async () => {
+        const resultingFiles = await x(parseParams(val));
+        setFiles(resultingFiles)
+    }
+
+    //temporary useEffect to load first time data
+    let firstTime = false;
+    useEffect(()=>{
+        if(!firstTime){
+            fetchData();
+            firstTime = true;
         }
-        await fetchData()
-    }, [val])
+    }, [])
     /*
     When we receive files from the server we put them in this array
     We can 'sort' the file table by sorting this array, since the table maps row 
@@ -227,6 +235,14 @@ function FilesTable() {
                     </Tab.Group>
                 </div>
             </Popup>
+
+            <button 
+            className="
+            absolute bottom-1 left-16
+            bg-iso-blue-grey-100 font-bold p-2 text-white rounded-md transition-all duration-300 ease-in-out hover:scale-110 hover:bg-iso-blue-grey-200"
+            onClick={() => fetchData()}
+            > Submit </button>
+            
             <div className="flex justify-between items-center mb-4">
                 <div className="text-lg font-bold text-iso-blue-grey">
                     Results...
