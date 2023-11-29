@@ -35,7 +35,7 @@ export default [
   {
     name: "Auction Period",
     dropdown: Array.from({ length: 151 }, (_, i) => i + 1900),
-    api: { auctionPeriod: 1900 }, //default value starts at 1900; TODO: we need to change this to match backend requirements
+    api: { auctionPeriod: 1900 }, //default value starts at 1900
   },
   {
     name: "Resource Type",
