@@ -16,14 +16,26 @@ function FilesTable() {
     const {val} = useContext(FetchContext);
 
     //this function executes on every element of the DummyData array
-    const filterFunc = (e) => {
-        //temporary filter function
-        let fitsCriteria = true;
-        for (const key in val){
-            if(key === "file_name" || key === "customer_name"){
-                if(val[key].length === 0) continue;
-                fitsCriteria = fitsCriteria && val[key].filter(name => (e[key].includes(name))).length > 0;
-            }
+
+    const x = async () => {
+        console.log(JSON.stringify({
+            ...val,
+        }));
+
+        const res = await axios.get('http://localhost:8080/api/v1/database', {
+            params: {
+                ...val
+            },
+            paramsSerializer: parseParams
+        });
+        // console.log('THIS IS... ', res.data);
+        return res.data;
+    }
+
+    useEffect(() => {
+        let fetchData = async () => {
+            const resultingFiles = await x(parseParams(val));
+            setFiles(resultingFiles)
         }
         return fitsCriteria;
     }
@@ -127,7 +139,48 @@ function FilesTable() {
             );
         }
     }
+    const downloadFiles = async () => {
+        if (selectedFiles.length === 0) return;
+        console.log(`downloading: ${selectedFiles}`)
+        const res = await axios.get('http://localhost:8080/api/v1/fileshare/download/zipFiles', {
+            params: {
+                fileIds: selectedFiles.join(',')
+            },
+            responseType: 'blob'
+        }).then((response) => {
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'file.zip'); // or any other filename you want
+            document.body.appendChild(link);
+            link.click();
+        })
+            .catch((error) => console.error(error));;
+    }
 
+    // For now this fetches a preview for the FIRST image selected only, and stores it's binary data in localstorage
+    function getPreview() {
+        if (selectedFiles.length === 0) return;
+        let targetFileID = selectedFiles[0];
+        if (!Number.isInteger(targetFileID)) return;
+        console.log(`getting preview for: ${targetFileID}`)
+
+        const url = `http://localhost:8080/api/v1/fileshare/preview/${targetFileID}`;
+
+        axios.get(url, { responseType: 'blob' })
+            .then(response => {
+                const reader = new FileReader();
+                reader.readAsDataURL(response.data);
+                reader.onloadend = function () {
+                    const base64data = reader.result;
+                    localStorage.setItem(`filePreview${targetFileID}`, base64data);
+                    console.log('successfully stored preview')
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching the image:', error);
+            });
+    }
     return (
         <div className='bg-iso-grey h-full w-full p-4'>
             
@@ -188,9 +241,15 @@ function FilesTable() {
                 <div className="text-lg font-bold text-iso-blue-grey">
                     Results...
                 </div>
-                <div className="space-x-2">
-                    <Button className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded" OnClick={()=>setOpenPreview(true)}>View</Button>
-                    <Button className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded">Download</Button>
+                    <Button
+                        className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded"
+                        OnClick={getPreview}
+                    >View</Button>
+                    <Button
+                        className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded"
+                        OnClick={downloadFiles}
+                    >Download</Button>
+
                 </div>
             </div>
 
