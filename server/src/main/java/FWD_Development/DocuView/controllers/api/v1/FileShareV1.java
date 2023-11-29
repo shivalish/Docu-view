@@ -80,7 +80,15 @@ public class FileShareV1 {
         fileId = getGoogleId(googleDriveService, getFilePath(jdbcTemplate, fileId));
         if (fileId == null || fileId.equals("")) return;
         java.nio.file.Path filePath = VIEWER_LOC.resolve(fileId + ".png");
-        if (java.nio.file.Files.exists(filePath)) return;
+        if (java.nio.file.Files.exists(filePath)){
+            FileTime lastModifiedTime = java.nio.file.Files.getLastModifiedTime(filePath);
+            long hours = ChronoUnit.HOURS.between(lastModifiedTime.toInstant(), Instant.now());
+            if (hours > 24) {
+                java.nio.file.Files.delete(filePath);
+            } else {
+                return;
+            }
+        }
 
         File fileData = googleDriveService.drive.files().get(fileId).execute();
         String fileName = fileData.getName();
