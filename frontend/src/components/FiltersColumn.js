@@ -1,5 +1,5 @@
 import { React, useContext, useEffect, useState } from "react";
-import { ChevronDoubleRightIcon } from "@heroicons/react/24/solid";
+import { CalendarIcon, ChevronDoubleRightIcon } from "@heroicons/react/24/solid";
 import { FetchContext } from "./TableContext";
 import classNames from "classnames";
 import { Disclosure } from "@headlessui/react";
@@ -9,6 +9,8 @@ import { Menu } from "@headlessui/react";
 import Button from "../atoms/Button.jsx";
 import SelectionTag from "../atoms/SelectionTag.jsx";
 // import Calendar from 'react-calendar';
+import 'react-datepicker/dist/react-datepicker.css';
+import DatePicker from 'react-datepicker';
 
 //this is each row of the dropdown menu
 //textboxes = 1 or 2 dictactes how many textboxes there will be
@@ -18,7 +20,7 @@ function FilterRow({
   textbox = false,
   checkbox = [],
   combo = [],
-  dropdown = [],
+  dropdown = null,
   placeholder = "",
   setQuery,
   api,
@@ -32,12 +34,26 @@ function FilterRow({
   const [comboText, setComboText] = useState("");
   const [combolog] = useState(new Set());
 
-  //dropdown states
-  const [currYear] = useState(new Set());
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
 
   //checkbox states
   const [selectedCheck] = useState([]);
 
+  const CustomInput = ({ value, onClick }) => {
+    const displayValue = startDate && endDate
+      ? `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`
+      : 'Select dates...';
+
+    return (
+      <button 
+      className="date-picker-input" 
+      onClick={onClick}
+      >
+        {displayValue}
+      </button>
+    );
+  };
   //TODO: code cleanup + visual alignment fixes
 
   //TODO: create a custom textbox component
@@ -46,7 +62,7 @@ function FilterRow({
     comboText === ""
       ? combo
       : combo.filter((val) =>
-          val.toLowerCase().includes(comboText.toLowerCase())
+          val[0].toLowerCase().includes(comboText.toLowerCase())
         );
 
   //adds a key/value pair to the global query variable
@@ -122,7 +138,7 @@ function FilterRow({
           )}
         </div>
       )}
-      {dropdown.length > 0 && (
+      {dropdown !== null && (
         <div className="bg-iso-blue w-full">
           <Menu>
             {({ open }) => (
@@ -135,35 +151,22 @@ function FilterRow({
                     />
                   </span>
                 </Menu.Button>
-                <Menu.Items className="h-32 overflow-auto">
-                  {dropdown.map((year) => (
-                    <Menu.Item
-                      onClick={() => {
-                        currYear.add(year);
-                        click(currYear);
-                      }}
-                    >
-                      <div className="w-full justify-center items-center hover:text-blue-400">
-                        <span className="cursor-pointer">{year}</span>
-                      </div>
-                    </Menu.Item> //TODO: overall style rework
-                  ))}
+                <Menu.Items>
+                <DatePicker
+                  selectsRange
+                  startDate={startDate}
+                  endDate={endDate}
+                  onChange={(update) => {
+                    setStartDate(update[0]);
+                    setEndDate(update[1]);
+                  }}
+                  isClearable={true}
+                  customInput={<CustomInput />}
+                />
                 </Menu.Items>
               </div>
             )}
           </Menu>
-          {currYear.size > 0 && (
-            [...currYear].map((e, i)=> (
-              <SelectionTag
-              value={e}
-              key={i}
-              onDelete={() => {
-                currYear.delete(e);
-                click(currYear);
-              }}
-            />
-            ))
-          )}
         </div>
       )}
       {combo.length > 0 && (
@@ -185,13 +188,13 @@ function FilterRow({
               {filtered.map((val, index) => (
                 <Combobox.Option
                   key={index}
-                  value={val}
+                  value={val[1]}
                   className="rounded-md ui-active:bg-iso-blue-grey-200
                   ui-active:text-white bg-iso-blue-grey-300
                   text-iso-white overflow-hidden text-sm p-1"
-                  onClick={() => {combolog.add(val); click(combolog);}}
+                  onClick={() => {combolog.add(val[1]); click(combolog);}}
                 >
-                  {val}
+                  {val[0]}
                 </Combobox.Option>
               ))}
             </Combobox.Options>
@@ -271,17 +274,9 @@ function FiltersColumn() {
                 />
               </div>
             ))}
-          </div>
 
-          <div className="flex justify-center">
-            <Button
-              onClick={() => console.log("do something")}
-              height="h-full"
-              width="w-1/2"
-            >
-              Submit
-            </Button>
-            </div>
+            <div className="h-16"/>
+          </div>
       </div>
   );
 }
