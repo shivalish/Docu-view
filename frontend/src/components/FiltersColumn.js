@@ -62,7 +62,7 @@ function FilterRow({
     comboText === ""
       ? combo
       : combo.filter((val) =>
-          val.toLowerCase().includes(comboText.toLowerCase())
+          val[0].toLowerCase().includes(comboText.toLowerCase())
         );
 
   //adds a key/value pair to the global query variable
@@ -188,13 +188,13 @@ function FilterRow({
               {filtered.map((val, index) => (
                 <Combobox.Option
                   key={index}
-                  value={val}
+                  value={val[1]}
                   className="rounded-md ui-active:bg-iso-blue-grey-200
                   ui-active:text-white bg-iso-blue-grey-300
                   text-iso-white overflow-hidden text-sm p-1"
-                  onClick={() => {combolog.add(val); click(combolog);}}
+                  onClick={() => {combolog.add(val[1]); click(combolog);}}
                 >
-                  {val}
+                  {val[0]}
                 </Combobox.Option>
               ))}
             </Combobox.Options>

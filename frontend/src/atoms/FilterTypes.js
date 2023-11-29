@@ -13,8 +13,8 @@ const bigData = await getComboData();
 let projTypes = new Set();
 let projName = [];
 bigData.forEach(file => {
-  projTypes.add(`${file.projectName} (${file.attachmentId})`)
-  projName.push(`${file.projectName} (${file.attachmentId})`)
+  projTypes.add([`${file.projectName} (${file.attachmentId})`, file.projectType])
+  projName.push([`${file.projectName} (${file.attachmentId})`, file.projectName])
 })
 
 export default [
