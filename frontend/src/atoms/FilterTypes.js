@@ -1,5 +1,21 @@
-import Calendar from "react-calendar";
-import { React, useContext, useEffect, useState } from "react";
+import axios from "axios";
+
+const x = async () => {
+  const res = await axios.get('http://localhost:8080/api/v1/database');
+  return res.data;
+}
+
+async function getComboData(){
+  return await x()
+}
+
+const bigData = await getComboData();
+let projTypes = new Set();
+let projName = [];
+bigData.forEach(file => {
+  projTypes.add(`${file.projectName} (${file.attachmentId})`)
+  projName.push(`${file.projectName} (${file.attachmentId})`)
+})
 
 export default [
   {
@@ -59,11 +75,7 @@ export default [
   {
     name: "Project Name",
     combo: [
-      "Gravity Works",
-      "Nice Load Response",
-      "Solar Yes",
-      "New Contract Year",
-      "Additional LR"
+      ...projName
     ],
     placeholder: "project",
     api: { projectName: [] }
@@ -71,17 +83,7 @@ export default [
   {
     name: "Project Type",
     combo: [
-      "Reestablishment",
-      "Environmental Upgrade",
-      "Incremental Increase of Existing Demand Resource",
-      "Increase above Threshold",
-      "Incremental Capacity",
-      "New Demand Resource",
-      "New Generation >= 20 MW",
-      "New Generation < 20MW",
-      "New Import",
-      "Repowering",
-      "Significant Increase",
+      ...projTypes
     ],
     placeholder: "project type",
     api: { projectType: [] }

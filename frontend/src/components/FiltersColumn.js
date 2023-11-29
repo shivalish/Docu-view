@@ -274,17 +274,9 @@ function FiltersColumn() {
                 />
               </div>
             ))}
-          </div>
 
-          <div className="flex justify-center">
-            <Button
-              onClick={() => console.log("do something")}
-              height="h-full"
-              width="w-1/2"
-            >
-              Submit
-            </Button>
-            </div>
+            <div className="h-16"/>
+          </div>
       </div>
   );
 }
