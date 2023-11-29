@@ -6,6 +6,7 @@ import { FetchContext } from "./TableContext.jsx";
 import DummyData from '../atoms/DummyData.js';
 import Popup from '../atoms/Popup.jsx';
 import { Tab } from '@headlessui/react';
+import ImagePreview from '../atoms/ImagePreview.js';
 import axios from 'axios'
 function FilesTable() {
     //popup states
@@ -217,10 +218,7 @@ function FilesTable() {
                                         </div>
 
                                         <div className="flex h-60 w-2/3 p-1">
-                                            {// replace anonymous func with await fetch the png
-                                            files.find(f => f.attachmentId === e) && 
-                                            (<img src={(()=>'https://buffer.com/cdn-cgi/image/w=1000,fit=contain,q=90,f=auto/library/content/images/size/w1200/2023/10/free-images.jpg')()} alt="preview page" width="500" height="500"/>)
-                                            }
+                                            <ImagePreview fileId={e}/>
                                         </div>
                                     </div> 
                                 </Tab.Panel>
