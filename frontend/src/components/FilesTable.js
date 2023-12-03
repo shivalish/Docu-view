@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from 'react'
 import FileRow from './FileRow'
 import TableHeaders from './TableHeaders'
 import Button from '../atoms/Button'
-import { FetchContext } from "./TableContext.jsx";
+import { FetchContext, SubmitContext } from "./TableContext.jsx";
 import DummyData from '../atoms/DummyData.js';
 import Popup from '../atoms/Popup.jsx';
 import { Tab } from '@headlessui/react';
@@ -12,6 +12,7 @@ function FilesTable() {
     //popup states
     const [openPreview, setOpenPreview] = useState(false);
     const {val} = useContext(FetchContext);
+    const {update} = useContext(SubmitContext);
 
     function parseParams(params) {
         const keys = Object.keys(params)
@@ -31,8 +32,6 @@ function FilesTable() {
         return options ? options.slice(0, -1) : options
     }
 
-    //this function executes on every element of the DummyData array
-
     const x = async () => {
         const res = await axios.get('http://localhost:8080/api/v1/database', {
             params: {
@@ -45,18 +44,15 @@ function FilesTable() {
     }
 
     const fetchData = async () => {
-        const resultingFiles = await x(parseParams(val));
-        setFiles(resultingFiles)
+        setFiles([]);
+        const resultingFiles = await x();
+        setFiles(resultingFiles);
     }
 
-    //temporary useEffect to load first time data
-    let firstTime = false;
     useEffect(()=>{
-        if(!firstTime){
-            fetchData();
-            firstTime = true;
-        }
-    }, [])
+        fetchData();
+        setSelectedFiles([]);
+    }, [update])
     /*
     When we receive files from the server we put them in this array
     We can 'sort' the file table by sorting this array, since the table maps row 
@@ -189,26 +185,24 @@ function FilesTable() {
         <div className='bg-iso-grey h-full w-full p-4'>
             
             <Popup
-            onOpen={openPreview}
+            onOpen={openPreview && selectedFiles?.length > 0}
             onClose={()=>{setOpenPreview(false)}}>
                 <div className="flex flex-col">
                     <Tab.Group>
-                        <Tab.List className="grid grid-cols-5">{selectedFiles.map(e => (
-                            <Tab className="tab !w-auto !h-auto truncate">{files.find(f => f.attachmentId === e).attachmentFileName}</Tab>
+                        <Tab.List className="grid grid-cols-5">{selectedFiles?.map(e => (
+                            <Tab className="tab !w-auto !h-auto truncate">{files?.find(f => f.attachmentId === e)?.attachmentFileName}</Tab>
                         )
                         
                         )}</Tab.List>
                         <Tab.Panels>
-                            {selectedFiles.map(e => (
+                            {selectedFiles?.map(e => (
                                 <Tab.Panel className="flex-1 tab-body !p-0">
                                     <div className="flex flex-row w-full h-full">
                                         <div className="flex flex-col gap-1 h-60 w-1/3 p-1">
                                             <div className="flex flex-col gap-1 h-full w-full overflow-y-auto">
-                                                {Object.entries(files.find(f => f.attachmentId === e)).map(kv => {
+                                            {files?.find(f => f.attachmentId === e)?.length > 0 && (Object.entries(files?.find(f => f.attachmentId === e))?.map(kv => {
                                                     const key = kv[0].replace(/([a-z])([A-Z])/g, '$1 $2');
                                                     const val = kv[1];
-                                                    //replace dummydata with actual data
-                                                    //kv is a key/value pair of some object in dummydata with attachmentID specified by selected file
                                                     return (
                                                         <div className="block font-bold text-xs first-letter:capitalize">
                                                             {`${key}:`}
@@ -216,9 +210,8 @@ function FilesTable() {
                                                             {`${val}`}
                                                         </div>
                                                     )
-                                                })
-                                                
-                                                }
+                                                }))
+                                            }
                                             </div>
 
                                             <Button width="w-32" height="h-10" onClick={downloadFiles}> Download </Button>
@@ -235,13 +228,6 @@ function FilesTable() {
                     </Tab.Group>
                 </div>
             </Popup>
-
-            <button 
-            className="
-            absolute bottom-1 left-16
-            bg-iso-blue-grey-100 font-bold p-2 text-white rounded-md transition-all duration-300 ease-in-out hover:scale-110 hover:bg-iso-blue-grey-200"
-            onClick={() => fetchData()}
-            > Submit </button>
             
             <div className="flex justify-between items-center mb-4">
                 <div className="text-lg font-bold text-iso-blue-grey">
@@ -262,16 +248,16 @@ function FilesTable() {
             <div className='flex justify-center'>
                 <div className='w-11/12 border border-gray-400'>
                     {files
-                        .slice((filePage - 1) * filesPerPage, filePage * filesPerPage)
-                        .map((fileData, index) => (
-                            <div key={fileData.attachmentID} className={index % 2 ? '' : 'bg-iso-white'}>
+                        ?.slice((filePage - 1) * filesPerPage, filePage * filesPerPage)
+                        ?.map((fileData, index) => (
+                            <div key={fileData?.attachmentID} className={index % 2 ? '' : 'bg-iso-white'}>
                                 <FileRow
-                                    fileName={fileData.attachmentFileName}
-                                    customer={fileData.customerName}
-                                    uploadDate={fileData.createDate}
+                                    fileName={fileData?.attachmentFileName}
+                                    customer={fileData?.customerName}
+                                    uploadDate={fileData?.createDate}
                                     fileSizeMb={500}
-                                    attachmentID={fileData.attachmentId}
-                                    isSelected={selectedFiles.includes(fileData.attachmentId)}
+                                    attachmentID={fileData?.attachmentId}
+                                    isSelected={selectedFiles?.includes(fileData?.attachmentId)}
                                     onFileSelection={handleFileSelection}
                                 />
                             </div>

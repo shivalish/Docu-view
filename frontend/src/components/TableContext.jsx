@@ -10,3 +10,14 @@ export const FetchContextProvider = ({children}) => {
         {children}
     </FetchContext.Provider>)
 }
+
+export const SubmitContext = createContext();
+
+export const SubmitContextProvider = ({children}) => {
+    const [update, setUpdate] = useState(0);
+    const superSetUpdate = (newVal) => setUpdate(newVal);
+
+    return (<SubmitContext.Provider value={{update, superSetUpdate}}>
+        {children}
+    </SubmitContext.Provider>)
+}
