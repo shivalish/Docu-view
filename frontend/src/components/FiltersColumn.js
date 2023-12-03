@@ -82,7 +82,7 @@ function FilterRow({
                   </span>
                 </Disclosure.Button>
                 <Disclosure.Panel>
-                  <div className="flex flex-col gap-2 w-full">
+                  <div className="flex flex-col gap-2 bg-iso-blue-grey-300 rounded-md p-1">
                     {checkbox.map((docType, index) => (
                       <div>
                         <input
@@ -180,17 +180,17 @@ function FilterRow({
                 }}}
               placeholder={placeholder}
             />
-            <Combobox.Options className="flex flex-col pt-1 gap-1 absolute h-32 bg-iso-blue-grey-300 rounded-md drop-shadow-md w-[9.9rem] mt-1 overflow-y-scroll">
+            <Combobox.Options className="flex flex-col pt-1 gap-1 max-h-32 bg-iso-blue-grey-300 rounded-md drop-shadow-md w-[9.9rem] mt-1 overflow-y-scroll">
               {filtered.map((val, index) => (
                 <Combobox.Option
                   key={index}
                   value={val[1]}
-                  className="rounded-md ui-active:bg-iso-blue-grey-200
-                  ui-active:text-white bg-iso-blue-grey-300
-                  text-iso-white overflow-hidden text-sm p-1 pb-5 text-center items-center justify-center"
+                  className="rounded-md ui-active:bg-iso-blue-grey-200 ui-active:text-white bg-iso-blue-grey-300"
                   onClick={() => {combolog.add(val[1]); click(combolog);}}
                 >
+                  <div className="text-iso-white overflow-hidden text-sm text-center items-center justify-center">
                   {val[0]}
+                  </div> 
                 </Combobox.Option>
               ))}
             </Combobox.Options>
@@ -271,11 +271,9 @@ function FiltersColumn() {
                 />
               </div>
             ))}
-
-            <div className="h-16"/>
           </div>
 
-          <div className="flex justify-center items-center w-full h-32">
+          <div className="flex justify-center items-center w-full h-13">
             <Button OnClick={()=>superSetUpdate(update+1)}> Submit </Button>
           </div>
       </div>
