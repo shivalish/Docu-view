@@ -6,7 +6,7 @@ import AuthPage from './AuthPage';
 function Pages() {
     return (
         <Router>
-            <div className='w-screen h-screen'>
+            <div className='w-screen h-screen overflow-hidden'>
                 <Routes>
                     <Route path="/" element={<AuthPage />} />
                     <Route path="/main" element={<MainPage />} />
