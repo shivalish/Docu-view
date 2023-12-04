@@ -21,7 +21,7 @@ function HomePageInput({ label, hidden = false, forgot = false, userInput = "", 
       <div className="flex flex-col w-full">
       <label> {label} </label>
       <input
-        type={hidden && "password"}
+        type={hidden ? "password" : "text"}
         className="h-10 w-full px-5 bg-iso-grey rounded-md"
       />
       {forgot && <span className="h-5 text-right">{forgotText}</span>}
@@ -32,7 +32,7 @@ function HomePageInput({ label, hidden = false, forgot = false, userInput = "", 
     <div className="flex flex-col w-full">
       <label> {label} </label>
       <input
-        type={hidden && "password"}
+        type={hidden ? "password" : "text"}
         className="h-10 w-full px-5 bg-iso-grey rounded-md"
         onChange={(e) => {setUserInput(e.target.value)}}
         value={userInput}
