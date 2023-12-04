@@ -70,15 +70,16 @@ function FilesTable() {
         const byAscending = currentSort.key === key ? currentSort.direction === 'descending' : true;
         setCurrentSort({ key, direction: byAscending ? 'ascending' : 'descending' });
         if (!files || files.length === 0 || !Object.keys(files[0]).includes(key)) {
+            console.log("NO FILES OR INVALID KEY")
             return;
         }
         setFiles((oldFiles) => {
             let newFiles = [...oldFiles];
             newFiles.sort((fileA, fileB) => {
                 if (typeof fileA[key] === "string") {
-                    return byAscending ? fileA[key].localeCompare(fileB[key]) : fileB[key].localeCompare(fileA[key]);
+                    return byAscending ? fileA?.[key]?.localeCompare(fileB?.[key]) : fileB?.[key]?.localeCompare(fileA?.[key]);
                 } else {
-                    return byAscending ? fileA[key] - fileB[key] : fileB[key] - fileA[key];
+                    return byAscending ? fileA?.[key] - fileB?.[key] : fileB?.[key] - fileA?.[key];
                 }
             });
             return newFiles;
@@ -183,7 +184,7 @@ function FilesTable() {
 
     return (
         <div className='bg-iso-grey h-full w-full p-4'>
-            
+
             <Popup
             onOpen={openPreview && selectedFiles?.length > 0}
             onClose={()=>{setOpenPreview(false)}}>
@@ -192,7 +193,7 @@ function FilesTable() {
                         <Tab.List className="grid grid-cols-5">{selectedFiles?.map(e => (
                             <Tab className="tab !w-auto !h-auto truncate">{files?.find(f => f.attachmentId === e)?.attachmentFileName}</Tab>
                         )
-                        
+
                         )}</Tab.List>
                         <Tab.Panels>
                             {selectedFiles?.map(e => (
@@ -206,7 +207,7 @@ function FilesTable() {
                                                     return (
                                                         <div className="block font-bold text-xs first-letter:capitalize">
                                                             {`${key}:`}
-                                                            <br/>
+                                                            <br />
                                                             {`${val}`}
                                                         </div>
                                                     )
@@ -215,13 +216,13 @@ function FilesTable() {
                                             </div>
 
                                             <Button width="w-32" height="h-10" onClick={downloadFiles}> Download </Button>
-                                            
+
                                         </div>
 
                                         <div className="flex h-60 w-2/3 p-1">
-                                            <ImagePreview fileId={e}/>
+                                            <ImagePreview fileId={e} />
                                         </div>
-                                    </div> 
+                                    </div>
                                 </Tab.Panel>
                             ))}
                         </Tab.Panels>
@@ -236,7 +237,7 @@ function FilesTable() {
                 <div className="space-x-2">
                     <Button
                         className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded"
-                        OnClick={()=> {getPreview(); setOpenPreview(true)}}
+                        OnClick={() => { getPreview(); setOpenPreview(true) }}
                     >View</Button>
                     <Button
                         className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded"
@@ -252,12 +253,12 @@ function FilesTable() {
                         ?.map((fileData, index) => (
                             <div key={fileData?.attachmentID} className={index % 2 ? '' : 'bg-iso-white'}>
                                 <FileRow
-                                    fileName={fileData?.attachmentFileName}
-                                    customer={fileData?.customerName}
-                                    uploadDate={fileData?.createDate}
-                                    fileSizeMb={500}
-                                    attachmentID={fileData?.attachmentId}
-                                    isSelected={selectedFiles?.includes(fileData?.attachmentId)}
+                                    fileName={fileData.attachmentFileName}
+                                    customer={fileData.customerName}
+                                    uploadDate={fileData.createDate}
+                                    description={fileData.typeDescription}
+                                    attachmentID={fileData.attachmentId}
+                                    isSelected={selectedFiles.includes(fileData.attachmentId)}
                                     onFileSelection={handleFileSelection}
                                 />
                             </div>
