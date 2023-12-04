@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 function formatDate(uDate) {
     if (!uDate) return uDate
@@ -17,15 +17,6 @@ function formatDate(uDate) {
     };
     return new Intl.DateTimeFormat('en-US', options).format(date);
 
-}
-
-function formatFileSize(mbSize) {
-    if (mbSize < 1000) {
-        return `${mbSize} MB`;
-    } else {
-        const gbSize = mbSize / 1000;
-        return `${gbSize.toFixed(2)} GB`;
-    }
 }
 
 const FileRow = ({ fileName, customer, uploadDate, description, fileSizeMb, attachmentID, isSelected, onFileSelection }) => {
