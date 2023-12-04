@@ -71,11 +71,9 @@ function FilesTable() {
     const totalFiles = files.length;
     const [currentSort, setCurrentSort] = useState({ key: '', direction: 'ascending' });
     const sortFiles = (key) => {
-        console.log(key)
         const byAscending = currentSort.key === key ? currentSort.direction === 'descending' : true;
         setCurrentSort({ key, direction: byAscending ? 'ascending' : 'descending' });
         if (!files || files.length === 0 || !Object.keys(files[0]).includes(key)) {
-            console.log(files[0])
             console.log("NO FILES OR INVALID KEY")
             return;
         }
@@ -83,9 +81,9 @@ function FilesTable() {
             let newFiles = [...oldFiles];
             newFiles.sort((fileA, fileB) => {
                 if (typeof fileA[key] === "string") {
-                    return byAscending ? fileA[key].localeCompare(fileB[key]) : fileB[key].localeCompare(fileA[key]);
+                    return byAscending ? fileA?.[key]?.localeCompare(fileB?.[key]) : fileB?.[key]?.localeCompare(fileA?.[key]);
                 } else {
-                    return byAscending ? fileA[key] - fileB[key] : fileB[key] - fileA[key];
+                    return byAscending ? fileA?.[key] - fileB?.[key] : fileB?.[key] - fileA?.[key];
                 }
             });
             return newFiles;
