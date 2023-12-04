@@ -1,6 +1,6 @@
-import { React, useContext, useEffect, useState } from "react";
-import { CalendarIcon, ChevronDoubleRightIcon } from "@heroicons/react/24/solid";
-import { FetchContext } from "./TableContext";
+import { React, useContext, useState } from "react";
+import { ChevronDoubleRightIcon } from "@heroicons/react/24/solid";
+import { FetchContext, SubmitContext } from "./TableContext";
 import classNames from "classnames";
 import { Disclosure } from "@headlessui/react";
 import FilterTypes from "../atoms/FilterTypes";
@@ -8,7 +8,6 @@ import { Combobox } from "@headlessui/react";
 import { Menu } from "@headlessui/react";
 import Button from "../atoms/Button.jsx";
 import SelectionTag from "../atoms/SelectionTag.jsx";
-// import Calendar from 'react-calendar';
 import 'react-datepicker/dist/react-datepicker.css';
 import DatePicker from 'react-datepicker';
 
@@ -54,9 +53,6 @@ function FilterRow({
       </button>
     );
   };
-  //TODO: code cleanup + visual alignment fixes
-
-  //TODO: create a custom textbox component
 
   const filtered =
     comboText === ""
@@ -86,7 +82,7 @@ function FilterRow({
                   </span>
                 </Disclosure.Button>
                 <Disclosure.Panel>
-                  <div className="flex flex-col gap-2 w-full">
+                  <div className="flex flex-col gap-2 bg-iso-blue-grey-300 rounded-md p-1">
                     {checkbox.map((docType, index) => (
                       <div>
                         <input
@@ -177,24 +173,24 @@ function FilterRow({
               onChange={(e) => setComboText(e.target.value)}
               className="textbox bg-iso-blue-grey-300 w-full max-w-full"
               onKeyUp={e => {
-                if(e.key==='Enter' && selectedCombo !== null){
+                if(e.key==='Enter' && selectedCombo !== null && selectedCombo?.replace(/ /g,'') !== ''){
                   combolog.add(selectedCombo);
                   setComboText("");
                   setCombo(null);
                 }}}
               placeholder={placeholder}
             />
-            <Combobox.Options className="flex flex-col pt-1 gap-1">
-              {filtered.map((val, index) => (
+            <Combobox.Options className="flex flex-col pt-1 gap-1 w-auto max-h-32 bg-iso-blue-grey-300 rounded-md drop-shadow-md mt-1 overflow-y-scroll">
+              {filtered.slice(0,10).map((val, index) => (
                 <Combobox.Option
                   key={index}
                   value={val[1]}
-                  className="rounded-md ui-active:bg-iso-blue-grey-200
-                  ui-active:text-white bg-iso-blue-grey-300
-                  text-iso-white overflow-hidden text-sm p-1"
+                  className="rounded-md ui-active:bg-iso-blue-grey-200 ui-active:text-white bg-iso-blue-grey-300"
                   onClick={() => {combolog.add(val[1]); click(combolog);}}
                 >
+                  <div className="text-iso-white overflow-hidden text-sm text-center items-center justify-center">
                   {val[0]}
+                  </div> 
                 </Combobox.Option>
               ))}
             </Combobox.Options>
@@ -261,7 +257,8 @@ function FilterRow({
 
 //dropdown menu
 function FiltersColumn() {
-  const {val, superSetVal}= useContext(FetchContext);
+  const {val, superSetVal} = useContext(FetchContext);
+  const {update, superSetUpdate} = useContext(SubmitContext);
 
   return (
       <div className="flex flex-col bg-iso-blue h-[50rem] w-full text-iso-white p-4 gap-2 overflow-y-scroll">
@@ -274,8 +271,10 @@ function FiltersColumn() {
                 />
               </div>
             ))}
+          </div>
 
-            <div className="h-16"/>
+          <div className="flex justify-center items-center w-full h-13">
+            <Button OnClick={()=>superSetUpdate(update+1)}> Submit </Button>
           </div>
       </div>
   );

@@ -1,13 +1,14 @@
 import React from 'react';
-
 import Header from './atoms/Header';
 import FiltersColumn from './components/FiltersColumn';
 import FilesTable from './components/FilesTable';
 import { FetchContextProvider } from './components/TableContext';
+import { SubmitContextProvider } from './components/TableContext';
 
 function MainPage() {
     return (
         <FetchContextProvider>
+            <SubmitContextProvider>
             <div className="h-full w-full flex flex-col">
             <div className="flex-shrink-0 ">
                 <Header />
@@ -24,6 +25,7 @@ function MainPage() {
 
             </div>
         </div>
+            </SubmitContextProvider>
         </FetchContextProvider>
     );
 }
