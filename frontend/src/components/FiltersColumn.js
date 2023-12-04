@@ -180,8 +180,8 @@ function FilterRow({
                 }}}
               placeholder={placeholder}
             />
-            <Combobox.Options className="flex flex-col pt-1 gap-1 max-h-32 bg-iso-blue-grey-300 rounded-md drop-shadow-md w-[9.9rem] mt-1 overflow-y-scroll">
-              {filtered.map((val, index) => (
+            <Combobox.Options className="flex flex-col pt-1 gap-1 w-auto max-h-32 bg-iso-blue-grey-300 rounded-md drop-shadow-md mt-1 overflow-y-scroll">
+              {filtered.slice(0,10).map((val, index) => (
                 <Combobox.Option
                   key={index}
                   value={val[1]}
