@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 function formatDate(uDate) {
     if (!uDate) return uDate
     if (typeof (uDate) === 'string') {
         uDate = new Date(uDate)?.getTime()
     }
-    
+
     const date = new Date(uDate);
     const options = {
         month: '2-digit',
@@ -28,7 +28,8 @@ function formatFileSize(mbSize) {
     }
 }
 
-const FileRow = ({ fileName, customer, uploadDate, fileSizeMb, attachmentID, isSelected, onFileSelection }) => {
+const FileRow = ({ fileName, customer, uploadDate, description, fileSizeMb, attachmentID, isSelected, onFileSelection }) => {
+    const [descriptionTip, setDescriptionTip] = useState(false);
     return (
         <div className="flex w-full border-b py-2 items-center">
             <input
@@ -40,7 +41,24 @@ const FileRow = ({ fileName, customer, uploadDate, fileSizeMb, attachmentID, isS
             <div className="w-1/4 truncate text-sm px-2">{fileName}</div>
             <div className="w-1/4 truncate text-sm px-2">{customer}</div>
             <div className="w-1/4 truncate text-sm px-2">{formatDate(uploadDate)}</div>
-            <div className="w-1/4 truncate text-sm px-2">{formatFileSize(fileSizeMb)}</div>
+            <div className="w-1/4"
+                style={{ overflowX: 'hidden' }}
+                onMouseEnter={() => setDescriptionTip(true)}
+                onMouseLeave={() => setDescriptionTip(false)}>
+                <div
+                    className="w-full text-sm px-2 relative truncate"
+                    style={{opacity: descriptionTip ? '0.6' : '1'}}
+                    >
+                    {description}
+                </div>
+                {descriptionTip && (
+                    <p className="absolute w-56 border border-solid bg-white text-sm text-black p-2 z-20"
+                        style={{ whiteSpace: 'normal', overflow: 'visible', marginTop: '-0.2vh', pointerEvents: 'none' }}>
+                        {description}
+                    </p>
+                )}
+            </div>
+
         </div>
     );
 }

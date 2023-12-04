@@ -11,7 +11,7 @@ import axios from 'axios'
 function FilesTable() {
     //popup states
     const [openPreview, setOpenPreview] = useState(false);
-    const {val} = useContext(FetchContext);
+    const { val } = useContext(FetchContext);
 
     function parseParams(params) {
         const keys = Object.keys(params)
@@ -51,8 +51,8 @@ function FilesTable() {
 
     //temporary useEffect to load first time data
     let firstTime = false;
-    useEffect(()=>{
-        if(!firstTime){
+    useEffect(() => {
+        if (!firstTime) {
             fetchData();
             firstTime = true;
         }
@@ -71,9 +71,12 @@ function FilesTable() {
     const totalFiles = files.length;
     const [currentSort, setCurrentSort] = useState({ key: '', direction: 'ascending' });
     const sortFiles = (key) => {
+        console.log(key)
         const byAscending = currentSort.key === key ? currentSort.direction === 'descending' : true;
         setCurrentSort({ key, direction: byAscending ? 'ascending' : 'descending' });
         if (!files || files.length === 0 || !Object.keys(files[0]).includes(key)) {
+            console.log(files[0])
+            console.log("NO FILES OR INVALID KEY")
             return;
         }
         setFiles((oldFiles) => {
@@ -187,16 +190,16 @@ function FilesTable() {
 
     return (
         <div className='bg-iso-grey h-full w-full p-4'>
-            
+
             <Popup
-            onOpen={openPreview}
-            onClose={()=>{setOpenPreview(false)}}>
+                onOpen={openPreview}
+                onClose={() => { setOpenPreview(false) }}>
                 <div className="flex flex-col">
                     <Tab.Group>
                         <Tab.List className="grid grid-cols-5">{selectedFiles.map(e => (
                             <Tab className="tab !w-auto !h-auto truncate">{files.find(f => f.attachmentId === e).attachmentFileName}</Tab>
                         )
-                        
+
                         )}</Tab.List>
                         <Tab.Panels>
                             {selectedFiles.map(e => (
@@ -212,23 +215,23 @@ function FilesTable() {
                                                     return (
                                                         <div className="block font-bold text-xs first-letter:capitalize">
                                                             {`${key}:`}
-                                                            <br/>
+                                                            <br />
                                                             {`${val}`}
                                                         </div>
                                                     )
                                                 })
-                                                
+
                                                 }
                                             </div>
 
                                             <Button width="w-32" height="h-10" onClick={downloadFiles}> Download </Button>
-                                            
+
                                         </div>
 
                                         <div className="flex h-60 w-2/3 p-1">
-                                            <ImagePreview fileId={e}/>
+                                            <ImagePreview fileId={e} />
                                         </div>
-                                    </div> 
+                                    </div>
                                 </Tab.Panel>
                             ))}
                         </Tab.Panels>
@@ -236,13 +239,13 @@ function FilesTable() {
                 </div>
             </Popup>
 
-            <button 
-            className="
+            <button
+                className="
             absolute bottom-1 left-16
             bg-iso-blue-grey-100 font-bold p-2 text-white rounded-md transition-all duration-300 ease-in-out hover:scale-110 hover:bg-iso-blue-grey-200"
-            onClick={() => fetchData()}
+                onClick={() => fetchData()}
             > Submit </button>
-            
+
             <div className="flex justify-between items-center mb-4">
                 <div className="text-lg font-bold text-iso-blue-grey">
                     Results...
@@ -250,7 +253,7 @@ function FilesTable() {
                 <div className="space-x-2">
                     <Button
                         className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded"
-                        OnClick={()=> {getPreview(); setOpenPreview(true)}}
+                        OnClick={() => { getPreview(); setOpenPreview(true) }}
                     >View</Button>
                     <Button
                         className="bg-iso-blue-grey-100 text-white px-4 py-2 rounded"
@@ -269,7 +272,7 @@ function FilesTable() {
                                     fileName={fileData.attachmentFileName}
                                     customer={fileData.customerName}
                                     uploadDate={fileData.createDate}
-                                    fileSizeMb={500}
+                                    description={fileData.typeDescription}
                                     attachmentID={fileData.attachmentId}
                                     isSelected={selectedFiles.includes(fileData.attachmentId)}
                                     onFileSelection={handleFileSelection}
