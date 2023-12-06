@@ -52,6 +52,7 @@ function FilesTable() {
     useEffect(()=>{
         fetchData();
         setSelectedFiles([]);
+        setFilePage(1);
     }, [update])
     /*
     When we receive files from the server we put them in this array
