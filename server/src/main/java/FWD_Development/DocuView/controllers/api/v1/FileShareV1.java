@@ -66,12 +66,14 @@ public class FileShareV1 {
 
 
     // for testing
-    @GetMapping("/list")
-    public List<File> listFiles() throws IOException {
-        // googleDriveService.drive is of type Drive, docu: https://developers.google.com/resources/api-libraries/documentation/drive/v3/java/latest/com/google/api/services/drive/Drive.html 
-        FileList fileList = googleDriveService.drive.files().list().execute();
-        return fileList.getFiles();
-    }
+
+
+    //@GetMapping("/list")
+    //public List<File> listFiles() throws IOException {
+    //    // googleDriveService.drive is of type Drive, docu: https://developers.google.com/resources/api-libraries/documentation/drive/v3/java/latest/com/google/api/services/drive/Drive.html 
+    //    FileList fileList = googleDriveService.drive.files().list().execute();
+    //    return fileList.getFiles();
+    //}
 
     // iframe: pdf and html
     // {".txt", ".xlsm", ".xlsx"}
@@ -80,7 +82,15 @@ public class FileShareV1 {
         fileId = getGoogleId(googleDriveService, getFilePath(jdbcTemplate, fileId));
         if (fileId == null || fileId.equals("")) return;
         java.nio.file.Path filePath = VIEWER_LOC.resolve(fileId + ".png");
-        if (java.nio.file.Files.exists(filePath)) return;
+        if (java.nio.file.Files.exists(filePath)){
+            FileTime lastModifiedTime = java.nio.file.Files.getLastModifiedTime(filePath);
+            long hours = ChronoUnit.HOURS.between(lastModifiedTime.toInstant(), Instant.now());
+            if (hours > 24) {
+                java.nio.file.Files.delete(filePath);
+            } else {
+                return;
+            }
+        }
 
         File fileData = googleDriveService.drive.files().get(fileId).execute();
         String fileName = fileData.getName();
@@ -105,6 +115,8 @@ public class FileShareV1 {
 
     @GetMapping("/preview/{fileId}")
     public ResponseEntity<Resource> previewFile(@PathVariable String fileId) throws Exception {
+        //if(!SecHandler.checkToken())
+		//	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         fileId = getGoogleId(googleDriveService, getFilePath(jdbcTemplate, fileId));
         if (fileId == null) return ResponseEntity.notFound().build();
         if (fileId.equals("")) return ResponseEntity.notFound().build();
@@ -156,8 +168,13 @@ public class FileShareV1 {
 
     @GetMapping("/download/{fileId}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileId) throws IOException {
+        //if(!SecHandler.checkToken())
+		//	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         fileId = getGoogleId(googleDriveService, getFilePath(jdbcTemplate, fileId));
         // Use Google Drive API to get the file
+        File fileData = googleDriveService.drive.files().get(fileId).execute();
+        String fileName = fileData.getName();
+        String ext = fileName.substring( fileName.lastIndexOf('.') + 1);
         OutputStream outputStream = new ByteArrayOutputStream();
         googleDriveService.drive.files().get(fileId).executeMediaAndDownloadTo(outputStream);
 
@@ -170,7 +187,7 @@ public class FileShareV1 {
 
         // Set content type and headers
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileId + "\"");
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileId + '.' + ext + "\"");
 
         return ResponseEntity.ok()
                 .headers(headers)
@@ -179,18 +196,27 @@ public class FileShareV1 {
     }
 
     //zip files
-    @GetMapping("/download/zipFiles")
+    @GetMapping({"/download/zipFiles", "/download/zipfiles"})
     public ResponseEntity<Resource> zipFiles(@RequestParam List<String> fileIds) throws IOException {
+        //if(!SecHandler.checkToken())
+		//	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ZipOutputStream zipOut = new ZipOutputStream(outputStream);
-
+	
+	    int counter = 0;
+	
         for (String fileId : fileIds) {
             fileId = getGoogleId(googleDriveService, getFilePath(jdbcTemplate, fileId));
             File fileData = googleDriveService.drive.files().get(fileId).execute();
 
             InputStream inputStream = googleDriveService.drive.files().get(fileId).executeMediaAsInputStream();
+	    String fileName = fileData.getName();
+            String fileExtension = fileName.substring(fileName.lastIndexOf(".")); // Get file extension
 
-            ZipEntry zipEntry = new ZipEntry(fileData.getName());
+            // Append a counter to the filename
+            String zipEntryName = fileName.replace(fileExtension, "") + "_" + counter + fileExtension;
+            
+            ZipEntry zipEntry = new ZipEntry(zipEntryName);
             zipOut.putNextEntry(zipEntry);
 
             byte[] bytes = new byte[1024];
@@ -200,6 +226,7 @@ public class FileShareV1 {
             }
             inputStream.close();
             zipOut.closeEntry();
+            counter++;
         }
         zipOut.close();
         // fix to be be byte resource
@@ -215,6 +242,8 @@ public class FileShareV1 {
     }
 
     public static String getGoogleId(GoogleDriveService googleDriveService, String path) throws IOException {
+        //if(!SecHandler.checkToken())
+		//	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         path = path.startsWith("/") ? path.substring(1) : path;
         path = path.startsWith("\\") ? path.substring(1) : path;
         String rootFolderId = googleDriveService.drive.files().get("root").execute().getId();

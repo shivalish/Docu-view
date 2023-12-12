@@ -15,6 +15,8 @@ public class FiltersV1{
     
     @GetMapping("")
     public ResponseEntity<JsonNode> filters() {
+        //if(!SecHandler.checkToken())
+		//	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
        return ResponseEntity.ok().body(Hardcoded.outerArray);
     }
 }

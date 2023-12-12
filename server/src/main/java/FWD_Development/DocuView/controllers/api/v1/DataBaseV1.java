@@ -85,6 +85,7 @@ public class DataBaseV1 {
 				e.printStackTrace();
 			}
 		}
+		
 	}
 
 
@@ -123,6 +124,11 @@ public class DataBaseV1 {
 
 	@GetMapping({"", "/infinite"})
 	public ResponseEntity<List<Map<String, Object>>> getDocs(@RequestParam MultiValueMap<String,String> allRequestParams){
+		//if(!SecHandler.checkToken())
+		//	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		if (Hardcoded.dataBaseTree == null) {
+			Hardcoded.initializeDataBaseTree(jdbcTemplate);
+		}
 		var query =  Hardcoded.dataBaseTree.generateQuery(allRequestParams);
 		List<Map<String, Object>> resp = jdbcTemplate.queryForList("SELECT " + rename +" FROM (" + query.parametrized + ") AS x;", query.params);
 		async_func.cache(googleDriveService, jdbcTemplate, resp);
@@ -137,6 +143,11 @@ public class DataBaseV1 {
 		@RequestParam(name = "perPage", required = false, defaultValue = "50") int perPage,
 		@RequestParam(name = "page", required = false, defaultValue = "1") int page
 		){
+			//if(!SecHandler.checkToken())
+			//	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+			if (Hardcoded.dataBaseTree == null) {
+				Hardcoded.initializeDataBaseTree(jdbcTemplate);
+			}
 		perPage = Math.min(Math.max(1, perPage), 100);
 		page = Math.max(1, page);
 		var query = Hardcoded.dataBaseTree.generateQuery(allRequestParams);
@@ -157,6 +168,11 @@ public class DataBaseV1 {
 		@RequestParam(name = "perPage", required = false, defaultValue = "50") int perPage,
 		@RequestParam(name = "page", required = false, defaultValue = "1") int page
 		){
+			//if(!SecHandler.checkToken())
+			//	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+			if (Hardcoded.dataBaseTree == null) {
+				Hardcoded.initializeDataBaseTree(jdbcTemplate);
+			}
 		perPage = Math.min(Math.max(1, perPage), 100);
 		page = Math.max(1, page);
 		var query = Hardcoded.dataBaseTree.generateQuery(allRequestParams);
@@ -176,6 +192,11 @@ public class DataBaseV1 {
 	
 	@GetMapping("/help")
 	public ResponseEntity<String> getHelp(@RequestParam Map<String,String> allRequestParams){
+		//if(!SecHandler.checkToken())
+		//	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		if (Hardcoded.dataBaseTree == null) {
+			Hardcoded.initializeDataBaseTree(jdbcTemplate);
+		}
 		return ResponseEntity.ok()
 			.contentType(MediaType.TEXT_PLAIN)
 			.body(Hardcoded.dataBaseTree.getURIquery("/api/v1/database"));

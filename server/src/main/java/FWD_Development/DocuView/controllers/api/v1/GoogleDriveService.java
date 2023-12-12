@@ -68,8 +68,9 @@ public class GoogleDriveService {
     //returns an authorized Credential object.
     return credential;
   }
-
+  
   public final Drive drive;
+
   @Autowired
   public GoogleDriveService() throws IOException, GeneralSecurityException{
       final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
