@@ -3,6 +3,7 @@ import Header from "./atoms/Header.jsx";
 import Button from "./atoms/Button.jsx";
 import { Tab } from "@headlessui/react";
 import { useNavigate } from "react-router-dom";
+import axios from 'axios'
 
 function HomePageButton({ text, OnClick }) {
   return (
@@ -19,13 +20,13 @@ function HomePageInput({ label, hidden = false, forgot = false, userInput = "", 
   if (setUserInput === null) {
     return (
       <div className="flex flex-col w-full">
-      <label> {label} </label>
-      <input
-        type={hidden ? "password" : "text"}
-        className="h-10 w-full px-5 bg-iso-grey rounded-md"
-      />
-      {forgot && <span className="h-5 text-right">{forgotText}</span>}
-    </div>
+        <label> {label} </label>
+        <input
+          type={hidden ? "password" : "text"}
+          className="h-10 w-full px-5 bg-iso-grey rounded-md"
+        />
+        {forgot && <span className="h-5 text-right">{forgotText}</span>}
+      </div>
     )
   }
   return (
@@ -34,7 +35,7 @@ function HomePageInput({ label, hidden = false, forgot = false, userInput = "", 
       <input
         type={hidden ? "password" : "text"}
         className="h-10 w-full px-5 bg-iso-grey rounded-md"
-        onChange={(e) => {setUserInput(e.target.value)}}
+        onChange={(e) => { setUserInput(e.target.value) }}
         value={userInput}
       />
       {forgot && <span className="h-5 text-right">{forgotText}</span>}
@@ -42,14 +43,39 @@ function HomePageInput({ label, hidden = false, forgot = false, userInput = "", 
   );
 }
 
+
 function HomePageTabs() {
+
   const navigate = useNavigate();
+
   const movePage = () => navigate("/main");
+
+  function logIn(logInID, logInPasswd) {
+    const endpoint = 'http://localhost:8080/api/v1/auth/login';
+
+    const postData = {
+      username: logInID,
+      password: logInPasswd
+    };
+
+    axios.post(endpoint, postData)
+      .then(response => {
+        console.log('Login successful:', response);
+      })
+      .catch(error => {
+        console.error('Login error:', error);
+      }).then(() => {
+        movePage()
+      })
+  }
+
   const [logInID, setLogInID] = useState("");
   const [logInPasswd, setLogInPasswd] = useState("");
   const [signUpID, setSignUpID] = useState("");
   const [signUpPasswd, setSignUpPasswd] = useState("");
   const [signUpPasswdReEnter, setSignUpPasswdReEnter] = useState("");
+
+
   return (
     <div className="flex h-full w-1/3 justify-center items-center">
       <div>
@@ -76,20 +102,20 @@ function HomePageTabs() {
                 userInput={logInPasswd}
                 setUserInput={setLogInPasswd}
               />
-              <HomePageButton text="Login" OnClick={movePage} />
+              <HomePageButton text="Login" OnClick={() => logIn(logInID, logInPasswd)} />
             </Tab.Panel>
             <Tab.Panel className="flex flex-col tab-body gap-5">
-              <HomePageInput label="Username" 
-              userInput={signUpID}
-              setUserInput={setSignUpID}/>
+              <HomePageInput label="Username"
+                userInput={signUpID}
+                setUserInput={setSignUpID} />
 
-              <HomePageInput label="Password" hidden={true} 
-              userInput={signUpPasswd}
-              setUserInput={setSignUpPasswd}/>
+              <HomePageInput label="Password" hidden={true}
+                userInput={signUpPasswd}
+                setUserInput={setSignUpPasswd} />
 
               <HomePageInput label="Re-enter Password" hidden={true}
-              userInput={signUpPasswdReEnter}
-              setUserInput={setSignUpPasswdReEnter}/>
+                userInput={signUpPasswdReEnter}
+                setUserInput={setSignUpPasswdReEnter} />
 
               <HomePageButton text="Sign Up" OnClick={movePage} />
             </Tab.Panel>
@@ -101,8 +127,6 @@ function HomePageTabs() {
 }
 
 function HomePage() {
-  //TODO 3: implement text rememberance when switching tabs
-
   return (
     <div className="ffc w-screen h-screen bg-iso-blue">
       <Header />

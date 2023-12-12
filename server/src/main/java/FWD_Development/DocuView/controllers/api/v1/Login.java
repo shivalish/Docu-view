@@ -48,6 +48,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.springframework.http.MediaType;
 
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/v1/auth")
 public class Login {
